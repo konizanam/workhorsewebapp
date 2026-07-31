@@ -1,12 +1,51 @@
 import "../App.css";
 import { Link, useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function VerifyOTP() {
 
   const navigate = useNavigate();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     
+  const [timer, setTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
+
+  // Countdown timer effect
+    useEffect(() => {
+
+        if (timer === 0) {
+
+            setCanResend(true);
+            return;
+
+        }
+
+
+        const countdown = setInterval(() => {
+
+            setTimer((previous) => previous - 1);
+
+        }, 1000);
+
+
+
+        return () => clearInterval(countdown);
+
+
+}, [timer]);
+
+// Function to handle OTP resend
+const resendOTP = () => {
+
+    setTimer(60);
+
+    setCanResend(false);
+
+
+    alert("New OTP sent!");
+
+};
+
   const inputRefs = useRef<HTMLInputElement[]>([]);
 
     const handleChange = (
@@ -64,7 +103,7 @@ const handleVerify = (
 
 };
 
-/////////////////////
+//
   return (
     <div className="page">
 
@@ -140,6 +179,28 @@ const handleVerify = (
           <button className="btn">
             Verify Code
           </button>
+        
+            <div className="text-center">
+
+                {canResend ? (
+
+                    <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={resendOTP}
+                    >
+                    Resend OTP
+                    </button>
+
+                ) : (
+
+                    <p className="subtitle">
+                    Resend OTP in {timer}s
+                    </p>
+
+                )}
+
+            </div>
 
 
         </form>

@@ -290,3 +290,36 @@ h1 {
     transform: scale(1.05);
 
 }
+
+/* ==============================
+   resend link bUTTON
+============================== */
+
+.btn-secondary {
+
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#ECEFF1;
+
+    color:#555;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    margin-top:15px;
+
+}
+
+
+.btn-secondary:hover {
+
+    background:#CFD8DC;
+
+}
