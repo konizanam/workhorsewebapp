@@ -176,6 +176,17 @@ h1 {
 
 }
 
+.error {
+
+  color:#E53935;
+
+  font-size:13px;
+
+  margin-bottom:15px;
+
+  text-align:center;
+
+}
 
 /* ==============================
    BUTTON

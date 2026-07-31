@@ -6,6 +6,27 @@ function App() {
 
   const [showPassword, setShowPassword] = useState(false);
   
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const handleLogin = (e: React.FormEvent) => {
+
+    e.preventDefault();
+
+    if (!email || !password) {
+
+      setError("Please enter email and password");
+
+      return;
+
+    }
+
+
+    setError("");
+
+    alert("Login successful");
+
+  };
   return (
     <div className="page">
       <div className="auth-card">
@@ -20,7 +41,7 @@ function App() {
           Sign in to access the Workhorse admin panel.
         </p>
           
-        <form>
+        <form onSubmit={handleLogin}>
 
           <div className="form-group">
             <label>Email Address</label>
@@ -29,6 +50,8 @@ function App() {
               <input
                 type="email"
                 placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
           </div>
@@ -42,6 +65,8 @@ function App() {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
 
 
@@ -73,6 +98,7 @@ function App() {
 
           </div>
 
+          {error && <p className="error">{error}</p>}
 
           <button className="btn">
             Login
