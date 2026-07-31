@@ -1,7 +1,9 @@
 import "../App.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function VerifyOTP() {
+  const navigate = useNavigate();
+
   return (
     <div className="page">
 
@@ -22,7 +24,10 @@ function VerifyOTP() {
         </p>
 
 
-        <form>
+        <form onSubmit={(e) => {
+            e.preventDefault();
+            navigate("/ResetPassword");
+        }}>
 
           <div className="otp-container">
 

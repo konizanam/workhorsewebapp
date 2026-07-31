@@ -1,7 +1,9 @@
 import "../App.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 function ForgotPassword() {
+  const navigate = useNavigate();
+
   return (
     <div className="page">
 
@@ -22,7 +24,11 @@ function ForgotPassword() {
         </p>
 
 
-        <form>
+        <form onSubmit={(e) => {
+            e.preventDefault();
+            navigate("/VerifyOTP");
+        }}
+        >
 
           <div className="form-group">
 
