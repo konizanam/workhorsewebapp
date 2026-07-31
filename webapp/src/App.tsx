@@ -2,15 +2,18 @@ import "./App.css";
 import { useState } from "react";
 import { FaUserShield, FaEye, FaEyeSlash } from "react-icons/fa";
 
-function App() {
+import { Routes, Route, Link } from "react-router-dom";
+import { ForgotPassword } from "./pages/ForgotPassword";
+
+function Login() {
 
   const [showPassword, setShowPassword] = useState(false);
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  
   const handleLogin = (e: React.FormEvent) => {
-
     e.preventDefault();
 
     if (!email || !password) {
@@ -18,15 +21,13 @@ function App() {
       setError("Please enter email and password");
 
       return;
-
     }
-
 
     setError("");
 
     alert("Login successful");
-
   };
+  
   return (
     <div className="page">
       <div className="auth-card">
@@ -78,8 +79,6 @@ function App() {
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
 
               </span>
-
-
             </div>
           </div>
 
@@ -92,24 +91,32 @@ function App() {
             </label>
 
 
-            <a href="#">
+            <Link to="/ForgotPassword">
               Forgot Password?
-            </a>
-
+            </Link>
           </div>
 
           {error && <p className="error">{error}</p>}
 
-          <button className="btn">
+          <button className="btn" type="submit">
             Login
           </button>
-
-
         </form>
-
       </div>
     </div>
   );
+}
+
+function App() {
+  return (
+    <Routes>
+
+      <Route path="/" element={<Login />} />
+      <Route path="/ForgotPassword" element={<ForgotPassword />}
+      />
+    </Routes>
+  );
+
 }
 
 export default App;
