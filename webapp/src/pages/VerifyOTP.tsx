@@ -1,9 +1,70 @@
 import "../App.css";
 import { Link, useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
 
 function VerifyOTP() {
-  const navigate = useNavigate();
 
+  const navigate = useNavigate();
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+    
+  const inputRefs = useRef<HTMLInputElement[]>([]);
+
+    const handleChange = (
+    value: string,
+    index: number
+    ) => {
+        
+        // Only allow numeric input
+    if (!/^[0-9]?$/.test(value)) {
+        return;
+    }
+
+    const newOtp = [...otp];
+
+    newOtp[index] = value;
+
+    setOtp(newOtp);
+
+// Move focus to the next input field if a digit is entered
+    if (value && index < 5) {
+
+        inputRefs.current[index + 1].focus();
+
+    }
+
+};
+
+const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    index: number
+  ) => {
+
+
+    // Move backwards on backspace
+    if (
+      e.key === "Backspace" &&
+      !otp[index] &&
+      index > 0
+    ) {
+
+      inputRefs.current[index - 1].focus();
+
+    }
+
+};
+
+const handleVerify = (
+    e: React.FormEvent
+  ) => {
+
+    e.preventDefault();
+
+
+    navigate("/ResetPassword");
+
+};
+
+/////////////////////
   return (
     <div className="page">
 
@@ -24,48 +85,54 @@ function VerifyOTP() {
         </p>
 
 
-        <form onSubmit={(e) => {
-            e.preventDefault();
-            navigate("/ResetPassword");
-        }}>
+        <form onSubmit={handleVerify}>
 
           <div className="otp-container">
 
-            <input
-              className="otp-input"
-              type="text"
-              maxLength={1}
-            />
+            {otp.map((digit, index) => (
 
-            <input
-              className="otp-input"
-              type="text"
-              maxLength={1}
-            />
+              <input
 
-            <input
-              className="otp-input"
-              type="text"
-              maxLength={1}
-            />
+                key={index}
 
-            <input
-              className="otp-input"
-              type="text"
-              maxLength={1}
-            />
+                className="otp-input"
 
-            <input
-              className="otp-input"
-              type="text"
-              maxLength={1}
-            />
+                type="text"
 
-            <input
-              className="otp-input"
-              type="text"
-              maxLength={1}
-            />
+                maxLength={1}
+
+                value={digit}
+
+
+                ref={(element) => {
+
+                  if (element) {
+
+                    inputRefs.current[index] = element;
+
+                  }
+
+                }}
+
+
+                onChange={(e) =>
+                  handleChange(
+                    e.target.value,
+                    index
+                  )
+                }
+
+
+                onKeyDown={(e) =>
+                  handleKeyDown(
+                    e,
+                    index
+                  )
+                }
+
+              />
+
+            ))}
 
           </div>
 
@@ -91,6 +158,7 @@ function VerifyOTP() {
 
     </div>
   );
+  
 }
 
 export { VerifyOTP };
