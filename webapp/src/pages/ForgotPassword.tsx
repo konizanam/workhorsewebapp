@@ -1,4 +1,5 @@
 import "../App.css";
+import { Link } from "react-router-dom";
 
 function ForgotPassword() {
   return (
@@ -46,6 +47,11 @@ function ForgotPassword() {
             Send Reset Link
           </button>
 
+            <p className="text-center">
+                <Link to="/">
+                    Back to Login
+                </Link>
+            </p>
 
         </form>
 
