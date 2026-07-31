@@ -10,7 +10,7 @@ The project focuses on creating a modern admin login interface with password rec
 
 ## Authentication Pages
 
-### Login Page
+### Login Page (App.tsx)
 - Admin login interface
 - Email input
 - Password input
@@ -167,14 +167,11 @@ The interface uses:
 - Smooth animations
 - Mobile responsive design
 
-
 ---
 
 # Author
 
-PAULUS KASHIMBODE
-
-Software Development Student
+PAULUS KASHIMBODE (intern)
 
 ---
 
