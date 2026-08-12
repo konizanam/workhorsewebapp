@@ -223,4 +223,3 @@ const handleVerify = (
 }
 
 export { VerifyOTP };
-/*export default VerifyOTP;*/

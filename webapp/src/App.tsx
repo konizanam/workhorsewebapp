@@ -6,6 +6,9 @@ import { Routes, Route, Link } from "react-router-dom";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { VerifyOTP } from "./pages/VerifyOTP";
 import ResetPassword from "./pages/ResetPassword";
+import Dashboard from "./pages/Dashboard";
+import Users from "./pages/Users";
+
 
 function Login() {
 
@@ -117,7 +120,8 @@ function App() {
       <Route path="/ForgotPassword" element={<ForgotPassword />} />
       <Route path="/VerifyOTP" element={<VerifyOTP />} />
       <Route path="/ResetPassword" element={<ResetPassword />} />
-    
+      <Route path="/Dashboard" element={<Dashboard />} />
+      <Route path="/Users" element={<Users />} />
     </Routes>
   );
 
