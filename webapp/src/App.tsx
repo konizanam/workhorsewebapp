@@ -13,7 +13,8 @@ import Companies from "./pages/Companies";
 import Requests from "./pages/Requests";
 import Trips from "./pages/Trips";
 import Payments from "./pages/Payments";
-//import Roles from "./pages/Roles";
+import Roles from "./pages/Roles";
+import AuditLogs from "./pages/AuditLogs";
 
 
 function Login() {
@@ -133,6 +134,8 @@ function App() {
       <Route path="/Requests" element={<Requests />} />
       <Route path="/Trips" element={<Trips />} />
       <Route path="/Payments" element={<Payments />} />
+      <Route path="/Roles" element={<Roles />} />
+      <Route path="/AuditLogs" element={<AuditLogs />} />
     </Routes>
   );
 
