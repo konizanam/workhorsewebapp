@@ -683,7 +683,7 @@ h1 {
 
 .users-section {
   background: white;
-  border-radius: 16px;
+  border-radius: 0px;
   padding: 25px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
 }
@@ -744,7 +744,7 @@ h1 {
 .user-type {
   display: inline-block;
   padding: 5px 10px;
-  border-radius: 20px;
+  border-radius: 0px;
   font-size: 12px;
   font-weight: 600;
 }
@@ -777,7 +777,7 @@ h1 {
 .status {
   display: inline-block;
   padding: 5px 10px;
-  border-radius: 20px;
+  border-radius: 0px;
   font-size: 12px;
   font-weight: 600;
 }
@@ -802,7 +802,7 @@ h1 {
   background: #eaf3ff;
   color: #1976d2;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: 0px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;

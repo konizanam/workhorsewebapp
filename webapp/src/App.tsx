@@ -8,6 +8,12 @@ import { VerifyOTP } from "./pages/VerifyOTP";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
+import Drivers from "./pages/Drivers";
+import Companies from "./pages/Companies";
+import Requests from "./pages/Requests";
+import Trips from "./pages/Trips";
+import Payments from "./pages/Payments";
+//import Roles from "./pages/Roles";
 
 
 function Login() {
@@ -122,6 +128,11 @@ function App() {
       <Route path="/ResetPassword" element={<ResetPassword />} />
       <Route path="/Dashboard" element={<Dashboard />} />
       <Route path="/Users" element={<Users />} />
+      <Route path="/Drivers" element={<Drivers />} />
+      <Route path="/Companies" element={<Companies />} />
+      <Route path="/Requests" element={<Requests />} />
+      <Route path="/Trips" element={<Trips />} />
+      <Route path="/Payments" element={<Payments />} />
     </Routes>
   );
 
