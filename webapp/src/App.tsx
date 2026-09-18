@@ -2,7 +2,7 @@ import "./App.css";
 import { useState } from "react";
 import { FaUserShield, FaEye, FaEyeSlash } from "react-icons/fa";
 
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { VerifyOTP } from "./pages/VerifyOTP";
 import ResetPassword from "./pages/ResetPassword";
@@ -15,10 +15,11 @@ import Trips from "./pages/Trips";
 import Payments from "./pages/Payments";
 import Roles from "./pages/Roles";
 import AuditLogs from "./pages/AuditLogs";
-
+import Settings from "./pages/Settings";
 
 function Login() {
 
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   
   const [email, setEmail] = useState("");
@@ -36,8 +37,7 @@ function Login() {
     }
 
     setError("");
-
-    alert("Login successful");
+    navigate("/Dashboard");
   };
   
   return (
@@ -136,6 +136,7 @@ function App() {
       <Route path="/Payments" element={<Payments />} />
       <Route path="/Roles" element={<Roles />} />
       <Route path="/AuditLogs" element={<AuditLogs />} />
+      <Route path="/Settings" element={<Settings />} />
     </Routes>
   );
 
