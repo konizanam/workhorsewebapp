@@ -1835,39 +1835,29 @@ h1 {
 
 .settings-page {
   width: 100%;
-  max-width: 1140px;
-  margin: 0 auto;
-  padding: 55px 35px 60px;
+  padding: 0;
 }
 
 /* Header */
 
 .settings-header {
-  margin-bottom: 38px;
+  margin-bottom: 30px;
 }
 
 .settings-header h1 {
-  margin: 0;
-  color: #092d4f;
-  font-size: 40px;
-  font-weight: 700;
-  letter-spacing: -1px;
+  margin-bottom: 5px;
 }
 
 .settings-header p {
-  margin: 14px 0 0;
-  color: #ffffff;
-  font-size: 18px;
-  line-height: 1.5;
+  margin: 0;
+  color: #787575;
+  font-size: 14px;
 }
 
 /* Main white sections */
 
 .settings-section {
-  background: #ffffff;
-  margin-bottom: 22px;
-  padding: 32px;
-  border-radius: 0;
+  margin-bottom: 25px;
 }
 
 /* Section headings */
@@ -1878,16 +1868,16 @@ h1 {
 
 .settings-section-header h2 {
   margin: 0;
-  color: #092d4f;
-  font-size: 27px;
-  font-weight: 700;
+  color: #263238;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .settings-section-header p {
-  margin: 9px 0 0;
+  margin: 6px 0 0;
   color: #7b7b7b;
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 /* Form grid */
@@ -1904,36 +1894,36 @@ h1 {
 }
 
 .settings-field label {
-  margin-bottom: 9px;
-  color: #31455a;
-  font-size: 15px;
+  margin-bottom: 8px;
+  color: #444;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .settings-field input,
 .settings-field select {
   width: 100%;
-  height: 50px;
+  height: 44px;
   box-sizing: border-box;
 
-  padding: 0 15px;
+  padding: 0 12px;
 
   border: 1px solid #d7dce2;
   border-radius: 0;
 
   background: #ffffff;
-  color: #26384a;
+  color: #263238;
 
   font-family: inherit;
-  font-size: 15px;
+  font-size: 14px;
 
   outline: none;
 }
 
 .settings-field input:focus,
 .settings-field select:focus {
-  border-color: #2684d9;
-  box-shadow: 0 0 0 2px rgba(38, 132, 217, 0.12);
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 2px rgba(255, 107, 53, 0.12);
 }
 
 /* Notification/security options */
@@ -2025,7 +2015,7 @@ h1 {
 }
 
 .switch input:checked + .slider {
-  background: #1676ce;
+  background: #ff6b35;
 }
 
 .switch input:checked + .slider::before {
@@ -2045,32 +2035,11 @@ h1 {
   justify-content: flex-end;
 
   margin-top: 5px;
-  padding-bottom: 30px;
+  padding-bottom: 0;
 }
 
 .settings-save-btn {
   min-width: 145px;
-  height: 48px;
-
-  padding: 0 25px;
-
-  border: none;
-  border-radius: 0;
-
-  background: #1676ce;
-  color: #ffffff;
-
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition: background 0.2s ease;
-}
-
-.settings-save-btn:hover {
-  background: #0d65b6;
 }
 
 /* =========================================================
@@ -2078,10 +2047,6 @@ h1 {
    ========================================================= */
 
 @media (max-width: 900px) {
-
-  .settings-page {
-    padding: 40px 25px;
-  }
 
   .settings-form-grid {
     grid-template-columns: 1fr;
@@ -2093,10 +2058,6 @@ h1 {
 }
 
 @media (max-width: 600px) {
-
-  .settings-page {
-    padding: 30px 18px;
-  }
 
   .settings-section {
     padding: 22px;

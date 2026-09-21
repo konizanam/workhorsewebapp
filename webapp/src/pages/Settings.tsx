@@ -64,27 +64,29 @@ const Settings = () => {
   };
 
   return (
-    <div className="admin-layout">
+    <div className="admin-page">
 
       {/* Sidebar */}
       <AdminSidebar />
 
       {/* Main Content */}
-      <main className="admin-main">
+      <main className="admin-content">
 
         <div className="settings-page">
 
           {/* Page Header */}
-          <div className="settings-header">
-            <h1>Settings</h1>
+          <div className="admin-header settings-header">
+            <div>
+              <h1>Settings</h1>
             <p>
               Manage platform configuration, notifications and security
               preferences.
             </p>
+            </div>
           </div>
 
           {/* Platform Settings */}
-          <section className="settings-section">
+          <section className="users-section settings-section">
 
             <div className="settings-section-header">
               <h2>Platform Settings</h2>
@@ -177,7 +179,7 @@ const Settings = () => {
           </section>
 
           {/* Notifications */}
-          <section className="settings-section">
+          <section className="users-section settings-section">
 
             <div className="settings-section-header">
               <h2>Notifications</h2>
@@ -274,7 +276,7 @@ const Settings = () => {
           </section>
 
           {/* Security */}
-          <section className="settings-section">
+          <section className="users-section settings-section">
 
             <div className="settings-section-header">
               <h2>Security</h2>
@@ -359,7 +361,7 @@ const Settings = () => {
           <div className="settings-actions">
             <button
               type="button"
-              className="settings-save-btn"
+              className="primary-btn settings-save-btn"
               onClick={handleSave}
             >
               Save Changes
