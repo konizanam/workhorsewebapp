@@ -1,7 +1,45 @@
 import "../App.css";
+import { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
+import AddRecordModal from "../components/AddRecordModal";
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  type: string;
+  status: string;
+  twoFactor: string;
+};
+
+const initialUsers: User[] = [
+  { id: 1, name: "John Smith", email: "john@example.com", phone: "0812345678", type: "Customer", status: "Active", twoFactor: "Enabled" },
+  { id: 2, name: "Michael Adams", email: "michael@example.com", phone: "0856781234", type: "Driver", status: "Active", twoFactor: "Enabled" },
+  { id: 3, name: "Sarah Williams", email: "sarah@example.com", phone: "0823456789", type: "Company", status: "Pending", twoFactor: "Disabled" },
+  { id: 4, name: "Admin User", email: "admin@workhorse.com", phone: "0811111111", type: "Admin", status: "Active", twoFactor: "Enabled" },
+];
 
 function Users() {
+  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [showModal, setShowModal] = useState(false);
+
+  const addUser = (values: Record<string, string>) => {
+    setUsers((current) => [
+      ...current,
+      {
+        id: Date.now(),
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        type: values.type,
+        status: "Pending",
+        twoFactor: "Disabled",
+      },
+    ]);
+    setShowModal(false);
+  };
+
   return (
     <div className="admin-page">
 
@@ -27,7 +65,7 @@ function Users() {
 
             <h2>All Users</h2>
 
-            <button className="btn">
+            <button className="btn" onClick={() => setShowModal(true)}>
               + Add User
             </button>
 
@@ -54,130 +92,17 @@ function Users() {
 
 
               <tbody>
-
-                <tr>
-
-                  <td>John Smith</td>
-
-                  <td>john@example.com</td>
-
-                  <td>0812345678</td>
-
-                  <td>
-                    <span className="user-type customer">
-                      Customer
-                    </span>
-                  </td>
-
-                  <td>
-                    <span className="status active">
-                      Active
-                    </span>
-                  </td>
-
-                  <td>Enabled</td>
-
-                  <td>
-                    <button className="action-btn">
-                      View
-                    </button>
-                  </td>
-
-                </tr>
-
-
-                <tr>
-
-                  <td>Michael Adams</td>
-
-                  <td>michael@example.com</td>
-
-                  <td>0856781234</td>
-
-                  <td>
-                    <span className="user-type driver">
-                      Driver
-                    </span>
-                  </td>
-
-                  <td>
-                    <span className="status active">
-                      Active
-                    </span>
-                  </td>
-
-                  <td>Enabled</td>
-
-                  <td>
-                    <button className="action-btn">
-                      View
-                    </button>
-                  </td>
-
-                </tr>
-
-
-                <tr>
-
-                  <td>Sarah Williams</td>
-
-                  <td>sarah@example.com</td>
-
-                  <td>0823456789</td>
-
-                  <td>
-                    <span className="user-type company">
-                      Company
-                    </span>
-                  </td>
-
-                  <td>
-                    <span className="status pending">
-                      Pending
-                    </span>
-                  </td>
-
-                  <td>Disabled</td>
-
-                  <td>
-                    <button className="action-btn">
-                      View
-                    </button>
-                  </td>
-
-                </tr>
-
-
-                <tr>
-
-                  <td>Admin User</td>
-
-                  <td>admin@workhorse.com</td>
-
-                  <td>0811111111</td>
-
-                  <td>
-                    <span className="user-type admin">
-                      Admin
-                    </span>
-                  </td>
-
-                  <td>
-                    <span className="status active">
-                      Active
-                    </span>
-                  </td>
-
-                  <td>Enabled</td>
-
-                  <td>
-                    <button className="action-btn">
-                      View
-                    </button>
-                  </td>
-
-                </tr>
-
+                {users.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>{user.phone}</td>
+                    <td><span className={`user-type ${user.type.toLowerCase()}`}>{user.type}</span></td>
+                    <td><span className={`status ${user.status.toLowerCase()}`}>{user.status}</span></td>
+                    <td>{user.twoFactor}</td>
+                    <td><button className="action-btn">View</button></td>
+                  </tr>
+                ))}
               </tbody>
 
             </table>
@@ -187,6 +112,21 @@ function Users() {
         </div>
 
       </div>
+
+      {showModal && (
+        <AddRecordModal
+          title="Add New User"
+          description="Enter the details for the new user."
+          fields={[
+            { name: "name", label: "Full Name", placeholder: "e.g. Alex Morgan" },
+            { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com" },
+            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678" },
+            { name: "type", label: "User Type", placeholder: "e.g. Customer" },
+          ]}
+          onClose={() => setShowModal(false)}
+          onSubmit={addUser}
+        />
+      )}
 
     </div>
   );

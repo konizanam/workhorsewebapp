@@ -1,7 +1,16 @@
 import "../App.css";
+import { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
+import AddRecordModal from "../components/AddRecordModal";
 
 function Drivers() {
+  const [showModal, setShowModal] = useState(false);
+
+  const addDriver = (values: Record<string, string>) => {
+    setShowModal(false);
+    alert(`${values.name} was added as a driver.`);
+  };
+
   return (
     <div className="admin-page">
 
@@ -27,7 +36,7 @@ function Drivers() {
 
             <h2>All Drivers</h2>
 
-            <button className="btn">
+            <button className="btn" onClick={() => setShowModal(true)}>
               + Add Driver
             </button>
 
@@ -144,6 +153,21 @@ function Drivers() {
         </div>
 
       </div>
+
+      {showModal && (
+        <AddRecordModal
+          title="Add New Driver"
+          description="Enter the details for the new driver."
+          fields={[
+            { name: "name", label: "Full Name", placeholder: "e.g. Alex Morgan" },
+            { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com" },
+            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678" },
+            { name: "license", label: "License Number", placeholder: "N12345W" },
+          ]}
+          onClose={() => setShowModal(false)}
+          onSubmit={addDriver}
+        />
+      )}
 
     </div>
   );

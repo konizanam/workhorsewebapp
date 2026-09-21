@@ -1,7 +1,16 @@
 import "../App.css";
+import { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
+import AddRecordModal from "../components/AddRecordModal";
 
 function Companies() {
+  const [showModal, setShowModal] = useState(false);
+
+  const addCompany = (values: Record<string, string>) => {
+    setShowModal(false);
+    alert(`${values.name} was added as a company.`);
+  };
+
   return (
     <div className="admin-page">
 
@@ -27,7 +36,7 @@ function Companies() {
 
             <h2>All Companies</h2>
 
-            <button className="btn">
+            <button className="btn" onClick={() => setShowModal(true)}>
               + Add Company
             </button>
 
@@ -137,6 +146,21 @@ function Companies() {
         </div>
 
       </div>
+
+      {showModal && (
+        <AddRecordModal
+          title="Add New Company"
+          description="Enter the details for the new company."
+          fields={[
+            { name: "name", label: "Company Name", placeholder: "e.g. North Star Logistics" },
+            { name: "email", label: "Email Address", type: "email", placeholder: "info@example.com" },
+            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0612345678" },
+            { name: "registration", label: "Registration Number", placeholder: "REG-123456" },
+          ]}
+          onClose={() => setShowModal(false)}
+          onSubmit={addCompany}
+        />
+      )}
 
     </div>
   );
