@@ -1,7 +1,13 @@
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
+import { useState } from "react";
+import ViewDetailsModal from "../components/ViewDetailsModal";
+import RecordActionsModal from "../components/RecordActionsModal";
 
 function Payments() {
+  const [selectedPayment, setSelectedPayment] = useState<Record<string, string> | null>(null);
+  const [actionPayment, setActionPayment] = useState<Record<string, string> | null>(null);
+
   return (
     <div className="admin-page">
 
@@ -73,9 +79,7 @@ function Payments() {
                   <td>12 Aug 2026</td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment({ "Payment ID": "#PAY-1001", "Request ID": "#REQ-1002", Customer: "John Smith", Amount: "N$ 2,500.00", "Payment Method": "Card", Status: "Completed", "Payment Date": "12 Aug 2026" })}>View</button><button className="action-btn" onClick={() => setActionPayment({ "Payment ID": "#PAY-1001", "Request ID": "#REQ-1002", Customer: "John Smith", Amount: "N$ 2,500.00", "Payment Method": "Card", Status: "Completed", "Payment Date": "12 Aug 2026" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -102,9 +106,7 @@ function Payments() {
                   <td>12 Aug 2026</td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment({ "Payment ID": "#PAY-1002", "Request ID": "#REQ-1003", Customer: "Sarah Williams", Amount: "N$ 1,200.00", "Payment Method": "Mobile Money", Status: "Pending", "Payment Date": "12 Aug 2026" })}>View</button><button className="action-btn" onClick={() => setActionPayment({ "Payment ID": "#PAY-1002", "Request ID": "#REQ-1003", Customer: "Sarah Williams", Amount: "N$ 1,200.00", "Payment Method": "Mobile Money", Status: "Pending", "Payment Date": "12 Aug 2026" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -131,9 +133,7 @@ function Payments() {
                   <td>11 Aug 2026</td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment({ "Payment ID": "#PAY-1003", "Request ID": "#REQ-1004", Customer: "ABC Construction", Amount: "N$ 5,800.00", "Payment Method": "Bank Transfer", Status: "Completed", "Payment Date": "11 Aug 2026" })}>View</button><button className="action-btn" onClick={() => setActionPayment({ "Payment ID": "#PAY-1003", "Request ID": "#REQ-1004", Customer: "ABC Construction", Amount: "N$ 5,800.00", "Payment Method": "Bank Transfer", Status: "Completed", "Payment Date": "11 Aug 2026" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -160,9 +160,7 @@ function Payments() {
                   <td>11 Aug 2026</td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment({ "Payment ID": "#PAY-1004", "Request ID": "#REQ-1005", Customer: "NamBuild Supplies", Amount: "N$ 3,400.00", "Payment Method": "Card", Status: "Pending", "Payment Date": "11 Aug 2026" })}>View</button><button className="action-btn" onClick={() => setActionPayment({ "Payment ID": "#PAY-1004", "Request ID": "#REQ-1005", Customer: "NamBuild Supplies", Amount: "N$ 3,400.00", "Payment Method": "Card", Status: "Pending", "Payment Date": "11 Aug 2026" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -176,6 +174,25 @@ function Payments() {
         </div>
 
       </div>
+
+      {selectedPayment && (
+        <ViewDetailsModal
+          title={selectedPayment["Payment ID"]}
+          details={selectedPayment}
+          onClose={() => setSelectedPayment(null)}
+        />
+      )}
+
+      {actionPayment && (
+        <RecordActionsModal
+          title={`Manage ${actionPayment["Payment ID"]}`}
+          values={actionPayment}
+          fields={[{ key: "Customer", label: "Customer" }, { key: "Amount", label: "Amount" }, { key: "Payment Method", label: "Payment Method", options: ["Card", "Mobile Money", "Bank Transfer"] }, { key: "Status", label: "Status", options: ["Pending", "Completed", "Failed", "Refunded"] }]}
+          actions={[{ label: "Refund Payment", onClick: () => alert("Payment marked for refund.") }, { label: "Delete Payment", onClick: () => { alert("Payment deleted."); setActionPayment(null); }, danger: true }]}
+          onClose={() => setActionPayment(null)}
+          onSave={(values) => { alert(`${values["Payment ID"]} was updated.`); setActionPayment(null); }}
+        />
+      )}
 
     </div>
   );

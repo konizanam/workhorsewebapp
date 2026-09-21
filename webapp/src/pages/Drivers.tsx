@@ -2,9 +2,13 @@ import "../App.css";
 import { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import AddRecordModal from "../components/AddRecordModal";
+import ViewDetailsModal from "../components/ViewDetailsModal";
+import RecordActionsModal from "../components/RecordActionsModal";
 
 function Drivers() {
   const [showModal, setShowModal] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState<Record<string, string> | null>(null);
+  const [actionDriver, setActionDriver] = useState<Record<string, string> | null>(null);
 
   const addDriver = (values: Record<string, string>) => {
     setShowModal(false);
@@ -83,9 +87,7 @@ function Drivers() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedDriver({ Name: "Michael Adams", Email: "michael@example.com", Phone: "0856781234", "License Number": "N58921W", Rating: "4.8", Availability: "Available" })}>View</button><button className="action-btn" onClick={() => setActionDriver({ Name: "Michael Adams", Email: "michael@example.com", Phone: "0856781234", "License Number": "N58921W", Rating: "4.8", Availability: "Available" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -110,9 +112,7 @@ function Drivers() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedDriver({ Name: "David Smith", Email: "david@example.com", Phone: "0812345678", "License Number": "N7841W", Rating: "4.5", Availability: "Unavailable" })}>View</button><button className="action-btn" onClick={() => setActionDriver({ Name: "David Smith", Email: "david@example.com", Phone: "0812345678", "License Number": "N7841W", Rating: "4.5", Availability: "Unavailable" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -137,9 +137,7 @@ function Drivers() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedDriver({ Name: "James Wilson", Email: "james@example.com", Phone: "0823456789", "License Number": "N923451W", Rating: "4.9", Availability: "Available" })}>View</button><button className="action-btn" onClick={() => setActionDriver({ Name: "James Wilson", Email: "james@example.com", Phone: "0823456789", "License Number": "N923451W", Rating: "4.9", Availability: "Available" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -166,6 +164,25 @@ function Drivers() {
           ]}
           onClose={() => setShowModal(false)}
           onSubmit={addDriver}
+        />
+      )}
+
+      {selectedDriver && (
+        <ViewDetailsModal
+          title={selectedDriver.Name}
+          details={selectedDriver}
+          onClose={() => setSelectedDriver(null)}
+        />
+      )}
+
+      {actionDriver && (
+        <RecordActionsModal
+          title={`Manage ${actionDriver.Name}`}
+          values={actionDriver}
+          fields={[{ key: "Name", label: "Full Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "License Number", label: "License Number" }, { key: "Availability", label: "Availability", options: ["Available", "Unavailable"] }]}
+          actions={[{ label: "Disable Driver", onClick: () => alert("Driver disabled.") }, { label: "Delete Driver", onClick: () => { alert("Driver deleted."); setActionDriver(null); }, danger: true }]}
+          onClose={() => setActionDriver(null)}
+          onSave={(values) => { alert(`${values.Name} was updated.`); setActionDriver(null); }}
         />
       )}
 

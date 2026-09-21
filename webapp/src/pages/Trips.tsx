@@ -1,7 +1,13 @@
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
+import { useState } from "react";
+import ViewDetailsModal from "../components/ViewDetailsModal";
+import RecordActionsModal from "../components/RecordActionsModal";
 
 function Trips() {
+  const [selectedTrip, setSelectedTrip] = useState<Record<string, string> | null>(null);
+  const [actionTrip, setActionTrip] = useState<Record<string, string> | null>(null);
+
   return (
     <div className="admin-page">
 
@@ -73,9 +79,7 @@ function Trips() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedTrip({ "Trip ID": "#TRIP-1001", "Request ID": "#REQ-1002", Driver: "Michael Adams", Vehicle: "N12345W", Pickup: "Windhoek", Destination: "Rehoboth", Status: "In Progress" })}>View</button><button className="action-btn" onClick={() => setActionTrip({ "Trip ID": "#TRIP-1001", "Request ID": "#REQ-1002", Driver: "Michael Adams", Vehicle: "N12345W", Pickup: "Windhoek", Destination: "Rehoboth", Status: "In Progress" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -102,9 +106,7 @@ function Trips() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedTrip({ "Trip ID": "#TRIP-1002", "Request ID": "#REQ-1003", Driver: "James Wilson", Vehicle: "N67890W", Pickup: "Windhoek", Destination: "Katutura", Status: "Completed" })}>View</button><button className="action-btn" onClick={() => setActionTrip({ "Trip ID": "#TRIP-1002", "Request ID": "#REQ-1003", Driver: "James Wilson", Vehicle: "N67890W", Pickup: "Windhoek", Destination: "Katutura", Status: "Completed" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -131,9 +133,7 @@ function Trips() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedTrip({ "Trip ID": "#TRIP-1003", "Request ID": "#REQ-1004", Driver: "David Smith", Vehicle: "N24680W", Pickup: "Windhoek", Destination: "Ongwediva", Status: "Assigned" })}>View</button><button className="action-btn" onClick={() => setActionTrip({ "Trip ID": "#TRIP-1003", "Request ID": "#REQ-1004", Driver: "David Smith", Vehicle: "N24680W", Pickup: "Windhoek", Destination: "Ongwediva", Status: "Assigned" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -160,9 +160,7 @@ function Trips() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedTrip({ "Trip ID": "#TRIP-1004", "Request ID": "#REQ-1005", Driver: "Michael Adams", Vehicle: "N12345W", Pickup: "Windhoek", Destination: "Okahandja", Status: "Pending" })}>View</button><button className="action-btn" onClick={() => setActionTrip({ "Trip ID": "#TRIP-1004", "Request ID": "#REQ-1005", Driver: "Michael Adams", Vehicle: "N12345W", Pickup: "Windhoek", Destination: "Okahandja", Status: "Pending" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -176,6 +174,25 @@ function Trips() {
         </div>
 
       </div>
+
+      {selectedTrip && (
+        <ViewDetailsModal
+          title={selectedTrip["Trip ID"]}
+          details={selectedTrip}
+          onClose={() => setSelectedTrip(null)}
+        />
+      )}
+
+      {actionTrip && (
+        <RecordActionsModal
+          title={`Manage ${actionTrip["Trip ID"]}`}
+          values={actionTrip}
+          fields={[{ key: "Driver", label: "Driver" }, { key: "Vehicle", label: "Vehicle" }, { key: "Pickup", label: "Pickup" }, { key: "Destination", label: "Destination" }, { key: "Status", label: "Status", options: ["Pending", "Assigned", "In Progress", "Completed", "Cancelled"] }]}
+          actions={[{ label: "Cancel Trip", onClick: () => alert("Trip cancelled.") }, { label: "Delete Trip", onClick: () => { alert("Trip deleted."); setActionTrip(null); }, danger: true }]}
+          onClose={() => setActionTrip(null)}
+          onSave={(values) => { alert(`${values["Trip ID"]} was updated.`); setActionTrip(null); }}
+        />
+      )}
 
     </div>
   );

@@ -1,7 +1,13 @@
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
+import { useState } from "react";
+import ViewDetailsModal from "../components/ViewDetailsModal";
+import RecordActionsModal from "../components/RecordActionsModal";
 
 function Requests() {
+  const [selectedRequest, setSelectedRequest] = useState<Record<string, string> | null>(null);
+  const [actionRequest, setActionRequest] = useState<Record<string, string> | null>(null);
+
   return (
     <div className="admin-page">
 
@@ -70,9 +76,7 @@ function Requests() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedRequest({ "Request ID": "#REQ-1001", Customer: "John Smith", "Service Type": "Delivery", Pickup: "Windhoek", Destination: "Okahandja", Status: "Pending" })}>View</button><button className="action-btn" onClick={() => setActionRequest({ "Request ID": "#REQ-1001", Customer: "John Smith", "Service Type": "Delivery", Pickup: "Windhoek", Destination: "Okahandja", Status: "Pending" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -97,9 +101,7 @@ function Requests() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedRequest({ "Request ID": "#REQ-1002", Customer: "ABC Construction", "Service Type": "Heavy Transport", Pickup: "Windhoek", Destination: "Rehoboth", Status: "Accepted" })}>View</button><button className="action-btn" onClick={() => setActionRequest({ "Request ID": "#REQ-1002", Customer: "ABC Construction", "Service Type": "Heavy Transport", Pickup: "Windhoek", Destination: "Rehoboth", Status: "Accepted" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -124,9 +126,7 @@ function Requests() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedRequest({ "Request ID": "#REQ-1003", Customer: "Sarah Williams", "Service Type": "Relocation", Pickup: "Windhoek", Destination: "Katutura", Status: "Completed" })}>View</button><button className="action-btn" onClick={() => setActionRequest({ "Request ID": "#REQ-1003", Customer: "Sarah Williams", "Service Type": "Relocation", Pickup: "Windhoek", Destination: "Katutura", Status: "Completed" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -151,9 +151,7 @@ function Requests() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedRequest({ "Request ID": "#REQ-1004", Customer: "NamBuild Supplies", "Service Type": "Material Delivery", Pickup: "Windhoek", Destination: "Ongwediva", Status: "Pending" })}>View</button><button className="action-btn" onClick={() => setActionRequest({ "Request ID": "#REQ-1004", Customer: "NamBuild Supplies", "Service Type": "Material Delivery", Pickup: "Windhoek", Destination: "Ongwediva", Status: "Pending" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -167,6 +165,25 @@ function Requests() {
         </div>
 
       </div>
+
+      {selectedRequest && (
+        <ViewDetailsModal
+          title={selectedRequest["Request ID"]}
+          details={selectedRequest}
+          onClose={() => setSelectedRequest(null)}
+        />
+      )}
+
+      {actionRequest && (
+        <RecordActionsModal
+          title={`Manage ${actionRequest["Request ID"]}`}
+          values={actionRequest}
+          fields={[{ key: "Customer", label: "Customer" }, { key: "Service Type", label: "Service Type" }, { key: "Pickup", label: "Pickup" }, { key: "Destination", label: "Destination" }, { key: "Status", label: "Status", options: ["Pending", "Accepted", "Completed", "Cancelled"] }]}
+          actions={[{ label: "Cancel Request", onClick: () => alert("Request cancelled.") }, { label: "Delete Request", onClick: () => { alert("Request deleted."); setActionRequest(null); }, danger: true }]}
+          onClose={() => setActionRequest(null)}
+          onSave={(values) => { alert(`${values["Request ID"]} was updated.`); setActionRequest(null); }}
+        />
+      )}
 
     </div>
   );

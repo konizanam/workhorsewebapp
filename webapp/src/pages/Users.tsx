@@ -2,6 +2,8 @@ import "../App.css";
 import { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import AddRecordModal from "../components/AddRecordModal";
+import ViewDetailsModal from "../components/ViewDetailsModal";
+import UserActionsModal from "../components/UserActionsModal";
 
 type User = {
   id: number;
@@ -23,6 +25,8 @@ const initialUsers: User[] = [
 function Users() {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [showModal, setShowModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [actionUser, setActionUser] = useState<User | null>(null);
 
   const addUser = (values: Record<string, string>) => {
     setUsers((current) => [
@@ -38,6 +42,41 @@ function Users() {
       },
     ]);
     setShowModal(false);
+  };
+
+  const updateUser = (values: Pick<User, "name" | "email" | "phone">) => {
+    setUsers((current) => current.map((user) =>
+      user.id === actionUser?.id ? { ...user, ...values } : user
+    ));
+    setActionUser((current) => current ? { ...current, ...values } : current);
+  };
+
+  const changeRole = (type: string) => {
+    setUsers((current) => current.map((user) =>
+      user.id === actionUser?.id ? { ...user, type } : user
+    ));
+    setActionUser((current) => current ? { ...current, type } : current);
+  };
+
+  const setPassword = () => {
+    alert("Password updated successfully.");
+  };
+
+  const disableUser = () => {
+    setUsers((current) => current.map((user) =>
+      user.id === actionUser?.id ? { ...user, status: "Disabled" } : user
+    ));
+    setActionUser((current) => current ? { ...current, status: "Disabled" } : current);
+  };
+
+  const deleteUser = () => {
+    if (actionUser?.status !== "Disabled") {
+      alert("Disable the user before deleting the account.");
+      return;
+    }
+
+    setUsers((current) => current.filter((user) => user.id !== actionUser.id));
+    setActionUser(null);
   };
 
   return (
@@ -100,7 +139,12 @@ function Users() {
                     <td><span className={`user-type ${user.type.toLowerCase()}`}>{user.type}</span></td>
                     <td><span className={`status ${user.status.toLowerCase()}`}>{user.status}</span></td>
                     <td>{user.twoFactor}</td>
-                    <td><button className="action-btn">View</button></td>
+                    <td>
+                      <div className="table-actions">
+                        <button className="action-btn" onClick={() => setSelectedUser(user)}>View</button>
+                        <button className="action-btn" onClick={() => setActionUser(user)}>Actions</button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -125,6 +169,32 @@ function Users() {
           ]}
           onClose={() => setShowModal(false)}
           onSubmit={addUser}
+        />
+      )}
+
+      {selectedUser && (
+        <ViewDetailsModal
+          title={selectedUser.name}
+          details={{
+            Email: selectedUser.email,
+            Phone: selectedUser.phone,
+            "User Type": selectedUser.type,
+            Status: selectedUser.status,
+            "Two-Factor Authentication": selectedUser.twoFactor,
+          }}
+          onClose={() => setSelectedUser(null)}
+        />
+      )}
+
+      {actionUser && (
+        <UserActionsModal
+          user={actionUser}
+          onClose={() => setActionUser(null)}
+          onUpdate={updateUser}
+          onChangeRole={changeRole}
+          onSetPassword={setPassword}
+          onDisable={disableUser}
+          onDelete={deleteUser}
         />
       )}
 

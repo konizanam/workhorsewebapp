@@ -977,6 +977,65 @@ h1 {
   background: #e55a2b;
 }
 
+.delete-btn:disabled,
+.secondary-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.user-actions-modal {
+  max-width: 760px;
+}
+
+.actions-section-title {
+  margin: 0 0 12px;
+  color: #263238;
+  font-size: 15px;
+}
+
+.actions-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.action-control-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #eeeeee;
+}
+
+.action-control-row > div {
+  flex: 1;
+}
+
+.action-control-row select,
+.action-control-row input {
+  width: 100%;
+  border: 1px solid #ddd;
+  padding: 11px 12px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.danger-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #eeeeee;
+}
+
+.action-help {
+  margin: 8px 0 0;
+  color: #888;
+  font-size: 12px;
+}
+
 
 /* =========================================
    PERMISSIONS SECTION
@@ -1201,6 +1260,31 @@ h1 {
   padding: 25px;
 }
 
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.detail-item span {
+  color: #888;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.detail-item strong {
+  color: #263238;
+  font-size: 14px;
+}
+
 
 /* =========================================
    FORM GROUP
@@ -1336,6 +1420,23 @@ h1 {
 
 
 @media (max-width: 700px) {
+
+  .actions-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-control-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .danger-actions {
+    flex-direction: column;
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr;
+  }
 
   .permissions-grid {
     grid-template-columns: 1fr;

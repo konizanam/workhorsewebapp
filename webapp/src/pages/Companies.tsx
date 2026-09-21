@@ -2,9 +2,13 @@ import "../App.css";
 import { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import AddRecordModal from "../components/AddRecordModal";
+import ViewDetailsModal from "../components/ViewDetailsModal";
+import RecordActionsModal from "../components/RecordActionsModal";
 
 function Companies() {
   const [showModal, setShowModal] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<Record<string, string> | null>(null);
+  const [actionCompany, setActionCompany] = useState<Record<string, string> | null>(null);
 
   const addCompany = (values: Record<string, string>) => {
     setShowModal(false);
@@ -80,9 +84,7 @@ function Companies() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedCompany({ Name: "ABC Construction", Email: "info@abcconstruction.com", Phone: "0612345678", "Registration Number": "REG-458921", Status: "Verified" })}>View</button><button className="action-btn" onClick={() => setActionCompany({ Name: "ABC Construction", Email: "info@abcconstruction.com", Phone: "0612345678", "Registration Number": "REG-458921", Status: "Verified" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -105,9 +107,7 @@ function Companies() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedCompany({ Name: "NamBuild Supplies", Email: "info@nambuild.com", Phone: "0623456789", "Registration Number": "REG-782341", Status: "Pending" })}>View</button><button className="action-btn" onClick={() => setActionCompany({ Name: "NamBuild Supplies", Email: "info@nambuild.com", Phone: "0623456789", "Registration Number": "REG-782341", Status: "Pending" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -130,9 +130,7 @@ function Companies() {
                   </td>
 
                   <td>
-                    <button className="action-btn">
-                      View
-                    </button>
+                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedCompany({ Name: "Heavy Haul Logistics", Email: "contact@heavyhaul.com", Phone: "0634567890", "Registration Number": "REG-923451", Status: "Verified" })}>View</button><button className="action-btn" onClick={() => setActionCompany({ Name: "Heavy Haul Logistics", Email: "contact@heavyhaul.com", Phone: "0634567890", "Registration Number": "REG-923451", Status: "Verified" })}>Actions</button></div>
                   </td>
 
                 </tr>
@@ -159,6 +157,25 @@ function Companies() {
           ]}
           onClose={() => setShowModal(false)}
           onSubmit={addCompany}
+        />
+      )}
+
+      {selectedCompany && (
+        <ViewDetailsModal
+          title={selectedCompany.Name}
+          details={selectedCompany}
+          onClose={() => setSelectedCompany(null)}
+        />
+      )}
+
+      {actionCompany && (
+        <RecordActionsModal
+          title={`Manage ${actionCompany.Name}`}
+          values={actionCompany}
+          fields={[{ key: "Name", label: "Company Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Registration Number", label: "Registration Number" }, { key: "Status", label: "Status", options: ["Verified", "Pending", "Disabled"] }]}
+          actions={[{ label: "Disable Company", onClick: () => alert("Company disabled.") }, { label: "Delete Company", onClick: () => { alert("Company deleted."); setActionCompany(null); }, danger: true }]}
+          onClose={() => setActionCompany(null)}
+          onSave={(values) => { alert(`${values.Name} was updated.`); setActionCompany(null); }}
         />
       )}
 
