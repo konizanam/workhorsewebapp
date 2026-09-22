@@ -1,11 +1,23 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 function AdminSidebar() {
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
-    <aside className="admin-sidebar">
+    <aside className={`admin-sidebar${collapsed ? " collapsed" : ""}`}>
 
       <div className="sidebar-logo">
-        <h2>Workhorse</h2>
+        <img src="/logo.png" alt="Workhorse" />
+        <button
+          className="sidebar-toggle"
+          type="button"
+          onClick={() => setCollapsed((current) => !current)}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? "»" : "«"}
+        </button>
       </div>
 
 
@@ -13,55 +25,55 @@ function AdminSidebar() {
 
         <Link to="/Dashboard" className="sidebar-link">
           <span>📊</span>
-          Dashboard
+          <b>Dashboard</b>
         </Link>
 
 
         <Link to="/Users" className="sidebar-link">
           <span>👥</span>
-          Users
+          <b>Users</b>
         </Link>
 
 
         <Link to="/Drivers" className="sidebar-link">
           <span>🚚</span>
-          Drivers
+          <b>Drivers</b>
         </Link>
 
 
         <Link to="/Companies" className="sidebar-link">
           <span>🏢</span>
-          Companies
+          <b>Companies</b>
         </Link>
 
 
         <Link to="/Requests" className="sidebar-link">
           <span>📦</span>
-          Requests
+          <b>Requests</b>
         </Link>
 
 
         <Link to="/Trips" className="sidebar-link">
           <span>🚛</span>
-          Trips
+          <b>Trips</b>
         </Link>
 
 
         <Link to="/Payments" className="sidebar-link">
           <span>💳</span>
-          Payments
+          <b>Payments</b>
         </Link>
 
 
         <Link to="/Roles" className="sidebar-link">
           <span>🔐</span>
-          Roles & Permissions
+          <b>Roles & Permissions</b>
         </Link>
 
 
         <Link to="/AuditLogs" className="sidebar-link">
           <span>📋</span>
-          Audit Logs
+          <b>Audit Logs</b>
         </Link>
 
       </nav>
@@ -71,13 +83,13 @@ function AdminSidebar() {
 
         <Link to="/Settings" className="sidebar-link">
           <span>⚙️</span>
-          Settings
+          <b>Settings</b>
         </Link>
 
 
         <Link to="/" className="sidebar-link logout">
           <span>🚪</span>
-          Logout
+          <b>Logout</b>
         </Link>
 
       </div>

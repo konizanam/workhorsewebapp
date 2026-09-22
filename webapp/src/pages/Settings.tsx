@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
+import FeedbackMessage from "../components/FeedbackMessage";
 
 const Settings = () => {
   const [notifications, setNotifications] = useState({
@@ -21,6 +22,7 @@ const Settings = () => {
     timezone: "Africa/Windhoek",
     currency: "NAD",
   });
+  const [feedback, setFeedback] = useState("");
 
   const handlePlatformChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -56,35 +58,35 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    console.log("Platform Settings:", platform);
-    console.log("Notifications:", notifications);
-    console.log("Security:", security);
-
-    alert("Settings saved successfully.");
+    setFeedback("Settings saved successfully.");
   };
 
   return (
-    <div className="admin-layout">
+    <div className="admin-page">
 
       {/* Sidebar */}
       <AdminSidebar />
 
       {/* Main Content */}
-      <main className="admin-main">
+      <main className="admin-content">
 
         <div className="settings-page">
 
           {/* Page Header */}
-          <div className="settings-header">
-            <h1>Settings</h1>
+          <div className="admin-header settings-header">
+            <div>
+              <h1>Settings</h1>
             <p>
               Manage platform configuration, notifications and security
               preferences.
             </p>
+            </div>
           </div>
 
+          {feedback && <FeedbackMessage message={feedback} />}
+
           {/* Platform Settings */}
-          <section className="settings-section">
+          <section className="users-section settings-section">
 
             <div className="settings-section-header">
               <h2>Platform Settings</h2>
@@ -177,7 +179,7 @@ const Settings = () => {
           </section>
 
           {/* Notifications */}
-          <section className="settings-section">
+          <section className="users-section settings-section">
 
             <div className="settings-section-header">
               <h2>Notifications</h2>
@@ -274,7 +276,7 @@ const Settings = () => {
           </section>
 
           {/* Security */}
-          <section className="settings-section">
+          <section className="users-section settings-section">
 
             <div className="settings-section-header">
               <h2>Security</h2>
@@ -359,7 +361,7 @@ const Settings = () => {
           <div className="settings-actions">
             <button
               type="button"
-              className="settings-save-btn"
+              className="primary-btn settings-save-btn"
               onClick={handleSave}
             >
               Save Changes

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
+import FeedbackMessage from "../components/FeedbackMessage";
+import TablePagination from "../components/TablePagination";
 
 interface Permission {
   id: string;
@@ -236,6 +238,20 @@ function RolesPermissions() {
 
   const [roleName, setRoleName] = useState("");
   const [description, setDescription] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const filteredRoles = roles.filter((role) =>
+    [role.name, role.description, role.type, role.status, String(role.permissions)]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredRoles.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
 
   const openAddRole = () => {
     setEditingRole(null);
@@ -274,7 +290,7 @@ function RolesPermissions() {
 
   const saveRole = () => {
     if (!roleName.trim()) {
-      alert("Please enter a role name.");
+      setFeedback("Please enter a role name.");
       return;
     }
 
@@ -305,11 +321,12 @@ function RolesPermissions() {
     }
 
     closeModal();
+    setFeedback(editingRole ? "Role updated successfully." : "Role created successfully.");
   };
 
   const deleteRole = (role: Role) => {
     if (role.type === "System") {
-      alert("System roles cannot be deleted.");
+      setFeedback("System roles cannot be deleted.");
       return;
     }
 
@@ -321,6 +338,7 @@ function RolesPermissions() {
       setRoles((current) =>
         current.filter((item) => item.id !== role.id)
       );
+      setFeedback("Role deleted successfully.");
     }
   };
 
@@ -333,6 +351,8 @@ function RolesPermissions() {
 
       <div className="admin-content">
 
+        {feedback && <FeedbackMessage message={feedback} tone={feedback.startsWith("Please") || feedback.startsWith("System") ? "error" : "success"} />}
+
         {/* Header */}
         <div className="admin-header">
 
@@ -343,13 +363,6 @@ function RolesPermissions() {
               Manage administrator roles and system permissions.
             </p>
           </div>
-
-          <button
-            className="primary-btn"
-            onClick={openAddRole}
-          >
-            + Add Role
-          </button>
 
         </div>
 
@@ -369,8 +382,25 @@ function RolesPermissions() {
 
           </div>
 
+          <div className="table-toolbar">
+            <input
+              type="text"
+              className="table-search-input"
+              placeholder="Search roles..."
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setPage(1);
+              }}
+            />
+            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRoles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+            <button className="primary-btn" onClick={openAddRole}>+ Add Role</button>
+          </div>
+
 
           <div className="table-container">
+
+            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRoles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
             <table className="users-table">
 
@@ -388,7 +418,7 @@ function RolesPermissions() {
 
               <tbody>
 
-                {roles.map((role) => (
+                {filteredRoles.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((role) => (
 
                   <tr key={role.id}>
 
@@ -461,6 +491,8 @@ function RolesPermissions() {
             </table>
 
           </div>
+
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRoles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
         </div>
 

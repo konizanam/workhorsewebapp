@@ -1,6 +1,7 @@
 import "../App.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import FeedbackMessage from "../components/FeedbackMessage";
 
 function VerifyOTP() {
 
@@ -9,6 +10,7 @@ function VerifyOTP() {
     
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const [feedback, setFeedback] = useState("");
 
   // Countdown timer effect
     useEffect(() => {
@@ -42,7 +44,7 @@ const resendOTP = () => {
     setCanResend(false);
 
 
-    alert("New OTP sent!");
+    setFeedback("New OTP sent successfully.");
 
 };
 
@@ -122,6 +124,8 @@ const handleVerify = (
         <p className="subtitle">
           Enter the 6-digit code sent to your email address.
         </p>
+
+        {feedback && <FeedbackMessage message={feedback} />}
 
 
         <form onSubmit={handleVerify}>

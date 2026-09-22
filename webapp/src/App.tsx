@@ -1,6 +1,6 @@
 import "./App.css";
 import { useState } from "react";
-import { FaUserShield, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import { ForgotPassword } from "./pages/ForgotPassword";
@@ -45,7 +45,7 @@ function Login() {
       <div className="auth-card">
 
         <div className="icon-circle">
-          <FaUserShield />
+          <img src="/logo.png" alt="Workhorse" />
         </div>
 
         <h1>Admin Login</h1>
