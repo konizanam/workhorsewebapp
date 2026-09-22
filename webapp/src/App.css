@@ -2130,3 +2130,158 @@ h1 {
 ===============================================================================================================================================================================
 ===============================================================================================================================================================================
 ===============================================================================================================================================================================*/
+
+/* =====================================================================
+   WORKHORSE BRAND THEME
+===================================================================== */
+:root {
+  --brand-navy: #1c3e70;
+  --brand-gold: #eebf1c;
+  --brand-white: #ffffff;
+}
+
+body,
+.page,
+.admin-page,
+.admin-content {
+  background: var(--brand-white);
+  color: var(--brand-navy);
+}
+
+.admin-sidebar {
+  background: var(--brand-navy);
+}
+
+.sidebar-link,
+.sidebar-logo h2,
+.admin-header h1,
+.settings-header h1,
+h1,
+h2,
+h3,
+.users-section-header h2,
+.settings-section-header h2,
+.detail-item strong,
+.role-name,
+.admin-profile {
+  color: var(--brand-navy);
+}
+
+.admin-sidebar .sidebar-link,
+.admin-sidebar .sidebar-logo h2,
+.admin-sidebar .sidebar-link.logout {
+  color: var(--brand-white);
+}
+
+.admin-sidebar .sidebar-link:hover,
+.admin-sidebar .sidebar-link:focus {
+  background: var(--brand-gold);
+  color: var(--brand-navy);
+}
+
+.admin-sidebar .sidebar-link:hover span,
+.admin-sidebar .sidebar-link:focus span {
+  color: var(--brand-navy);
+}
+
+.auth-card,
+.users-section,
+.dashboard-card,
+.dashboard-section,
+.settings-section,
+.role-modal,
+.audit-modal {
+  background: var(--brand-white);
+}
+
+.icon-circle {
+  background: var(--brand-navy);
+  color: var(--brand-gold);
+}
+
+.input-box input:focus,
+.settings-field input:focus,
+.settings-field select:focus,
+.action-control-row select:focus,
+.action-control-row input:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--brand-gold);
+  box-shadow: 0 0 0 2px rgba(238, 191, 28, 0.2);
+}
+
+.btn,
+.primary-btn,
+.settings-save-btn {
+  background: var(--brand-navy);
+  color: var(--brand-white);
+}
+
+.btn:hover,
+.primary-btn:hover,
+.settings-save-btn:hover {
+  background: var(--brand-gold);
+  color: var(--brand-navy);
+}
+
+.users-section-header .btn,
+.admin-header > .primary-btn {
+  background: var(--brand-gold);
+  color: var(--brand-navy);
+}
+
+.users-section-header .btn:hover,
+.admin-header > .primary-btn:hover {
+  background: var(--brand-navy);
+  color: var(--brand-white);
+}
+
+.action-btn,
+.options a,
+.text-center a {
+  color: var(--brand-navy);
+}
+
+.action-btn {
+  background: var(--brand-navy);
+  color: var(--brand-white);
+}
+
+.action-btn:hover,
+.action-btn:focus,
+.options a:hover,
+.text-center a:hover {
+  color: var(--brand-gold);
+}
+
+.action-btn:hover,
+.action-btn:focus {
+  background: var(--brand-gold);
+  color: var(--brand-navy);
+}
+
+.status.pending,
+.permission-count,
+.user-type {
+  background: rgba(238, 191, 28, 0.2);
+  color: var(--brand-navy);
+}
+
+.switch input:checked + .slider {
+  background: var(--brand-gold);
+}
+
+.feedback-message {
+  border-left-color: var(--brand-gold);
+  background: rgba(238, 191, 28, 0.14);
+  color: var(--brand-navy);
+}
+
+.table-container,
+.users-table,
+.settings-section,
+.modal-overlay,
+.modal-header,
+.modal-footer {
+  border-color: rgba(28, 62, 112, 0.2);
+}
