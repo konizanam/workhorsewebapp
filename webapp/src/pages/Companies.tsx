@@ -5,12 +5,29 @@ import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import TablePagination from "../components/TablePagination";
 
 function Companies() {
   const [showModal, setShowModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Record<string, string> | null>(null);
   const [actionCompany, setActionCompany] = useState<Record<string, string> | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const companyRows = [
+    { Name: "ABC Construction", Email: "info@abcconstruction.com", Phone: "0612345678", "Registration Number": "REG-458921", Status: "Verified" },
+    { Name: "NamBuild Supplies", Email: "info@nambuild.com", Phone: "0623456789", "Registration Number": "REG-782341", Status: "Pending" },
+    { Name: "Heavy Haul Logistics", Email: "contact@heavyhaul.com", Phone: "0634567890", "Registration Number": "REG-923451", Status: "Verified" },
+  ];
+
+  const filteredCompanies = companyRows.filter((company) =>
+    Object.values(company).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredCompanies.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
 
   const addCompany = (values: Record<string, string>) => {
     setShowModal(false);
@@ -44,14 +61,27 @@ function Companies() {
 
             <h2>All Companies</h2>
 
-            <button className="btn" onClick={() => setShowModal(true)}>
-              + Add Company
-            </button>
+          </div>
 
+          <div className="table-toolbar">
+            <input
+              type="text"
+              className="table-search-input"
+              placeholder="Search companies..."
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setPage(1);
+              }}
+            />
+            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredCompanies.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+            <button className="btn" onClick={() => setShowModal(true)}>+ Add Company</button>
           </div>
 
 
           <div className="table-container">
+
+            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredCompanies.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
             <table className="users-table">
 
@@ -71,79 +101,30 @@ function Companies() {
 
               <tbody>
 
-                <tr>
-
-                  <td>ABC Construction</td>
-
-                  <td>info@abcconstruction.com</td>
-
-                  <td>0612345678</td>
-
-                  <td>REG-458921</td>
-
-                  <td>
-                    <span className="status active">
-                      Verified
-                    </span>
-                  </td>
-
-                  <td>
-                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedCompany({ Name: "ABC Construction", Email: "info@abcconstruction.com", Phone: "0612345678", "Registration Number": "REG-458921", Status: "Verified" })}>View</button><button className="action-btn" onClick={() => setActionCompany({ Name: "ABC Construction", Email: "info@abcconstruction.com", Phone: "0612345678", "Registration Number": "REG-458921", Status: "Verified" })}>Actions</button></div>
-                  </td>
-
-                </tr>
-
-
-                <tr>
-
-                  <td>NamBuild Supplies</td>
-
-                  <td>info@nambuild.com</td>
-
-                  <td>0623456789</td>
-
-                  <td>REG-782341</td>
-
-                  <td>
-                    <span className="status pending">
-                      Pending
-                    </span>
-                  </td>
-
-                  <td>
-                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedCompany({ Name: "NamBuild Supplies", Email: "info@nambuild.com", Phone: "0623456789", "Registration Number": "REG-782341", Status: "Pending" })}>View</button><button className="action-btn" onClick={() => setActionCompany({ Name: "NamBuild Supplies", Email: "info@nambuild.com", Phone: "0623456789", "Registration Number": "REG-782341", Status: "Pending" })}>Actions</button></div>
-                  </td>
-
-                </tr>
-
-
-                <tr>
-
-                  <td>Heavy Haul Logistics</td>
-
-                  <td>contact@heavyhaul.com</td>
-
-                  <td>0634567890</td>
-
-                  <td>REG-923451</td>
-
-                  <td>
-                    <span className="status active">
-                      Verified
-                    </span>
-                  </td>
-
-                  <td>
-                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedCompany({ Name: "Heavy Haul Logistics", Email: "contact@heavyhaul.com", Phone: "0634567890", "Registration Number": "REG-923451", Status: "Verified" })}>View</button><button className="action-btn" onClick={() => setActionCompany({ Name: "Heavy Haul Logistics", Email: "contact@heavyhaul.com", Phone: "0634567890", "Registration Number": "REG-923451", Status: "Verified" })}>Actions</button></div>
-                  </td>
-
-                </tr>
+                {filteredCompanies.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((company) => (
+                  <tr key={company.Email}>
+                    <td>{company.Name}</td>
+                    <td>{company.Email}</td>
+                    <td>{company.Phone}</td>
+                    <td>{company["Registration Number"]}</td>
+                    <td>
+                      <span className={`status ${company.Status === "Verified" ? "active" : "pending"}`}>
+                        {company.Status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedCompany(company)}>View</button><button className="action-btn" onClick={() => setActionCompany(company)}>Actions</button></div>
+                    </td>
+                  </tr>
+                ))}
 
               </tbody>
 
             </table>
 
           </div>
+
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredCompanies.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
         </div>
 

@@ -4,11 +4,29 @@ import { useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import TablePagination from "../components/TablePagination";
 
 function Payments() {
   const [selectedPayment, setSelectedPayment] = useState<Record<string, string> | null>(null);
   const [actionPayment, setActionPayment] = useState<Record<string, string> | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const paymentRows = [
+    { "Payment ID": "#PAY-1001", "Request ID": "#REQ-1002", Customer: "John Smith", Amount: "N$ 2,500.00", "Payment Method": "Card", Status: "Completed", "Payment Date": "12 Aug 2026" },
+    { "Payment ID": "#PAY-1002", "Request ID": "#REQ-1003", Customer: "Sarah Williams", Amount: "N$ 1,200.00", "Payment Method": "Mobile Money", Status: "Pending", "Payment Date": "12 Aug 2026" },
+    { "Payment ID": "#PAY-1003", "Request ID": "#REQ-1004", Customer: "ABC Construction", Amount: "N$ 5,800.00", "Payment Method": "Bank Transfer", Status: "Completed", "Payment Date": "11 Aug 2026" },
+    { "Payment ID": "#PAY-1004", "Request ID": "#REQ-1005", Customer: "NamBuild Supplies", Amount: "N$ 3,400.00", "Payment Method": "Card", Status: "Pending", "Payment Date": "11 Aug 2026" },
+  ];
+
+  const filteredPayments = paymentRows.filter((payment) =>
+    Object.values(payment).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredPayments.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
 
   return (
     <div className="admin-page">
@@ -40,7 +58,23 @@ function Payments() {
           </div>
 
 
+          <div className="table-toolbar">
+            <input
+              type="text"
+              className="table-search-input"
+              placeholder="Search payments..."
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setPage(1);
+              }}
+            />
+            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredPayments.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          </div>
+
           <div className="table-container">
+
+            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredPayments.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
             <table className="users-table">
 
@@ -62,118 +96,32 @@ function Payments() {
 
               <tbody>
 
-                <tr>
-
-                  <td>#PAY-1001</td>
-
-                  <td>#REQ-1002</td>
-
-                  <td>John Smith</td>
-
-                  <td>N$ 2,500.00</td>
-
-                  <td>Card</td>
-
-                  <td>
-                    <span className="status active">
-                      Completed
-                    </span>
-                  </td>
-
-                  <td>12 Aug 2026</td>
-
-                  <td>
-                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment({ "Payment ID": "#PAY-1001", "Request ID": "#REQ-1002", Customer: "John Smith", Amount: "N$ 2,500.00", "Payment Method": "Card", Status: "Completed", "Payment Date": "12 Aug 2026" })}>View</button><button className="action-btn" onClick={() => setActionPayment({ "Payment ID": "#PAY-1001", "Request ID": "#REQ-1002", Customer: "John Smith", Amount: "N$ 2,500.00", "Payment Method": "Card", Status: "Completed", "Payment Date": "12 Aug 2026" })}>Actions</button></div>
-                  </td>
-
-                </tr>
-
-
-                <tr>
-
-                  <td>#PAY-1002</td>
-
-                  <td>#REQ-1003</td>
-
-                  <td>Sarah Williams</td>
-
-                  <td>N$ 1,200.00</td>
-
-                  <td>Mobile Money</td>
-
-                  <td>
-                    <span className="status pending">
-                      Pending
-                    </span>
-                  </td>
-
-                  <td>12 Aug 2026</td>
-
-                  <td>
-                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment({ "Payment ID": "#PAY-1002", "Request ID": "#REQ-1003", Customer: "Sarah Williams", Amount: "N$ 1,200.00", "Payment Method": "Mobile Money", Status: "Pending", "Payment Date": "12 Aug 2026" })}>View</button><button className="action-btn" onClick={() => setActionPayment({ "Payment ID": "#PAY-1002", "Request ID": "#REQ-1003", Customer: "Sarah Williams", Amount: "N$ 1,200.00", "Payment Method": "Mobile Money", Status: "Pending", "Payment Date": "12 Aug 2026" })}>Actions</button></div>
-                  </td>
-
-                </tr>
-
-
-                <tr>
-
-                  <td>#PAY-1003</td>
-
-                  <td>#REQ-1004</td>
-
-                  <td>ABC Construction</td>
-
-                  <td>N$ 5,800.00</td>
-
-                  <td>Bank Transfer</td>
-
-                  <td>
-                    <span className="status active">
-                      Completed
-                    </span>
-                  </td>
-
-                  <td>11 Aug 2026</td>
-
-                  <td>
-                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment({ "Payment ID": "#PAY-1003", "Request ID": "#REQ-1004", Customer: "ABC Construction", Amount: "N$ 5,800.00", "Payment Method": "Bank Transfer", Status: "Completed", "Payment Date": "11 Aug 2026" })}>View</button><button className="action-btn" onClick={() => setActionPayment({ "Payment ID": "#PAY-1003", "Request ID": "#REQ-1004", Customer: "ABC Construction", Amount: "N$ 5,800.00", "Payment Method": "Bank Transfer", Status: "Completed", "Payment Date": "11 Aug 2026" })}>Actions</button></div>
-                  </td>
-
-                </tr>
-
-
-                <tr>
-
-                  <td>#PAY-1004</td>
-
-                  <td>#REQ-1005</td>
-
-                  <td>NamBuild Supplies</td>
-
-                  <td>N$ 3,400.00</td>
-
-                  <td>Card</td>
-
-                  <td>
-                    <span className="status pending">
-                      Pending
-                    </span>
-                  </td>
-
-                  <td>11 Aug 2026</td>
-
-                  <td>
-                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment({ "Payment ID": "#PAY-1004", "Request ID": "#REQ-1005", Customer: "NamBuild Supplies", Amount: "N$ 3,400.00", "Payment Method": "Card", Status: "Pending", "Payment Date": "11 Aug 2026" })}>View</button><button className="action-btn" onClick={() => setActionPayment({ "Payment ID": "#PAY-1004", "Request ID": "#REQ-1005", Customer: "NamBuild Supplies", Amount: "N$ 3,400.00", "Payment Method": "Card", Status: "Pending", "Payment Date": "11 Aug 2026" })}>Actions</button></div>
-                  </td>
-
-                </tr>
+                {filteredPayments.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((payment) => (
+                  <tr key={payment["Payment ID"]}>
+                    <td>{payment["Payment ID"]}</td>
+                    <td>{payment["Request ID"]}</td>
+                    <td>{payment.Customer}</td>
+                    <td>{payment.Amount}</td>
+                    <td>{payment["Payment Method"]}</td>
+                    <td>
+                      <span className={`status ${payment.Status === "Completed" ? "active" : "pending"}`}>
+                        {payment.Status}
+                      </span>
+                    </td>
+                    <td>{payment["Payment Date"]}</td>
+                    <td>
+                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment(payment)}>View</button><button className="action-btn" onClick={() => setActionPayment(payment)}>Actions</button></div>
+                    </td>
+                  </tr>
+                ))}
 
               </tbody>
 
             </table>
 
           </div>
+
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredPayments.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
         </div>
 

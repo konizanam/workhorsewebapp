@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
+import TablePagination from "../components/TablePagination";
 
 interface AuditLog {
   id: string;
@@ -118,6 +119,8 @@ function AuditLogs() {
   const [logs] = useState<AuditLog[]>(initialLogs);
 
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const [methodFilter, setMethodFilter] = useState("All");
 
@@ -249,6 +252,8 @@ function AuditLogs() {
           {/* Table */}
           <div className="table-container">
 
+            <TablePagination page={page} pageSize={pageSize} totalRecords={filteredLogs.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+
             <table className="users-table audit-table">
 
               <thead>
@@ -272,7 +277,7 @@ function AuditLogs() {
 
                 {filteredLogs.length > 0 ? (
 
-                  filteredLogs.map((log) => (
+                  filteredLogs.slice((page - 1) * pageSize, page * pageSize).map((log) => (
 
                     <tr key={log.id}>
 
@@ -381,6 +386,8 @@ function AuditLogs() {
             </table>
 
           </div>
+
+          <TablePagination page={page} pageSize={pageSize} totalRecords={filteredLogs.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
         </div>
 

@@ -5,6 +5,7 @@ import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import UserActionsModal from "../components/UserActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import TablePagination from "../components/TablePagination";
 
 type User = {
   id: number;
@@ -29,6 +30,19 @@ function Users() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [actionUser, setActionUser] = useState<User | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const filteredUsers = users.filter((user) =>
+    [user.name, user.email, user.phone, user.type, user.status, user.twoFactor]
+      .join(" ")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
 
   const addUser = (values: Record<string, string>) => {
     setUsers((current) => [
@@ -110,14 +124,26 @@ function Users() {
 
             <h2>All Users</h2>
 
-            <button className="btn" onClick={() => setShowModal(true)}>
-              + Add User
-            </button>
-
           </div>
 
+          <div className="table-toolbar">
+            <input
+              type="text"
+              className="table-search-input"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setPage(1);
+              }}
+            />
+            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredUsers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+            <button className="btn" onClick={() => setShowModal(true)}>+ Add User</button>
+          </div>
 
           <div className="table-container">
+
+            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredUsers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
             <table className="users-table">
 
@@ -137,7 +163,7 @@ function Users() {
 
 
               <tbody>
-                {users.map((user) => (
+                {filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((user) => (
                   <tr key={user.id}>
                     <td>{user.name}</td>
                     <td>{user.email}</td>
@@ -158,6 +184,8 @@ function Users() {
             </table>
 
           </div>
+
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredUsers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
         </div>
 

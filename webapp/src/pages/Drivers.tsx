@@ -5,12 +5,29 @@ import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import TablePagination from "../components/TablePagination";
 
 function Drivers() {
   const [showModal, setShowModal] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Record<string, string> | null>(null);
   const [actionDriver, setActionDriver] = useState<Record<string, string> | null>(null);
   const [feedback, setFeedback] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const driverRows = [
+    { Name: "Michael Adams", Email: "michael@example.com", Phone: "0856781234", "License Number": "N58921W", Rating: "4.8", Availability: "Available" },
+    { Name: "David Smith", Email: "david@example.com", Phone: "0812345678", "License Number": "N7841W", Rating: "4.5", Availability: "Unavailable" },
+    { Name: "James Wilson", Email: "james@example.com", Phone: "0823456789", "License Number": "N923451W", Rating: "4.9", Availability: "Available" },
+  ];
+
+  const filteredDrivers = driverRows.filter((driver) =>
+    Object.values(driver).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredDrivers.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
 
   const addDriver = (values: Record<string, string>) => {
     setShowModal(false);
@@ -44,14 +61,27 @@ function Drivers() {
 
             <h2>All Drivers</h2>
 
-            <button className="btn" onClick={() => setShowModal(true)}>
-              + Add Driver
-            </button>
+          </div>
 
+          <div className="table-toolbar">
+            <input
+              type="text"
+              className="table-search-input"
+              placeholder="Search drivers..."
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setPage(1);
+              }}
+            />
+            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredDrivers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+            <button className="btn" onClick={() => setShowModal(true)}>+ Add Driver</button>
           </div>
 
 
           <div className="table-container">
+
+            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredDrivers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
             <table className="users-table">
 
@@ -72,85 +102,31 @@ function Drivers() {
 
               <tbody>
 
-                <tr>
-
-                  <td>Michael Adams</td>
-
-                  <td>michael@example.com</td>
-
-                  <td>0856781234</td>
-
-                  <td>N58921W</td>
-
-                  <td>4.8</td>
-
-                  <td>
-                    <span className="status active">
-                      Available
-                    </span>
-                  </td>
-
-                  <td>
-                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedDriver({ Name: "Michael Adams", Email: "michael@example.com", Phone: "0856781234", "License Number": "N58921W", Rating: "4.8", Availability: "Available" })}>View</button><button className="action-btn" onClick={() => setActionDriver({ Name: "Michael Adams", Email: "michael@example.com", Phone: "0856781234", "License Number": "N58921W", Rating: "4.8", Availability: "Available" })}>Actions</button></div>
-                  </td>
-
-                </tr>
-
-
-                <tr>
-
-                  <td>David Smith</td>
-
-                  <td>david@example.com</td>
-
-                  <td>0812345678</td>
-
-                  <td>N7841W</td>
-
-                  <td>4.5</td>
-
-                  <td>
-                    <span className="status pending">
-                      Unavailable
-                    </span>
-                  </td>
-
-                  <td>
-                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedDriver({ Name: "David Smith", Email: "david@example.com", Phone: "0812345678", "License Number": "N7841W", Rating: "4.5", Availability: "Unavailable" })}>View</button><button className="action-btn" onClick={() => setActionDriver({ Name: "David Smith", Email: "david@example.com", Phone: "0812345678", "License Number": "N7841W", Rating: "4.5", Availability: "Unavailable" })}>Actions</button></div>
-                  </td>
-
-                </tr>
-
-
-                <tr>
-
-                  <td>James Wilson</td>
-
-                  <td>james@example.com</td>
-
-                  <td>0823456789</td>
-
-                  <td>N923451W</td>
-
-                  <td>4.9</td>
-
-                  <td>
-                    <span className="status active">
-                      Available
-                    </span>
-                  </td>
-
-                  <td>
-                    <div className="table-actions"><button className="action-btn" onClick={() => setSelectedDriver({ Name: "James Wilson", Email: "james@example.com", Phone: "0823456789", "License Number": "N923451W", Rating: "4.9", Availability: "Available" })}>View</button><button className="action-btn" onClick={() => setActionDriver({ Name: "James Wilson", Email: "james@example.com", Phone: "0823456789", "License Number": "N923451W", Rating: "4.9", Availability: "Available" })}>Actions</button></div>
-                  </td>
-
-                </tr>
+                {filteredDrivers.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((driver) => (
+                  <tr key={driver.Email}>
+                    <td>{driver.Name}</td>
+                    <td>{driver.Email}</td>
+                    <td>{driver.Phone}</td>
+                    <td>{driver["License Number"]}</td>
+                    <td>{driver.Rating}</td>
+                    <td>
+                      <span className={`status ${driver.Availability === "Available" ? "active" : "pending"}`}>
+                        {driver.Availability}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedDriver(driver)}>View</button><button className="action-btn" onClick={() => setActionDriver(driver)}>Actions</button></div>
+                    </td>
+                  </tr>
+                ))}
 
               </tbody>
 
             </table>
 
           </div>
+
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredDrivers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
         </div>
 

@@ -237,6 +237,12 @@ h1 {
   margin-top: 20px;
 }
 
+.users-section-header .btn {
+  width: auto;
+  padding: 7px 11px;
+  font-size: 12px;
+}
+
 .text-center a {
   color: #ff6b35;
   text-decoration: none;
@@ -270,7 +276,6 @@ h1 {
 .otp-input {
 
     width: 50px;
-
     height: 60px;
 
     border: 2px solid #ff6b35;
@@ -363,6 +368,7 @@ h1 {
   text-align: left;
   margin-bottom: 5px;
   color: #ff6b35;
+  font-size: 15px;
 }
 
 .admin-header p {
@@ -741,6 +747,84 @@ h1 {
 .users-section-header h2 {
   margin: 0;
   color: #263238;
+  font-size: 14px;
+}
+
+.table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.table-search-input {
+  min-width: 220px;
+  max-width: 280px;
+  padding: 8px 10px;
+  border: 1px solid #d5dce5;
+  background: white;
+  color: var(--brand-navy);
+  font: inherit;
+  font-size: 12px;
+}
+
+.table-search-input:focus {
+  outline: 2px solid rgba(238, 191, 28, 0.25);
+  border-color: var(--brand-gold);
+}
+
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin: 12px 0;
+  color: var(--brand-navy);
+  font-size: 12px;
+}
+
+.table-pagination button,
+.page-size-control select {
+  min-height: 28px;
+  border: 1px solid #d5dce5;
+  background: white;
+  color: var(--brand-navy);
+  padding: 4px 8px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.table-pagination button:hover:not(:disabled),
+.table-pagination button.active {
+  border-color: var(--brand-gold);
+  background: var(--brand-gold);
+  color: var(--brand-navy);
+}
+
+.table-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.pagination-pages {
+  display: flex;
+  gap: 4px;
+}
+
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 2px;
+}
+
+.page-size-control {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  white-space: nowrap;
 }
 
 
@@ -1911,6 +1995,7 @@ h1 {
 
 .settings-header h1 {
   margin-bottom: 5px;
+  font-size: 15px;
 }
 
 .settings-header p {
@@ -1950,7 +2035,7 @@ h1 {
 .settings-section-header h2 {
   margin: 0;
   color: #263238;
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -2400,4 +2485,22 @@ h3,
     margin-left: 78px;
     padding: 20px 15px;
   }
+}
+
+.table-toolbar > .btn,
+.table-toolbar > .primary-btn {
+  width: auto;
+  padding: 7px 11px;
+  font-size: 12px;
+}
+
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 2px;
+}
+
+body {
+  font-size: 14px;
 }
