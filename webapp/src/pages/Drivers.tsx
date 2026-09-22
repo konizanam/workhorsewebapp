@@ -4,15 +4,17 @@ import AdminSidebar from "../components/AdminSidebar";
 import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
+import FeedbackMessage from "../components/FeedbackMessage";
 
 function Drivers() {
   const [showModal, setShowModal] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Record<string, string> | null>(null);
   const [actionDriver, setActionDriver] = useState<Record<string, string> | null>(null);
+  const [feedback, setFeedback] = useState("");
 
   const addDriver = (values: Record<string, string>) => {
     setShowModal(false);
-    alert(`${values.name} was added as a driver.`);
+    setFeedback(`${values.name} was added as a driver.`);
   };
 
   return (
@@ -21,6 +23,8 @@ function Drivers() {
       <AdminSidebar />
 
       <div className="admin-content">
+
+        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -180,9 +184,9 @@ function Drivers() {
           title={`Manage ${actionDriver.Name}`}
           values={actionDriver}
           fields={[{ key: "Name", label: "Full Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "License Number", label: "License Number" }, { key: "Availability", label: "Availability", options: ["Available", "Unavailable"] }]}
-          actions={[{ label: "Disable Driver", onClick: () => alert("Driver disabled.") }, { label: "Delete Driver", onClick: () => { alert("Driver deleted."); setActionDriver(null); }, danger: true }]}
+          actions={[{ label: "Disable Driver", onClick: () => setFeedback("Driver disabled.") }, { label: "Delete Driver", onClick: () => { setFeedback("Driver deleted."); setActionDriver(null); }, danger: true }]}
           onClose={() => setActionDriver(null)}
-          onSave={(values) => { alert(`${values.Name} was updated.`); setActionDriver(null); }}
+          onSave={(values) => { setFeedback(`${values.Name} was updated.`); setActionDriver(null); }}
         />
       )}
 

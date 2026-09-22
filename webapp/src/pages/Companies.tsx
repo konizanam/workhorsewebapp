@@ -4,15 +4,17 @@ import AdminSidebar from "../components/AdminSidebar";
 import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
+import FeedbackMessage from "../components/FeedbackMessage";
 
 function Companies() {
   const [showModal, setShowModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Record<string, string> | null>(null);
   const [actionCompany, setActionCompany] = useState<Record<string, string> | null>(null);
+  const [feedback, setFeedback] = useState("");
 
   const addCompany = (values: Record<string, string>) => {
     setShowModal(false);
-    alert(`${values.name} was added as a company.`);
+    setFeedback(`${values.name} was added as a company.`);
   };
 
   return (
@@ -21,6 +23,8 @@ function Companies() {
       <AdminSidebar />
 
       <div className="admin-content">
+
+        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -173,9 +177,9 @@ function Companies() {
           title={`Manage ${actionCompany.Name}`}
           values={actionCompany}
           fields={[{ key: "Name", label: "Company Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Registration Number", label: "Registration Number" }, { key: "Status", label: "Status", options: ["Verified", "Pending", "Disabled"] }]}
-          actions={[{ label: "Disable Company", onClick: () => alert("Company disabled.") }, { label: "Delete Company", onClick: () => { alert("Company deleted."); setActionCompany(null); }, danger: true }]}
+          actions={[{ label: "Disable Company", onClick: () => setFeedback("Company disabled.") }, { label: "Delete Company", onClick: () => { setFeedback("Company deleted."); setActionCompany(null); }, danger: true }]}
           onClose={() => setActionCompany(null)}
-          onSave={(values) => { alert(`${values.Name} was updated.`); setActionCompany(null); }}
+          onSave={(values) => { setFeedback(`${values.Name} was updated.`); setActionCompany(null); }}
         />
       )}
 

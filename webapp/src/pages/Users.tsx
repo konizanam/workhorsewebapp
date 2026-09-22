@@ -4,6 +4,7 @@ import AdminSidebar from "../components/AdminSidebar";
 import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import UserActionsModal from "../components/UserActionsModal";
+import FeedbackMessage from "../components/FeedbackMessage";
 
 type User = {
   id: number;
@@ -27,6 +28,7 @@ function Users() {
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [actionUser, setActionUser] = useState<User | null>(null);
+  const [feedback, setFeedback] = useState("");
 
   const addUser = (values: Record<string, string>) => {
     setUsers((current) => [
@@ -42,6 +44,7 @@ function Users() {
       },
     ]);
     setShowModal(false);
+    setFeedback(`${values.name} was added successfully.`);
   };
 
   const updateUser = (values: Pick<User, "name" | "email" | "phone">) => {
@@ -59,7 +62,7 @@ function Users() {
   };
 
   const setPassword = () => {
-    alert("Password updated successfully.");
+    setFeedback("Password updated successfully.");
   };
 
   const disableUser = () => {
@@ -71,12 +74,13 @@ function Users() {
 
   const deleteUser = () => {
     if (actionUser?.status !== "Disabled") {
-      alert("Disable the user before deleting the account.");
+      setFeedback("Disable the user before deleting the account.");
       return;
     }
 
     setUsers((current) => current.filter((user) => user.id !== actionUser.id));
     setActionUser(null);
+    setFeedback("User deleted successfully.");
   };
 
   return (
@@ -93,6 +97,8 @@ function Users() {
             <h1>Users</h1>
             <p>Manage all registered users.</p>
           </div>
+
+          {feedback && <FeedbackMessage message={feedback} />}
 
         </div>
 

@@ -3,10 +3,12 @@ import AdminSidebar from "../components/AdminSidebar";
 import { useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
+import FeedbackMessage from "../components/FeedbackMessage";
 
 function Payments() {
   const [selectedPayment, setSelectedPayment] = useState<Record<string, string> | null>(null);
   const [actionPayment, setActionPayment] = useState<Record<string, string> | null>(null);
+  const [feedback, setFeedback] = useState("");
 
   return (
     <div className="admin-page">
@@ -14,6 +16,8 @@ function Payments() {
       <AdminSidebar />
 
       <div className="admin-content">
+
+        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -188,9 +192,9 @@ function Payments() {
           title={`Manage ${actionPayment["Payment ID"]}`}
           values={actionPayment}
           fields={[{ key: "Customer", label: "Customer" }, { key: "Amount", label: "Amount" }, { key: "Payment Method", label: "Payment Method", options: ["Card", "Mobile Money", "Bank Transfer"] }, { key: "Status", label: "Status", options: ["Pending", "Completed", "Failed", "Refunded"] }]}
-          actions={[{ label: "Refund Payment", onClick: () => alert("Payment marked for refund.") }, { label: "Delete Payment", onClick: () => { alert("Payment deleted."); setActionPayment(null); }, danger: true }]}
+          actions={[{ label: "Refund Payment", onClick: () => setFeedback("Payment marked for refund.") }, { label: "Delete Payment", onClick: () => { setFeedback("Payment deleted."); setActionPayment(null); }, danger: true }]}
           onClose={() => setActionPayment(null)}
-          onSave={(values) => { alert(`${values["Payment ID"]} was updated.`); setActionPayment(null); }}
+          onSave={(values) => { setFeedback(`${values["Payment ID"]} was updated.`); setActionPayment(null); }}
         />
       )}
 

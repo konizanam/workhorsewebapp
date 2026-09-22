@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
+import FeedbackMessage from "../components/FeedbackMessage";
 
 interface Permission {
   id: string;
@@ -236,6 +237,7 @@ function RolesPermissions() {
 
   const [roleName, setRoleName] = useState("");
   const [description, setDescription] = useState("");
+  const [feedback, setFeedback] = useState("");
 
   const openAddRole = () => {
     setEditingRole(null);
@@ -274,7 +276,7 @@ function RolesPermissions() {
 
   const saveRole = () => {
     if (!roleName.trim()) {
-      alert("Please enter a role name.");
+      setFeedback("Please enter a role name.");
       return;
     }
 
@@ -305,11 +307,12 @@ function RolesPermissions() {
     }
 
     closeModal();
+    setFeedback(editingRole ? "Role updated successfully." : "Role created successfully.");
   };
 
   const deleteRole = (role: Role) => {
     if (role.type === "System") {
-      alert("System roles cannot be deleted.");
+      setFeedback("System roles cannot be deleted.");
       return;
     }
 
@@ -321,6 +324,7 @@ function RolesPermissions() {
       setRoles((current) =>
         current.filter((item) => item.id !== role.id)
       );
+      setFeedback("Role deleted successfully.");
     }
   };
 
@@ -332,6 +336,8 @@ function RolesPermissions() {
       <AdminSidebar />
 
       <div className="admin-content">
+
+        {feedback && <FeedbackMessage message={feedback} tone={feedback.startsWith("Please") || feedback.startsWith("System") ? "error" : "success"} />}
 
         {/* Header */}
         <div className="admin-header">

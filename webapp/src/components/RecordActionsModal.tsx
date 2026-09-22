@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 type RecordField = {
   key: string;
   label: string;
@@ -22,6 +24,8 @@ function RecordActionsModal({
   onClose,
   onSave,
 }: RecordActionsModalProps) {
+  const [pendingAction, setPendingAction] = useState<{ label: string; onClick: () => void } | null>(null);
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -57,12 +61,23 @@ function RecordActionsModal({
 
         <div className="modal-footer">
           {actions.map((action) => (
-            <button key={action.label} className={action.danger ? "delete-btn" : "secondary-btn"} type="button" onClick={action.onClick}>
+            <button key={action.label} className={action.danger ? "delete-btn" : "secondary-btn"} type="button" onClick={() => action.danger ? setPendingAction(action) : action.onClick()}>
               {action.label}
             </button>
           ))}
           <button className="primary-btn" type="submit">Save Changes</button>
         </div>
+
+        {pendingAction && (
+          <div className="confirmation-panel">
+            <strong>Are you sure you want to delete?</strong>
+            <p>This action cannot be undone.</p>
+            <div className="confirmation-actions">
+              <button className="secondary-btn" type="button" onClick={() => setPendingAction(null)}>Cancel</button>
+              <button className="delete-btn" type="button" onClick={() => { pendingAction.onClick(); setPendingAction(null); }}>Yes, Delete</button>
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );

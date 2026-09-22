@@ -3,10 +3,12 @@ import AdminSidebar from "../components/AdminSidebar";
 import { useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
+import FeedbackMessage from "../components/FeedbackMessage";
 
 function Trips() {
   const [selectedTrip, setSelectedTrip] = useState<Record<string, string> | null>(null);
   const [actionTrip, setActionTrip] = useState<Record<string, string> | null>(null);
+  const [feedback, setFeedback] = useState("");
 
   return (
     <div className="admin-page">
@@ -14,6 +16,8 @@ function Trips() {
       <AdminSidebar />
 
       <div className="admin-content">
+
+        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -188,9 +192,9 @@ function Trips() {
           title={`Manage ${actionTrip["Trip ID"]}`}
           values={actionTrip}
           fields={[{ key: "Driver", label: "Driver" }, { key: "Vehicle", label: "Vehicle" }, { key: "Pickup", label: "Pickup" }, { key: "Destination", label: "Destination" }, { key: "Status", label: "Status", options: ["Pending", "Assigned", "In Progress", "Completed", "Cancelled"] }]}
-          actions={[{ label: "Cancel Trip", onClick: () => alert("Trip cancelled.") }, { label: "Delete Trip", onClick: () => { alert("Trip deleted."); setActionTrip(null); }, danger: true }]}
+          actions={[{ label: "Cancel Trip", onClick: () => setFeedback("Trip cancelled.") }, { label: "Delete Trip", onClick: () => { setFeedback("Trip deleted."); setActionTrip(null); }, danger: true }]}
           onClose={() => setActionTrip(null)}
-          onSave={(values) => { alert(`${values["Trip ID"]} was updated.`); setActionTrip(null); }}
+          onSave={(values) => { setFeedback(`${values["Trip ID"]} was updated.`); setActionTrip(null); }}
         />
       )}
 

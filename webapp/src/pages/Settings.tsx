@@ -1,5 +1,6 @@
 import { useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
+import FeedbackMessage from "../components/FeedbackMessage";
 
 const Settings = () => {
   const [notifications, setNotifications] = useState({
@@ -21,6 +22,7 @@ const Settings = () => {
     timezone: "Africa/Windhoek",
     currency: "NAD",
   });
+  const [feedback, setFeedback] = useState("");
 
   const handlePlatformChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -56,11 +58,7 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    console.log("Platform Settings:", platform);
-    console.log("Notifications:", notifications);
-    console.log("Security:", security);
-
-    alert("Settings saved successfully.");
+    setFeedback("Settings saved successfully.");
   };
 
   return (
@@ -84,6 +82,8 @@ const Settings = () => {
             </p>
             </div>
           </div>
+
+          {feedback && <FeedbackMessage message={feedback} />}
 
           {/* Platform Settings */}
           <section className="users-section settings-section">
