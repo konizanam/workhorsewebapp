@@ -8,7 +8,7 @@ function AdminSidebar() {
     <aside className={`admin-sidebar${collapsed ? " collapsed" : ""}`}>
 
       <div className="sidebar-logo">
-        <img src="/logo.png" alt="Workhorse" />
+        <img src="/logosidebar.png" alt="Workhorse" />
         <button
           className="sidebar-toggle"
           type="button"

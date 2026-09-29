@@ -74,7 +74,6 @@ function Companies() {
                 setPage(1);
               }}
             />
-            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredCompanies.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
             <button className="btn" onClick={() => setShowModal(true)}>+ Add Company</button>
           </div>
 

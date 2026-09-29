@@ -74,7 +74,6 @@ function Drivers() {
                 setPage(1);
               }}
             />
-            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredDrivers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
             <button className="btn" onClick={() => setShowModal(true)}>+ Add Driver</button>
           </div>
 

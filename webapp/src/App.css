@@ -117,7 +117,7 @@ h1 {
 
 .input-box input:focus {
 
-  border-color: #ff6b35;
+  border-color: rgba(238, 191, 28, 0.2);
 
   box-shadow: 0 0 8px #e55a2b;
 
@@ -170,7 +170,7 @@ h1 {
 
   text-decoration: none;
 
-  color: #ff6b35;
+  color: rgba(28, 62, 112, 0.2);
 
   font-weight: 500;
 
@@ -185,7 +185,7 @@ h1 {
 
 .error {
 
-  color:#E53935;
+  color:#f70c08;
 
   font-size:13px;
 
@@ -209,7 +209,7 @@ h1 {
 
   border-radius: 0px;
 
-  background: #ff6b35;
+  background: rgba(28, 62, 112, 0.2);
 
   color: white;
 
@@ -226,7 +226,7 @@ h1 {
 
 .btn:hover {
 
-  background: #e55a2b;
+  background: rgba(238, 191, 28, 0.2);
 
   transform: translateY(-2px);
 
@@ -244,7 +244,7 @@ h1 {
 }
 
 .text-center a {
-  color: #ff6b35;
+  color: rgba(28, 62, 112, 0.2);
   text-decoration: none;
 }
 
@@ -278,7 +278,7 @@ h1 {
     width: 50px;
     height: 60px;
 
-    border: 2px solid #ff6b35;
+    border: 2px solid rgba(28, 62, 112, 0.2);
 
     border-radius: 0px;
 
@@ -297,7 +297,7 @@ h1 {
 
 .otp-input:focus {
 
-    border-color: #e55a2b;
+    border-color: rgba(238, 191, 28, 0.2);
 
     transform: scale(1.05);
 
@@ -317,7 +317,7 @@ h1 {
 
     border-radius:0px;
 
-    background:#ff6b35;
+    background:rgba(28, 62, 112, 0.2);
 
     color:white;
 
@@ -332,7 +332,7 @@ h1 {
 
 .btn-secondary:hover {
 
-    background:#e55a2b;
+    background:rgba(238, 191, 28, 0.2);
 
 }
 
@@ -367,7 +367,7 @@ h1 {
 .admin-header h1 {
   text-align: left;
   margin-bottom: 5px;
-  color: #ff6b35;
+  color: rgba(28, 62, 112, 0.2);
   font-size: 15px;
 }
 
@@ -592,7 +592,7 @@ h1 {
   left: 0;
   top: 0;
 
-  background: #f86e3c;
+  background: white;
   color: white;
 
   display: flex;
@@ -645,7 +645,7 @@ h1 {
 .sidebar-toggle:hover,
 .sidebar-toggle:focus {
   background: #eebf1c;
-  color: #1c3e70;
+  color: #f4f5f6;
   outline: none;
 }
 
@@ -2264,6 +2264,7 @@ h1 {
   --brand-navy: #1c3e70;
   --brand-gold: #eebf1c;
   --brand-white: #ffffff;
+  --brand-grey: #e4e5e5e2;
 }
 
 body,
@@ -2275,7 +2276,7 @@ body,
 }
 
 .admin-sidebar {
-  background: var(--brand-navy);
+  background: var(--brand-grey);
 }
 
 .sidebar-link,
@@ -2296,7 +2297,7 @@ h3,
 .admin-sidebar .sidebar-link,
 .admin-sidebar .sidebar-logo h2,
 .admin-sidebar .sidebar-link.logout {
-  color: var(--brand-white);
+  color: var(--brand-navy);
 }
 
 .admin-sidebar .sidebar-link:hover,
