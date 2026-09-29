@@ -753,7 +753,7 @@ h1 {
 .table-toolbar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 12px;
   margin-bottom: 12px;
 }
@@ -863,6 +863,51 @@ h1 {
   border-bottom: none;
 }
 
+.driver-photo,
+.driver-photo-placeholder {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.driver-photo-placeholder {
+  background: var(--brand-grey);
+  color: var(--brand-navy);
+  font-size: 12px;
+}
+
+.driver-photo-preview {
+  display: block;
+  width: 80px;
+  height: 80px;
+  margin-top: 8px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.driver-details-image {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.driver-details-image .driver-photo,
+.driver-details-image .driver-photo-placeholder {
+  width: 96px;
+  height: 96px;
+  font-size: 22px;
+}
+
+.file-upload-error {
+  color: #b42318;
+  font-size: 12px;
+}
 
 /* ==============================
    USER TYPE
@@ -2492,6 +2537,36 @@ h3,
 .table-toolbar > .primary-btn {
   width: auto;
   padding: 7px 11px;
+  font-size: 12px;
+}
+
+.admin-content select,
+.modal-overlay select {
+  width: 100%;
+  height: 44px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid #d7dce2;
+  border-radius: 0;
+  background: #ffffff;
+  color: var(--brand-navy);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+.admin-content select:focus,
+.modal-overlay select:focus {
+  border-color: var(--brand-gold);
+  box-shadow: 0 0 0 2px rgba(238, 191, 28, 0.2);
+}
+
+.admin-content .page-size-control select {
+  width: auto;
+  height: 28px;
+  min-height: 28px;
+  padding: 4px 8px;
   font-size: 12px;
 }
 

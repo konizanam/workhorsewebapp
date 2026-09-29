@@ -112,7 +112,7 @@ function Companies() {
                       </span>
                     </td>
                     <td>
-                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedCompany(company)}>View</button><button className="action-btn" onClick={() => setActionCompany(company)}>Actions</button></div>
+                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedCompany(company)}>View</button><button className="action-btn" onClick={() => setActionCompany(company)}>Edit</button></div>
                     </td>
                   </tr>
                 ))}

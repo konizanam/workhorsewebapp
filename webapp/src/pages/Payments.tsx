@@ -109,7 +109,7 @@ function Payments() {
                     </td>
                     <td>{payment["Payment Date"]}</td>
                     <td>
-                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment(payment)}>View</button><button className="action-btn" onClick={() => setActionPayment(payment)}>Actions</button></div>
+                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment(payment)}>View</button><button className="action-btn" onClick={() => setActionPayment(payment)}>Edit</button></div>
                     </td>
                   </tr>
                 ))}

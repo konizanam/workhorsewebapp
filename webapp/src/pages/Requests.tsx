@@ -107,7 +107,7 @@ function Requests() {
                       </span>
                     </td>
                     <td>
-                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedRequest(request)}>View</button><button className="action-btn" onClick={() => setActionRequest(request)}>Actions</button></div>
+                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedRequest(request)}>View</button><button className="action-btn" onClick={() => setActionRequest(request)}>Edit</button></div>
                     </td>
                   </tr>
                 ))}

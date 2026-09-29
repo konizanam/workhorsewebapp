@@ -173,7 +173,7 @@ function Users() {
                     <td>
                       <div className="table-actions">
                         <button className="action-btn" onClick={() => setSelectedUser(user)}>View</button>
-                        <button className="action-btn" onClick={() => setActionUser(user)}>Actions</button>
+                        <button className="action-btn" onClick={() => setActionUser(user)}>Edit</button>
                       </div>
                     </td>
                   </tr>

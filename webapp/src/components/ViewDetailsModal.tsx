@@ -19,7 +19,18 @@ function ViewDetailsModal({ title, details, onClose }: ViewDetailsModalProps) {
         </div>
 
         <div className="modal-body details-grid">
-          {Object.entries(details).map(([label, value]) => (
+          {details["Driver Image"] !== undefined && (
+            <div className="driver-details-image">
+              {details["Driver Image"] ? (
+                <img className="driver-photo" src={details["Driver Image"]} alt={`${title} profile`} />
+              ) : (
+                <span className="driver-photo-placeholder">
+                  {(details.Name ?? title).split(" ").map((part) => part[0]).join("").slice(0, 2)}
+                </span>
+              )}
+            </div>
+          )}
+          {Object.entries(details).filter(([label]) => label !== "Driver Image").map(([label, value]) => (
             <div className="detail-item" key={label}>
               <span>{label}</span>
               <strong>{value}</strong>
