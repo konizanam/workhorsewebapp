@@ -1,14 +1,18 @@
 import "../App.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import FeedbackMessage from "../components/FeedbackMessage";
+
+const OTP_RESEND_SECONDS = 240;
 
 function VerifyOTP() {
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const verificationState = location.state as { email?: string } | null;
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     
-  const [timer, setTimer] = useState(60);
+  const [timer, setTimer] = useState(OTP_RESEND_SECONDS);
   const [canResend, setCanResend] = useState(false);
   const [feedback, setFeedback] = useState("");
 
@@ -39,12 +43,14 @@ function VerifyOTP() {
 // Function to handle OTP resend
 const resendOTP = () => {
 
-    setTimer(60);
+    setTimer(OTP_RESEND_SECONDS);
 
     setCanResend(false);
 
+  setOtp(["", "", "", "", "", ""]);
+  inputRefs.current[0]?.focus();
 
-    setFeedback("New OTP sent successfully.");
+  setFeedback("Resend requested. The 240-second timer has restarted.");
 
 };
 
@@ -100,8 +106,12 @@ const handleVerify = (
 
     e.preventDefault();
 
+    if (otp.some((digit) => !digit)) {
+      setFeedback("Enter all 6 digits to continue.");
+      return;
+    }
 
-    navigate("/ResetPassword");
+    navigate("/Dashboard");
 
 };
 
@@ -112,7 +122,7 @@ const handleVerify = (
       <div className="auth-card">
 
         <div className="icon-circle">
-          🔐
+          <img src="/logo1.png" alt="Workhorse" />
         </div>
 
 
@@ -122,7 +132,7 @@ const handleVerify = (
 
 
         <p className="subtitle">
-          Enter the 6-digit code sent to your email address.
+          Enter the 6-digit code sent to {verificationState?.email || "your email address"}.
         </p>
 
         {feedback && <FeedbackMessage message={feedback} />}

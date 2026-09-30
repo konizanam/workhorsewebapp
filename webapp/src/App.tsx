@@ -37,7 +37,7 @@ function Login() {
     }
 
     setError("");
-    navigate("/Dashboard");
+    navigate("/VerifyOTP", { state: { email } });
   };
   
   return (
@@ -45,14 +45,8 @@ function Login() {
       <div className="auth-card">
 
         <div className="icon-circle">
-          <img src="/logo.png" alt="Workhorse" />
+          <img src="/logo1.png" alt="Workhorse" />
         </div>
-
-        <h1>Admin Login</h1>
-
-        <p className="subtitle">
-          Sign in to access the Workhorse admin panel.
-        </p>
           
         <form onSubmit={handleLogin}>
 

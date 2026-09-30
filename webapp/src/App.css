@@ -10,17 +10,9 @@
   margin: auto;
   margin-bottom: 25px;
 
-  border-radius: 50%;
-
-  background: #eaf3ff;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
-  color: #1976d2;
-
-  font-size: 60px;
 }
 
 .icon-circle img {
@@ -308,32 +300,26 @@ h1 {
 ============================== */
 
 .btn-secondary {
-
-    width:100%;
-
-    padding:15px;
-
-    border:none;
-
-    border-radius:0px;
-
-    background:rgba(28, 62, 112, 0.2);
-
-    color:white;
-
-    font-weight:600;
-
-    cursor:pointer;
-
-    margin-top:15px;
-
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--brand-navy);
+  border-radius: 0;
+  background: var(--brand-navy);
+  color: white;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background-color 0.2s, color 0.2s;
 }
 
-
-.btn-secondary:hover {
-
-    background:rgba(238, 191, 28, 0.2);
-
+.btn-secondary:hover,
+.btn-secondary:focus-visible {
+  border-color: var(--brand-gold);
+  background: var(--brand-gold);
+  color: var(--brand-navy);
+  outline: 2px solid rgba(238, 191, 28, 0.3);
+  outline-offset: 2px;
 }
 
 
@@ -2344,11 +2330,6 @@ h3,
 .role-modal,
 .audit-modal {
   background: var(--brand-white);
-}
-
-.icon-circle {
-  background: var(--brand-navy);
-  color: var(--brand-gold);
 }
 
 .input-box input:focus,

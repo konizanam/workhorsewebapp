@@ -1,7 +1,7 @@
 import "../App.css";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 
 function ResetPassword() {
@@ -17,9 +17,7 @@ function ResetPassword() {
 
 
         <div className="icon-circle">
-
-          <FaLock />
-
+          <img src="/logo1.png" alt="Workhorse" />
         </div>
 
         <h1>
