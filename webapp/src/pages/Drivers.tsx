@@ -56,6 +56,16 @@ function Drivers() {
     setFeedback(`${values.name} was added as a driver.`);
   };
 
+  const toggleDriverStatus = () => {
+    if (!actionDriver) return;
+    const availability = actionDriver.Availability === "Disabled" ? "Available" : "Disabled";
+    setDriverRows((current) => current.map((driver) =>
+      driver.Email === actionDriver.Email ? { ...driver, Availability: availability } : driver
+    ));
+    setFeedback(`${actionDriver.Name} ${availability === "Disabled" ? "disabled" : "enabled"}.`);
+    setActionDriver(null);
+  };
+
   return (
     <div className="admin-page">
 
@@ -194,8 +204,8 @@ function Drivers() {
         <RecordActionsModal
           title={`Manage ${actionDriver.Name}`}
           values={actionDriver}
-          fields={[{ key: "Name", label: "Full Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Driver's License Number", label: "Driver's License Number", pattern: licenseNumberPattern, title: licenseNumberHint }, { key: "Car's License Plate", label: "Car's License Plate", pattern: carLicensePlatePattern, title: carLicensePlateHint }, { key: "Driver Image", label: "Driver Image", type: "file", accept: "image/*", required: false }, { key: "Availability", label: "Availability", options: ["Available", "Unavailable"] }]}
-          actions={[{ label: "Disable Driver", onClick: () => setFeedback("Driver disabled.") }, { label: "Delete Driver", onClick: () => { setFeedback("Driver deleted."); setActionDriver(null); }, danger: true }]}
+          fields={[{ key: "Name", label: "Full Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Driver's License Number", label: "Driver's License Number", pattern: licenseNumberPattern, title: licenseNumberHint }, { key: "Car's License Plate", label: "Car's License Plate", pattern: carLicensePlatePattern, title: carLicensePlateHint }, { key: "Driver Image", label: "Driver Image", type: "file", accept: "image/*", required: false }, { key: "Availability", label: "Availability", options: ["Available", "Unavailable", "Disabled"] }]}
+          actions={[{ label: actionDriver.Availability === "Disabled" ? "Enable Driver" : "Disable Driver", onClick: toggleDriverStatus }]}
           onClose={() => setActionDriver(null)}
           onSave={(values) => {
             setDriverRows((current) => current.map((driver) =>

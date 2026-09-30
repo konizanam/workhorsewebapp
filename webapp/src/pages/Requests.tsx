@@ -137,7 +137,7 @@ function Requests() {
           title={`Manage ${actionRequest["Request ID"]}`}
           values={actionRequest}
           fields={[{ key: "Customer", label: "Customer" }, { key: "Service Type", label: "Service Type" }, { key: "Pickup", label: "Pickup" }, { key: "Destination", label: "Destination" }, { key: "Status", label: "Status", options: ["Pending", "Accepted", "Completed", "Cancelled"] }]}
-          actions={[{ label: "Cancel Request", onClick: () => setFeedback("Request cancelled.") }, { label: "Delete Request", onClick: () => { setFeedback("Request deleted."); setActionRequest(null); }, danger: true }]}
+          actions={[{ label: "Cancel Request", onClick: () => setFeedback("Request cancelled.") }]}
           onClose={() => setActionRequest(null)}
           onSave={(values) => { setFeedback(`${values["Request ID"]} was updated.`); setActionRequest(null); }}
         />

@@ -139,7 +139,7 @@ function Payments() {
           title={`Manage ${actionPayment["Payment ID"]}`}
           values={actionPayment}
           fields={[{ key: "Customer", label: "Customer" }, { key: "Amount", label: "Amount" }, { key: "Payment Method", label: "Payment Method", options: ["Card", "Mobile Money", "Bank Transfer"] }, { key: "Status", label: "Status", options: ["Pending", "Completed", "Failed", "Refunded"] }]}
-          actions={[{ label: "Refund Payment", onClick: () => setFeedback("Payment marked for refund.") }, { label: "Delete Payment", onClick: () => { setFeedback("Payment deleted."); setActionPayment(null); }, danger: true }]}
+          actions={[{ label: "Refund Payment", onClick: () => setFeedback("Payment marked for refund.") }]}
           onClose={() => setActionPayment(null)}
           onSave={(values) => { setFeedback(`${values["Payment ID"]} was updated.`); setActionPayment(null); }}
         />

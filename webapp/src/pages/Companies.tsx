@@ -16,11 +16,11 @@ function Companies() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const companyRows = [
+  const [companyRows, setCompanyRows] = useState([
     { Name: "ABC Construction", Email: "info@abcconstruction.com", Phone: "0612345678", "Registration Number": "REG-458921", Status: "Verified" },
     { Name: "NamBuild Supplies", Email: "info@nambuild.com", Phone: "0623456789", "Registration Number": "REG-782341", Status: "Pending" },
     { Name: "Heavy Haul Logistics", Email: "contact@heavyhaul.com", Phone: "0634567890", "Registration Number": "REG-923451", Status: "Verified" },
-  ];
+  ]);
 
   const filteredCompanies = companyRows.filter((company) =>
     Object.values(company).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
@@ -32,6 +32,16 @@ function Companies() {
   const addCompany = (values: Record<string, string>) => {
     setShowModal(false);
     setFeedback(`${values.name} was added as a company.`);
+  };
+
+  const toggleCompanyStatus = () => {
+    if (!actionCompany) return;
+    const status = actionCompany.Status === "Disabled" ? "Verified" : "Disabled";
+    setCompanyRows((current) => current.map((company) =>
+      company.Email === actionCompany.Email ? { ...company, Status: status } : company
+    ));
+    setFeedback(`${actionCompany.Name} ${status === "Disabled" ? "disabled" : "enabled"}.`);
+    setActionCompany(null);
   };
 
   return (
@@ -157,7 +167,7 @@ function Companies() {
           title={`Manage ${actionCompany.Name}`}
           values={actionCompany}
           fields={[{ key: "Name", label: "Company Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Registration Number", label: "Registration Number" }, { key: "Status", label: "Status", options: ["Verified", "Pending", "Disabled"] }]}
-          actions={[{ label: "Disable Company", onClick: () => setFeedback("Company disabled.") }, { label: "Delete Company", onClick: () => { setFeedback("Company deleted."); setActionCompany(null); }, danger: true }]}
+          actions={[{ label: actionCompany.Status === "Disabled" ? "Enable Company" : "Disable Company", onClick: toggleCompanyStatus }]}
           onClose={() => setActionCompany(null)}
           onSave={(values) => { setFeedback(`${values.Name} was updated.`); setActionCompany(null); }}
         />

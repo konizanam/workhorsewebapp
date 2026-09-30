@@ -86,15 +86,11 @@ function Users() {
     setActionUser((current) => current ? { ...current, status: "Disabled" } : current);
   };
 
-  const deleteUser = () => {
-    if (actionUser?.status !== "Disabled") {
-      setFeedback("Disable the user before deleting the account.");
-      return;
-    }
-
-    setUsers((current) => current.filter((user) => user.id !== actionUser.id));
-    setActionUser(null);
-    setFeedback("User deleted successfully.");
+  const enableUser = () => {
+    setUsers((current) => current.map((user) =>
+      user.id === actionUser?.id ? { ...user, status: "Active" } : user
+    ));
+    setActionUser((current) => current ? { ...current, status: "Active" } : current);
   };
 
   return (
@@ -227,7 +223,7 @@ function Users() {
           onChangeRole={changeRole}
           onSetPassword={setPassword}
           onDisable={disableUser}
-          onDelete={deleteUser}
+          onEnable={enableUser}
         />
       )}
 

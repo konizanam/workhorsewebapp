@@ -139,7 +139,7 @@ function Trips() {
           title={`Manage ${actionTrip["Trip ID"]}`}
           values={actionTrip}
           fields={[{ key: "Driver", label: "Driver" }, { key: "Vehicle", label: "Vehicle" }, { key: "Pickup", label: "Pickup" }, { key: "Destination", label: "Destination" }, { key: "Status", label: "Status", options: ["Pending", "Assigned", "In Progress", "Completed", "Cancelled"] }]}
-          actions={[{ label: "Cancel Trip", onClick: () => setFeedback("Trip cancelled.") }, { label: "Delete Trip", onClick: () => { setFeedback("Trip deleted."); setActionTrip(null); }, danger: true }]}
+          actions={[{ label: "Cancel Trip", onClick: () => setFeedback("Trip cancelled.") }]}
           onClose={() => setActionTrip(null)}
           onSave={(values) => { setFeedback(`${values["Trip ID"]} was updated.`); setActionTrip(null); }}
         />

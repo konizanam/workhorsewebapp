@@ -15,7 +15,7 @@ type UserActionsModalProps = {
   onChangeRole: (role: string) => void;
   onSetPassword: (password: string) => void;
   onDisable: () => void;
-  onDelete: () => void;
+  onEnable: () => void;
 };
 
 function UserActionsModal({
@@ -25,9 +25,8 @@ function UserActionsModal({
   onChangeRole,
   onSetPassword,
   onDisable,
-  onDelete,
+  onEnable,
 }: UserActionsModalProps) {
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [phone, setPhone] = useState(user.phone);
@@ -110,25 +109,11 @@ function UserActionsModal({
             <button className="secondary-btn" type="submit">Set Password</button>
           </form>
 
-          <div className="danger-actions">
-            <button className="secondary-btn" type="button" onClick={onDisable} disabled={user.status === "Disabled"}>
-              {user.status === "Disabled" ? "User Disabled" : "Disable User"}
-            </button>
-            <button className="delete-btn" type="button" onClick={() => setShowDeleteConfirmation(true)} disabled={user.status !== "Disabled"}>
-              Delete User
+          <div className="account-status-actions">
+            <button className="secondary-btn" type="button" onClick={user.status === "Disabled" ? onEnable : onDisable}>
+              {user.status === "Disabled" ? "Enable User" : "Disable User"}
             </button>
           </div>
-          {user.status !== "Disabled" && <p className="action-help">Disable this user before deleting the account.</p>}
-          {showDeleteConfirmation && user.status === "Disabled" && (
-            <div className="confirmation-panel">
-              <strong>Are you sure you want to delete?</strong>
-              <p>This action cannot be undone.</p>
-              <div className="confirmation-actions">
-                <button className="secondary-btn" type="button" onClick={() => setShowDeleteConfirmation(false)}>Cancel</button>
-                <button className="delete-btn" type="button" onClick={onDelete}>Yes, Delete</button>
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="modal-footer">

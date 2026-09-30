@@ -40,13 +40,6 @@ const permissions: Permission[] = [
     key: "users:update",
   },
   {
-    id: "4",
-    module: "Users",
-    action: "Delete",
-    key: "users:delete",
-  },
-
-  {
     id: "5",
     module: "Drivers",
     action: "Create",
@@ -64,13 +57,6 @@ const permissions: Permission[] = [
     action: "Update",
     key: "drivers:update",
   },
-  {
-    id: "8",
-    module: "Drivers",
-    action: "Delete",
-    key: "drivers:delete",
-  },
-
   {
     id: "9",
     module: "Companies",
@@ -90,13 +76,6 @@ const permissions: Permission[] = [
     key: "companies:update",
   },
   {
-    id: "12",
-    module: "Companies",
-    action: "Delete",
-    key: "companies:delete",
-  },
-
-  {
     id: "13",
     module: "Vehicles",
     action: "Create",
@@ -114,13 +93,6 @@ const permissions: Permission[] = [
     action: "Update",
     key: "vehicles:update",
   },
-  {
-    id: "16",
-    module: "Vehicles",
-    action: "Delete",
-    key: "vehicles:delete",
-  },
-
   {
     id: "17",
     module: "Requests",
@@ -140,13 +112,6 @@ const permissions: Permission[] = [
     key: "requests:update",
   },
   {
-    id: "20",
-    module: "Requests",
-    action: "Delete",
-    key: "requests:delete",
-  },
-
-  {
     id: "21",
     module: "Trips",
     action: "Create",
@@ -164,13 +129,6 @@ const permissions: Permission[] = [
     action: "Update",
     key: "trips:update",
   },
-  {
-    id: "24",
-    module: "Trips",
-    action: "Delete",
-    key: "trips:delete",
-  },
-
   {
     id: "25",
     module: "Payments",
@@ -197,7 +155,7 @@ const initialRoles: Role[] = [
     id: "1",
     name: "Super Admin",
     description: "Full access to all platform features.",
-    permissions: 27,
+    permissions: 21,
     type: "System",
     status: "Active",
   },
@@ -205,7 +163,7 @@ const initialRoles: Role[] = [
     id: "2",
     name: "Administrator",
     description: "Manages users, drivers, companies and trips.",
-    permissions: 20,
+    permissions: 15,
     type: "System",
     status: "Active",
   },
@@ -213,7 +171,7 @@ const initialRoles: Role[] = [
     id: "3",
     name: "Operations Manager",
     description: "Manages requests, trips and drivers.",
-    permissions: 14,
+    permissions: 11,
     type: "Custom",
     status: "Active",
   },
@@ -221,7 +179,7 @@ const initialRoles: Role[] = [
     id: "4",
     name: "Finance Manager",
     description: "Manages payments and financial records.",
-    permissions: 6,
+    permissions: 5,
     type: "Custom",
     status: "Active",
   },
@@ -324,22 +282,12 @@ function RolesPermissions() {
     setFeedback(editingRole ? "Role updated successfully." : "Role created successfully.");
   };
 
-  const deleteRole = (role: Role) => {
-    if (role.type === "System") {
-      setFeedback("System roles cannot be deleted.");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      `Are you sure you want to delete the "${role.name}" role?`
-    );
-
-    if (confirmed) {
-      setRoles((current) =>
-        current.filter((item) => item.id !== role.id)
-      );
-      setFeedback("Role deleted successfully.");
-    }
+  const toggleRoleStatus = (role: Role) => {
+    const status = role.status === "Active" ? "Inactive" : "Active";
+    setRoles((current) => current.map((item) =>
+      item.id === role.id ? { ...item, status } : item
+    ));
+    setFeedback(`${role.name} ${status === "Active" ? "enabled" : "disabled"}.`);
   };
 
   const modules = [...new Set(permissions.map((permission) => permission.module))];
@@ -453,7 +401,7 @@ function RolesPermissions() {
 
                     <td>
 
-                      <span className="status active">
+                      <span className={`status ${role.status === "Active" ? "active" : "pending"}`}>
                         {role.status}
                       </span>
 
@@ -471,10 +419,10 @@ function RolesPermissions() {
                         </button>
 
                         <button
-                          className="delete-btn"
-                          onClick={() => deleteRole(role)}
+                          className="action-btn"
+                          onClick={() => toggleRoleStatus(role)}
                         >
-                          Delete
+                          {role.status === "Active" ? "Disable" : "Enable"}
                         </button>
 
                       </div>
