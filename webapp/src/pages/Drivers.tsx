@@ -7,6 +7,17 @@ import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
 
+const caseStatuses = ["Under Review", "Resolved", "Cancelled", "In Violation"] as const;
+
+type DriverCase = {
+  id: string;
+  driverEmail: string;
+  customer: string;
+  report: string;
+  reportedOn: string;
+  status: typeof caseStatuses[number];
+};
+
 function Drivers() {
   const [showModal, setShowModal] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Record<string, string> | null>(null);
@@ -17,9 +28,15 @@ function Drivers() {
   const [pageSize, setPageSize] = useState(10);
 
   const [driverRows, setDriverRows] = useState([
-    { Name: "Michael Adams", Email: "michael@example.com", Phone: "0856781234", "Driver's License Number": "600255555M9KP", "Car's License Plate": "N456789W", "Driver Image": "", "ID Certified Copy": "", "Driver License Certified Copy": "", "Car Registration Certified Copy": "", Rating: "4.8", Availability: "Available", Status: "Approved" },
+    { Name: "Michael Adams", Email: "michael@example.com", Phone: "0856781234", "Driver's License Number": "600255555M9KP", "Car's License Plate": "N456789W", "Driver Image": "", "ID Certified Copy": "", "Driver License Certified Copy": "", "Car Registration Certified Copy": "", Rating: "4.8", Availability: "Disabled", Status: "Approved" },
     { Name: "David Smith", Email: "david@example.com", Phone: "0812345678", "Driver's License Number": "781234567N4QR", "Car's License Plate": "N123456W", "Driver Image": "", "ID Certified Copy": "", "Driver License Certified Copy": "", "Car Registration Certified Copy": "", Rating: "4.5", Availability: "Unavailable", Status: "Approved" },
     { Name: "James Wilson", Email: "james@example.com", Phone: "0823456789", "Driver's License Number": "923456789P2LX", "Car's License Plate": "N987654W", "Driver Image": "", "ID Certified Copy": "", "Driver License Certified Copy": "", "Car Registration Certified Copy": "", Rating: "4.9", Availability: "Available", Status: "Approved" },
+  ]);
+  const [caseRows, setCaseRows] = useState<DriverCase[]>([
+    { id: "CASE-1001", driverEmail: "michael@example.com", customer: "Olivia Ndeitunga", report: "Delivery arrived later than the agreed time.", reportedOn: "2026-09-28", status: "Under Review" },
+    { id: "CASE-1002", driverEmail: "michael@example.com", customer: "Peter Shilongo", report: "Customer reported unsafe driving during the trip.", reportedOn: "2026-09-30", status: "In Violation" },
+    { id: "CASE-1003", driverEmail: "david@example.com", customer: "Amelia Hamutenya", report: "Missing item from a completed delivery.", reportedOn: "2026-09-25", status: "Resolved" },
+    { id: "CASE-1004", driverEmail: "james@example.com", customer: "Daniel Nghidinwa", report: "Customer withdrew the duplicate report.", reportedOn: "2026-09-27", status: "Cancelled" },
   ]);
 
   const filteredDrivers = driverRows.filter((driver) =>
@@ -58,11 +75,30 @@ function Drivers() {
   const toggleDriverStatus = () => {
     if (!actionDriver) return;
     const availability = actionDriver.Availability === "Disabled" ? "Available" : "Disabled";
+    if (availability === "Available" && caseRows.some((report) => report.driverEmail === actionDriver.Email && report.status === "In Violation")) {
+      setFeedback(`${actionDriver.Name} cannot be enabled while a case is In Violation.`);
+      setActionDriver(null);
+      return;
+    }
     setDriverRows((current) => current.map((driver) =>
       driver.Email === actionDriver.Email ? { ...driver, Availability: availability } : driver
     ));
     setFeedback(`${actionDriver.Name} ${availability === "Disabled" ? "disabled" : "enabled"}.`);
     setActionDriver(null);
+  };
+
+  const updateCaseStatus = (caseId: string, status: typeof caseStatuses[number]) => {
+    const report = caseRows.find((item) => item.id === caseId);
+    if (!report) return;
+
+    setCaseRows((current) => current.map((item) => item.id === caseId ? { ...item, status } : item));
+    if (status === "In Violation") {
+      const driver = driverRows.find((item) => item.Email === report.driverEmail);
+      setDriverRows((current) => current.map((item) =>
+        item.Email === report.driverEmail ? { ...item, Availability: "Disabled" } : item
+      ));
+      setFeedback(`${driver?.Name ?? "Driver"} was disabled after a case was marked In Violation.`);
+    }
   };
 
   return (
@@ -109,9 +145,9 @@ function Drivers() {
           </div>
 
 
-          <div className="table-container">
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredDrivers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
-            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredDrivers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <div className="table-container">
 
             <table className="users-table">
 
@@ -153,7 +189,7 @@ function Drivers() {
                     <td>{driver["Car's License Plate"]}</td>
                     <td>{driver.Rating}</td>
                     <td>
-                      <span className={`status ${driver.Availability === "Available" ? "active" : "pending"}`}>
+                      <span className={`status ${driver.Availability === "Available" ? "active" : driver.Availability === "Disabled" ? "rejected" : "pending"}`}>
                         {driver.Availability}
                       </span>
                     </td>
@@ -197,11 +233,71 @@ function Drivers() {
       )}
 
       {selectedDriver && (
-        <ViewDetailsModal
-          title={selectedDriver.Name}
-          details={selectedDriver}
-          onClose={() => setSelectedDriver(null)}
-        />
+        (() => {
+          const driver = driverRows.find((item) => item.Email === selectedDriver.Email) ?? selectedDriver;
+          const driverCases = caseRows.filter((report) => report.driverEmail === driver.Email);
+          const hasViolation = driverCases.some((report) => report.status === "In Violation");
+          const appealSubject = encodeURIComponent("Appeal your driver account restriction");
+          const appealBody = encodeURIComponent(`Hello ${driver.Name},\n\nYour account has been disabled following a customer report reviewed as a violation. Please reply to this email to submit an appeal.\n\nCase(s): ${driverCases.filter((report) => report.status === "In Violation").map((report) => report.id).join(", ")}\n\nWorkhorse Support`);
+
+          return (
+            <ViewDetailsModal
+              title={driver.Name}
+              details={driver}
+              onClose={() => setSelectedDriver(null)}
+            >
+              <section className="driver-cases">
+                <div className="driver-cases-header">
+                  <div>
+                    <h3>Cases</h3>
+                    <p>Customer reports linked to this driver.</p>
+                  </div>
+                  <span>{driverCases.length} {driverCases.length === 1 ? "report" : "reports"}</span>
+                </div>
+
+                {hasViolation && (
+                  <div className="case-violation-notice" role="alert">
+                    <strong>Driver disabled: violation under review.</strong>
+                    <span>Send an appeal notice to {driver.Email}.</span>
+                    <a href={`mailto:${driver.Email}?subject=${appealSubject}&body=${appealBody}`}>Prepare appeal email</a>
+                  </div>
+                )}
+
+                {driverCases.length > 0 ? (
+                  <div className="table-container">
+                    <table className="users-table cases-table">
+                      <thead>
+                        <tr><th>Case</th><th>Customer</th><th>Report</th><th>Reported</th><th>Status</th></tr>
+                      </thead>
+                      <tbody>
+                        {driverCases.map((report) => (
+                          <tr key={report.id}>
+                            <td>{report.id}</td>
+                            <td>{report.customer}</td>
+                            <td>{report.report}</td>
+                            <td>{report.reportedOn}</td>
+                            <td>
+                              <select
+                                aria-label={`Status for ${report.id}`}
+                                className="case-status-select"
+                                value={report.status}
+                                onChange={(event) => updateCaseStatus(report.id, event.target.value as typeof caseStatuses[number])}
+                              >
+                                {caseStatuses.map((status) => <option key={status}>{status}</option>)}
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="cases-empty">No customer reports have been recorded for this driver.</p>
+                )}
+              </section>
+            </ViewDetailsModal>
+          );
+        })()
       )}
 
       {actionDriver && (
@@ -212,10 +308,11 @@ function Drivers() {
           actions={[{ label: actionDriver.Availability === "Disabled" ? "Enable Driver" : "Disable Driver", onClick: toggleDriverStatus }]}
           onClose={() => setActionDriver(null)}
           onSave={(values) => {
+            const hasViolation = caseRows.some((report) => report.driverEmail === actionDriver.Email && report.status === "In Violation");
             setDriverRows((current) => current.map((driver) =>
-              driver.Email === actionDriver.Email ? { ...driver, ...values } : driver
+              driver.Email === actionDriver.Email ? { ...driver, ...values, ...(hasViolation ? { Availability: "Disabled" } : {}) } : driver
             ));
-            setFeedback(`${values.Name} was updated.`);
+            setFeedback(`${values.Name} was updated${hasViolation ? "; the driver remains disabled while a case is In Violation" : ""}.`);
             setActionDriver(null);
           }}
         />

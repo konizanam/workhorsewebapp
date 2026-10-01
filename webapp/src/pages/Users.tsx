@@ -194,7 +194,7 @@ function Users() {
             { name: "name", label: "Full Name", placeholder: "e.g. Alex Morgan" },
             { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com" },
             { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678" },
-            { name: "type", label: "User Type", placeholder: "e.g. Customer" },
+            { name: "type", label: "User Type", options: ["Admin", "Customer", "Driver"] },
           ]}
           onClose={() => setShowModal(false)}
           onSubmit={addUser}

@@ -4,6 +4,7 @@ type AddRecordField = {
   name: string;
   label: string;
   type?: "text" | "email" | "tel" | "file";
+  options?: string[];
   placeholder?: string;
   pattern?: string;
   title?: string;
@@ -32,14 +33,14 @@ function AddRecordModal({
 
   const handleFieldChange = (
     field: AddRecordField,
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     if (field.type !== "file") {
       setValues((current) => ({ ...current, [field.name]: event.target.value }));
       return;
     }
 
-    const file = event.currentTarget.files?.[0];
+    const file = (event.currentTarget as HTMLInputElement).files?.[0];
     if (!file) return;
 
     const acceptsPdf = field.accept?.includes("application/pdf") ?? false;
@@ -103,17 +104,29 @@ function AddRecordModal({
           {fields.map((field) => (
             <div className="form-group" key={field.name}>
               <label htmlFor={`add-${field.name}`}>{field.label}</label>
-              <input
-                id={`add-${field.name}`}
-                type={field.type ?? "text"}
-                value={field.type === "file" ? undefined : values[field.name] ?? ""}
-                onChange={(event) => handleFieldChange(field, event)}
-                placeholder={field.placeholder}
-                pattern={field.pattern}
-                title={field.title}
-                accept={field.accept}
-                required={field.required ?? true}
-              />
+              {field.options ? (
+                <select
+                  id={`add-${field.name}`}
+                  value={values[field.name] ?? ""}
+                  onChange={(event) => handleFieldChange(field, event)}
+                  required={field.required ?? true}
+                >
+                  <option value="" disabled>Select {field.label.toLowerCase()}</option>
+                  {field.options.map((option) => <option key={option} value={option}>{option}</option>)}
+                </select>
+              ) : (
+                <input
+                  id={`add-${field.name}`}
+                  type={field.type ?? "text"}
+                  value={field.type === "file" ? undefined : values[field.name] ?? ""}
+                  onChange={(event) => handleFieldChange(field, event)}
+                  placeholder={field.placeholder}
+                  pattern={field.pattern}
+                  title={field.title}
+                  accept={field.accept}
+                  required={field.required ?? true}
+                />
+              )}
               {field.type === "file" && values[field.name] && (
                 values[field.name].startsWith("data:image/") ? (
                   <img className="driver-photo-preview" src={values[field.name]} alt={`${field.label} preview`} />
