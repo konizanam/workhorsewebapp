@@ -27,7 +27,7 @@ function AddRecordModal({
   onSubmit,
 }: AddRecordModalProps) {
   const [values, setValues] = useState<Record<string, string>>({});
-  const [fileError, setFileError] = useState("");
+  const [fileErrors, setFileErrors] = useState<Record<string, string>>({});
   const [isReadingFile, setIsReadingFile] = useState(false);
 
   const handleFieldChange = (
@@ -42,21 +42,24 @@ function AddRecordModal({
     const file = event.currentTarget.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setFileError("Choose an image file.");
+    const acceptsPdf = field.accept?.includes("application/pdf") ?? false;
+    const isAcceptedFile = file.type.startsWith("image/") || (acceptsPdf && file.type === "application/pdf");
+    if (!isAcceptedFile) {
+      setFileErrors((current) => ({ ...current, [field.name]: acceptsPdf ? "Choose an image or PDF file." : "Choose an image file." }));
       setValues((current) => ({ ...current, [field.name]: "" }));
       event.currentTarget.value = "";
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setFileError("Choose an image smaller than 5 MB.");
+    const maxSize = acceptsPdf ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setFileErrors((current) => ({ ...current, [field.name]: `Choose a file smaller than ${acceptsPdf ? "10" : "5"} MB.` }));
       setValues((current) => ({ ...current, [field.name]: "" }));
       event.currentTarget.value = "";
       return;
     }
 
-    setFileError("");
+    setFileErrors((current) => ({ ...current, [field.name]: "" }));
     setIsReadingFile(true);
     const reader = new FileReader();
     reader.onload = () => {
@@ -66,7 +69,7 @@ function AddRecordModal({
       setIsReadingFile(false);
     };
     reader.onerror = () => {
-      setFileError("The image could not be read. Please try another file.");
+      setFileErrors((current) => ({ ...current, [field.name]: "The file could not be read. Please try another file." }));
       setIsReadingFile(false);
     };
     reader.readAsDataURL(file);
@@ -74,6 +77,7 @@ function AddRecordModal({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (Object.values(fileErrors).some(Boolean)) return;
     onSubmit(values);
   };
 
@@ -111,9 +115,13 @@ function AddRecordModal({
                 required={field.required ?? true}
               />
               {field.type === "file" && values[field.name] && (
-                <img className="driver-photo-preview" src={values[field.name]} alt={`${field.label} preview`} />
+                values[field.name].startsWith("data:image/") ? (
+                  <img className="driver-photo-preview" src={values[field.name]} alt={`${field.label} preview`} />
+                ) : (
+                  <span>File uploaded</span>
+                )
               )}
-              {field.type === "file" && fileError && <span className="file-upload-error" role="alert">{fileError}</span>}
+              {field.type === "file" && fileErrors[field.name] && <span className="file-upload-error" role="alert">{fileErrors[field.name]}</span>}
             </div>
           ))}
         </div>

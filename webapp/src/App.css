@@ -940,7 +940,9 @@ h1 {
   font-weight: 600;
 }
 
-.status.active {
+.status.active,
+.status.approved,
+.status.verified {
   background: #e8f5e9;
   color: #2e7d32;
 }
@@ -948,6 +950,16 @@ h1 {
 .status.pending {
   background: #fff3e0;
   color: #ef6c00;
+}
+
+.status.submitted {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.status.rejected {
+  background: #ffebee;
+  color: #c62828;
 }
 
 

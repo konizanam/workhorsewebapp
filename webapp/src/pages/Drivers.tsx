@@ -7,11 +7,6 @@ import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
 
-const licenseNumberPattern = "[0-9]{9}[A-Za-z0-9]{4}";
-const licenseNumberHint = "Enter 9 digits followed by 4 letters or numbers, e.g. 600255555M9KP.";
-const carLicensePlatePattern = "N[0-9]{6}W";
-const carLicensePlateHint = "Enter a plate in the format N456789W.";
-
 function Drivers() {
   const [showModal, setShowModal] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Record<string, string> | null>(null);
@@ -22,9 +17,9 @@ function Drivers() {
   const [pageSize, setPageSize] = useState(10);
 
   const [driverRows, setDriverRows] = useState([
-    { Name: "Michael Adams", Email: "michael@example.com", Phone: "0856781234", "Driver's License Number": "600255555M9KP", "Car's License Plate": "N456789W", "Driver Image": "", Rating: "4.8", Availability: "Available" },
-    { Name: "David Smith", Email: "david@example.com", Phone: "0812345678", "Driver's License Number": "781234567N4QR", "Car's License Plate": "N123456W", "Driver Image": "", Rating: "4.5", Availability: "Unavailable" },
-    { Name: "James Wilson", Email: "james@example.com", Phone: "0823456789", "Driver's License Number": "923456789P2LX", "Car's License Plate": "N987654W", "Driver Image": "", Rating: "4.9", Availability: "Available" },
+    { Name: "Michael Adams", Email: "michael@example.com", Phone: "0856781234", "Driver's License Number": "600255555M9KP", "Car's License Plate": "N456789W", "Driver Image": "", "ID Certified Copy": "", "Driver License Certified Copy": "", "Car Registration Certified Copy": "", Rating: "4.8", Availability: "Available", Status: "Approved" },
+    { Name: "David Smith", Email: "david@example.com", Phone: "0812345678", "Driver's License Number": "781234567N4QR", "Car's License Plate": "N123456W", "Driver Image": "", "ID Certified Copy": "", "Driver License Certified Copy": "", "Car Registration Certified Copy": "", Rating: "4.5", Availability: "Unavailable", Status: "Approved" },
+    { Name: "James Wilson", Email: "james@example.com", Phone: "0823456789", "Driver's License Number": "923456789P2LX", "Car's License Plate": "N987654W", "Driver Image": "", "ID Certified Copy": "", "Driver License Certified Copy": "", "Car Registration Certified Copy": "", Rating: "4.9", Availability: "Available", Status: "Approved" },
   ]);
 
   const filteredDrivers = driverRows.filter((driver) =>
@@ -47,8 +42,12 @@ function Drivers() {
       "Driver's License Number": values.license,
       "Car's License Plate": values.carLicensePlate,
       "Driver Image": values.image ?? "",
+      "ID Certified Copy": values.idCopy ?? "",
+      "Driver License Certified Copy": values.driverLicenseCopy ?? "",
+      "Car Registration Certified Copy": values.carRegistrationCopy ?? "",
       Rating: "Not rated",
       Availability: "Available",
+      Status: "Submitted",
     }, ...current]);
     setPage(1);
     setSearchTerm("");
@@ -127,6 +126,7 @@ function Drivers() {
                   <th>Car's License Plate</th>
                   <th>Rating</th>
                   <th>Availability</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
 
@@ -157,6 +157,7 @@ function Drivers() {
                         {driver.Availability}
                       </span>
                     </td>
+                    <td><span className={`status ${driver.Status.toLowerCase()}`}>{driver.Status}</span></td>
                     <td>
                       <div className="table-actions"><button className="action-btn" onClick={() => setSelectedDriver(driver)}>View</button><button className="action-btn" onClick={() => setActionDriver(driver)}>Edit</button></div>
                     </td>
@@ -183,9 +184,12 @@ function Drivers() {
             { name: "name", label: "Full Name", placeholder: "e.g. Alex Morgan" },
             { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com" },
             { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678" },
-            { name: "license", label: "Driver's License Number", placeholder: "600255555M9KP", pattern: licenseNumberPattern, title: licenseNumberHint },
-            { name: "carLicensePlate", label: "Car's License Plate", placeholder: "N456789W", pattern: carLicensePlatePattern, title: carLicensePlateHint },
+            { name: "license", label: "Driver's License Number", placeholder: "Enter driver's license number" },
+            { name: "carLicensePlate", label: "Car's License Plate", placeholder: "Enter car's license plate" },
             { name: "image", label: "Driver Image", type: "file", accept: "image/*", required: false },
+            { name: "idCopy", label: "Certified Copy of ID", type: "file", accept: "image/*,application/pdf", required: false },
+            { name: "driverLicenseCopy", label: "Certified Copy of Driver License", type: "file", accept: "image/*,application/pdf", required: false },
+            { name: "carRegistrationCopy", label: "Certified Copy of Car Registration", type: "file", accept: "image/*,application/pdf", required: false },
           ]}
           onClose={() => setShowModal(false)}
           onSubmit={addDriver}
@@ -204,7 +208,7 @@ function Drivers() {
         <RecordActionsModal
           title={`Manage ${actionDriver.Name}`}
           values={actionDriver}
-          fields={[{ key: "Name", label: "Full Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Driver's License Number", label: "Driver's License Number", pattern: licenseNumberPattern, title: licenseNumberHint }, { key: "Car's License Plate", label: "Car's License Plate", pattern: carLicensePlatePattern, title: carLicensePlateHint }, { key: "Driver Image", label: "Driver Image", type: "file", accept: "image/*", required: false }, { key: "Availability", label: "Availability", options: ["Available", "Unavailable", "Disabled"] }]}
+          fields={[{ key: "Name", label: "Full Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Driver's License Number", label: "Driver's License Number" }, { key: "Car's License Plate", label: "Car's License Plate" }, { key: "Driver Image", label: "Driver Image", type: "file", accept: "image/*", required: false }, { key: "ID Certified Copy", label: "Certified Copy of ID", type: "file", accept: "image/*,application/pdf", required: false }, { key: "Driver License Certified Copy", label: "Certified Copy of Driver License", type: "file", accept: "image/*,application/pdf", required: false }, { key: "Car Registration Certified Copy", label: "Certified Copy of Car Registration", type: "file", accept: "image/*,application/pdf", required: false }, { key: "Availability", label: "Availability", options: ["Available", "Unavailable", "Disabled"] }, { key: "Status", label: "Onboarding Status", options: ["Submitted", "Verified", "Approved", "Rejected"] }]}
           actions={[{ label: actionDriver.Availability === "Disabled" ? "Enable Driver" : "Disable Driver", onClick: toggleDriverStatus }]}
           onClose={() => setActionDriver(null)}
           onSave={(values) => {

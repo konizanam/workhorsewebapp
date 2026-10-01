@@ -18,8 +18,8 @@ function Companies() {
 
   const [companyRows, setCompanyRows] = useState([
     { Name: "ABC Construction", Email: "info@abcconstruction.com", Phone: "0612345678", "Registration Number": "REG-458921", Status: "Verified" },
-    { Name: "NamBuild Supplies", Email: "info@nambuild.com", Phone: "0623456789", "Registration Number": "REG-782341", Status: "Pending" },
-    { Name: "Heavy Haul Logistics", Email: "contact@heavyhaul.com", Phone: "0634567890", "Registration Number": "REG-923451", Status: "Verified" },
+    { Name: "NamBuild Supplies", Email: "info@nambuild.com", Phone: "0623456789", "Registration Number": "REG-782341", Status: "Submitted" },
+    { Name: "Heavy Haul Logistics", Email: "contact@heavyhaul.com", Phone: "0634567890", "Registration Number": "REG-923451", Status: "Approved" },
   ]);
 
   const filteredCompanies = companyRows.filter((company) =>
@@ -30,6 +30,15 @@ function Companies() {
   const currentPage = Math.min(page, totalPages);
 
   const addCompany = (values: Record<string, string>) => {
+    setCompanyRows((current) => [{
+      Name: values.name,
+      Email: values.email,
+      Phone: values.phone,
+      "Registration Number": values.registration,
+      Status: "Submitted",
+    }, ...current]);
+    setPage(1);
+    setSearchTerm("");
     setShowModal(false);
     setFeedback(`${values.name} was added as a company.`);
   };
@@ -117,7 +126,7 @@ function Companies() {
                     <td>{company.Phone}</td>
                     <td>{company["Registration Number"]}</td>
                     <td>
-                      <span className={`status ${company.Status === "Verified" ? "active" : "pending"}`}>
+                      <span className={`status ${company.Status.toLowerCase()}`}>
                         {company.Status}
                       </span>
                     </td>
@@ -166,10 +175,16 @@ function Companies() {
         <RecordActionsModal
           title={`Manage ${actionCompany.Name}`}
           values={actionCompany}
-          fields={[{ key: "Name", label: "Company Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Registration Number", label: "Registration Number" }, { key: "Status", label: "Status", options: ["Verified", "Pending", "Disabled"] }]}
+          fields={[{ key: "Name", label: "Company Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Registration Number", label: "Registration Number" }, { key: "Status", label: "Onboarding Status", options: ["Submitted", "Verified", "Approved", "Rejected"] }]}
           actions={[{ label: actionCompany.Status === "Disabled" ? "Enable Company" : "Disable Company", onClick: toggleCompanyStatus }]}
           onClose={() => setActionCompany(null)}
-          onSave={(values) => { setFeedback(`${values.Name} was updated.`); setActionCompany(null); }}
+          onSave={(values) => {
+            setCompanyRows((current) => current.map((company) =>
+              company.Email === actionCompany.Email ? { ...company, ...values } : company
+            ));
+            setFeedback(`${values.Name} was updated.`);
+            setActionCompany(null);
+          }}
         />
       )}
 

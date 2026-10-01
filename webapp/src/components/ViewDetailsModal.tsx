@@ -33,7 +33,11 @@ function ViewDetailsModal({ title, details, onClose }: ViewDetailsModalProps) {
           {Object.entries(details).filter(([label]) => label !== "Driver Image").map(([label, value]) => (
             <div className="detail-item" key={label}>
               <span>{label}</span>
-              <strong>{value}</strong>
+              {value.startsWith("data:") ? (
+                <a href={value} download={`${label.toLowerCase().replaceAll(" ", "-")}`} target="_blank" rel="noreferrer">View or download</a>
+              ) : (
+                <strong>{value}</strong>
+              )}
             </div>
           ))}
         </div>
