@@ -136,9 +136,9 @@ function Users() {
             <button className="btn" onClick={() => setShowModal(true)}>+ Add User</button>
           </div>
 
-          <div className="table-container">
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredUsers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
-            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredUsers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <div className="table-container">
 
             <table className="users-table">
 

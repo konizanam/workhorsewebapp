@@ -250,9 +250,9 @@ function AuditLogs() {
 
 
           {/* Table */}
-          <div className="table-container">
+          <TablePagination page={page} pageSize={pageSize} totalRecords={filteredLogs.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
-            <TablePagination page={page} pageSize={pageSize} totalRecords={filteredLogs.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <div className="table-container">
 
             <table className="users-table audit-table">
 
