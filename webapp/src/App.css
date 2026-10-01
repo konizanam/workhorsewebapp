@@ -1590,6 +1590,80 @@ h1 {
   resize: vertical;
 }
 
+.location-autocomplete {
+  position: relative;
+}
+
+.location-autocomplete > input[type="text"] {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #dddddd;
+  padding: 11px 12px;
+  font: inherit;
+  font-size: 14px;
+}
+
+.location-suggestions {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 2px);
+  right: 0;
+  left: 0;
+  max-height: 240px;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  border: 1px solid #dddddd;
+  background: #ffffff;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.14);
+  list-style: none;
+}
+
+.location-suggestion {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  background: #ffffff;
+  color: #263238;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.location-suggestion:hover,
+.location-suggestion:focus {
+  background: #f5f8fc;
+}
+
+.location-attribution {
+  padding: 7px 12px 4px;
+  border-top: 1px solid #eeeeee;
+  color: #777777;
+  font-size: 11px;
+  text-align: right;
+}
+
+.location-attribution strong {
+  color: #4285f4;
+  font-weight: 600;
+}
+
+.location-help,
+.location-error {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.location-help {
+  color: #777777;
+}
+
+.location-error {
+  color: #b3261e;
+}
+
 
 /* =========================================
    MODAL PERMISSIONS

@@ -1,9 +1,10 @@
 import { useState } from "react";
+import LocationAutocomplete from "./LocationAutocomplete";
 
 type RecordField = {
   key: string;
   label: string;
-  type?: "text" | "email" | "number" | "file";
+  type?: "text" | "email" | "number" | "file" | "location";
   options?: string[];
   pattern?: string;
   title?: string;
@@ -96,6 +97,15 @@ function RecordActionsModal({
                 <select id={`record-${field.key}`} name={field.key} defaultValue={values[field.key]}>
                   {field.options.map((option) => <option key={option}>{option}</option>)}
                 </select>
+              ) : field.type === "location" ? (
+                <LocationAutocomplete
+                  id={`record-${field.key}`}
+                  name={field.key}
+                  initialAddress={values[field.key] ?? ""}
+                  initialLatitude={values[`${field.key} Latitude`]}
+                  initialLongitude={values[`${field.key} Longitude`]}
+                  initialPlaceId={values[`${field.key} Place ID`]}
+                />
               ) : field.type === "file" ? (
                 <>
                   <input

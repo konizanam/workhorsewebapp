@@ -14,12 +14,12 @@ function Trips() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const tripRows = [
+  const [tripRows, setTripRows] = useState<Record<string, string>[]>([
     { "Trip ID": "#TRIP-1001", "Request ID": "#REQ-1002", Driver: "Michael Adams", Vehicle: "N12345W", Pickup: "Windhoek", Destination: "Rehoboth", Status: "In Progress" },
     { "Trip ID": "#TRIP-1002", "Request ID": "#REQ-1003", Driver: "James Wilson", Vehicle: "N67890W", Pickup: "Windhoek", Destination: "Katutura", Status: "Completed" },
     { "Trip ID": "#TRIP-1003", "Request ID": "#REQ-1004", Driver: "David Smith", Vehicle: "N24680W", Pickup: "Windhoek", Destination: "Ongwediva", Status: "Assigned" },
     { "Trip ID": "#TRIP-1004", "Request ID": "#REQ-1005", Driver: "Michael Adams", Vehicle: "N12345W", Pickup: "Windhoek", Destination: "Okahandja", Status: "Pending" },
-  ];
+  ]);
 
   const filteredTrips = tripRows.filter((trip) =>
     Object.values(trip).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
@@ -138,10 +138,16 @@ function Trips() {
         <RecordActionsModal
           title={`Manage ${actionTrip["Trip ID"]}`}
           values={actionTrip}
-          fields={[{ key: "Driver", label: "Driver" }, { key: "Vehicle", label: "Vehicle" }, { key: "Pickup", label: "Pickup" }, { key: "Destination", label: "Destination" }, { key: "Status", label: "Status", options: ["Pending", "Assigned", "In Progress", "Completed", "Cancelled"] }]}
+          fields={[{ key: "Driver", label: "Driver" }, { key: "Vehicle", label: "Vehicle" }, { key: "Pickup", label: "Pickup", type: "location" }, { key: "Destination", label: "Destination", type: "location" }, { key: "Status", label: "Status", options: ["Pending", "Assigned", "In Progress", "Completed", "Cancelled"] }]}
           actions={[{ label: "Cancel Trip", onClick: () => setFeedback("Trip cancelled.") }]}
           onClose={() => setActionTrip(null)}
-          onSave={(values) => { setFeedback(`${values["Trip ID"]} was updated.`); setActionTrip(null); }}
+          onSave={(values) => {
+            setTripRows((current) => current.map((trip) =>
+              trip["Trip ID"] === actionTrip["Trip ID"] ? { ...trip, ...values } : trip
+            ));
+            setFeedback(`${values["Trip ID"]} was updated.`);
+            setActionTrip(null);
+          }}
         />
       )}
 

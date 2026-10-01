@@ -14,12 +14,12 @@ function Requests() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const requestRows = [
+  const [requestRows, setRequestRows] = useState<Record<string, string>[]>([
     { "Request ID": "#REQ-1001", Customer: "John Smith", "Service Type": "Delivery", Pickup: "Windhoek", Destination: "Okahandja", Status: "Pending" },
     { "Request ID": "#REQ-1002", Customer: "ABC Construction", "Service Type": "Heavy Transport", Pickup: "Windhoek", Destination: "Rehoboth", Status: "Accepted" },
     { "Request ID": "#REQ-1003", Customer: "Sarah Williams", "Service Type": "Relocation", Pickup: "Windhoek", Destination: "Katutura", Status: "Completed" },
     { "Request ID": "#REQ-1004", Customer: "NamBuild Supplies", "Service Type": "Material Delivery", Pickup: "Windhoek", Destination: "Ongwediva", Status: "Pending" },
-  ];
+  ]);
 
   const filteredRequests = requestRows.filter((request) =>
     Object.values(request).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
@@ -136,10 +136,16 @@ function Requests() {
         <RecordActionsModal
           title={`Manage ${actionRequest["Request ID"]}`}
           values={actionRequest}
-          fields={[{ key: "Customer", label: "Customer" }, { key: "Service Type", label: "Service Type" }, { key: "Pickup", label: "Pickup" }, { key: "Destination", label: "Destination" }, { key: "Status", label: "Status", options: ["Pending", "Accepted", "Completed", "Cancelled"] }]}
+          fields={[{ key: "Customer", label: "Customer" }, { key: "Service Type", label: "Service Type" }, { key: "Pickup", label: "Pickup", type: "location" }, { key: "Destination", label: "Destination", type: "location" }, { key: "Status", label: "Status", options: ["Pending", "Accepted", "Completed", "Cancelled"] }]}
           actions={[{ label: "Cancel Request", onClick: () => setFeedback("Request cancelled.") }]}
           onClose={() => setActionRequest(null)}
-          onSave={(values) => { setFeedback(`${values["Request ID"]} was updated.`); setActionRequest(null); }}
+          onSave={(values) => {
+            setRequestRows((current) => current.map((request) =>
+              request["Request ID"] === actionRequest["Request ID"] ? { ...request, ...values } : request
+            ));
+            setFeedback(`${values["Request ID"]} was updated.`);
+            setActionRequest(null);
+          }}
         />
       )}
 
