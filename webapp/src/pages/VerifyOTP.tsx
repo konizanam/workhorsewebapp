@@ -2,6 +2,7 @@ import "../App.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { apiRequest, clearSession, storeTokens } from "../lib/api";
 
 const OTP_RESEND_SECONDS = 240;
 
@@ -15,6 +16,13 @@ function VerifyOTP() {
   const [timer, setTimer] = useState(OTP_RESEND_SECONDS);
   const [canResend, setCanResend] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!sessionStorage.getItem("workhorse.pendingToken")) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   // Countdown timer effect
     useEffect(() => {
@@ -41,16 +49,30 @@ function VerifyOTP() {
 }, [timer]);
 
 // Function to handle OTP resend
-const resendOTP = () => {
+const resendOTP = async () => {
+  const pendingToken = sessionStorage.getItem("workhorse.pendingToken");
+  if (!pendingToken) {
+    navigate("/", { replace: true });
+    return;
+  }
 
+  setSubmitting(true);
+  setFeedback("");
+  try {
+    const result = await apiRequest<{ message: string }>("/auth/resend-2fa", {
+      method: "POST",
+      body: JSON.stringify({ pendingToken }),
+    });
     setTimer(OTP_RESEND_SECONDS);
-
     setCanResend(false);
-
-  setOtp(["", "", "", "", "", ""]);
-  inputRefs.current[0]?.focus();
-
-  setFeedback("Resend requested. The 240-second timer has restarted.");
+    setOtp(["", "", "", "", "", ""]);
+    inputRefs.current[0]?.focus();
+    setFeedback(result.message);
+  } catch (requestError) {
+    setFeedback(requestError instanceof Error ? requestError.message : "Unable to resend the code.");
+  } finally {
+    setSubmitting(false);
+  }
 
 };
 
@@ -100,7 +122,7 @@ const handleKeyDown = (
 
 };
 
-const handleVerify = (
+const handleVerify = async (
     e: React.FormEvent
   ) => {
 
@@ -111,7 +133,32 @@ const handleVerify = (
       return;
     }
 
-    navigate("/Dashboard");
+    const pendingToken = sessionStorage.getItem("workhorse.pendingToken");
+    if (!pendingToken) {
+      navigate("/", { replace: true });
+      return;
+    }
+
+    setSubmitting(true);
+    setFeedback("");
+    try {
+      const tokens = await apiRequest<{ accessToken: string; refreshToken: string }>("/auth/verify-2fa", {
+        method: "POST",
+        body: JSON.stringify({ pendingToken, code: otp.join("") }),
+      });
+      sessionStorage.removeItem("workhorse.pendingToken");
+      storeTokens(tokens);
+      const user = await apiRequest<{ user_type: string }>("/auth/me");
+      if (user.user_type !== "admin") {
+        clearSession();
+        throw new Error("This account does not have admin access.");
+      }
+      navigate("/Dashboard");
+    } catch (requestError) {
+      setFeedback(requestError instanceof Error ? requestError.message : "Unable to verify the code.");
+    } finally {
+      setSubmitting(false);
+    }
 
 };
 
@@ -190,8 +237,8 @@ const handleVerify = (
           </div>
 
 
-          <button className="btn">
-            Verify Code
+          <button className="btn" type="submit" disabled={submitting || otp.some((digit) => !digit)}>
+            {submitting ? "Verifying..." : "Verify Code"}
           </button>
         
             <div className="text-center">
@@ -202,6 +249,7 @@ const handleVerify = (
                     type="button"
                     className="btn-secondary"
                     onClick={resendOTP}
+                    disabled={submitting}
                     >
                     Resend OTP
                     </button>

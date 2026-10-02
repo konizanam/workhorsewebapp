@@ -6,6 +6,7 @@ import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { VerifyOTP } from "./pages/VerifyOTP";
 import ResetPassword from "./pages/ResetPassword";
+import { apiRequest, clearSession, storeTokens } from "./lib/api";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Drivers from "./pages/Drivers";
@@ -21,12 +22,13 @@ function Login() {
 
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -37,7 +39,43 @@ function Login() {
     }
 
     setError("");
-    navigate("/VerifyOTP", { state: { email } });
+    setSubmitting(true);
+    clearSession();
+
+    try {
+      const result = await apiRequest<{
+        requiresTwoFactor: boolean;
+        pendingToken?: string;
+        accessToken?: string;
+        refreshToken?: string;
+      }>("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (result.requiresTwoFactor && result.pendingToken) {
+        sessionStorage.setItem("workhorse.pendingToken", result.pendingToken);
+        navigate("/VerifyOTP", { state: { email } });
+        return;
+      }
+
+      if (result.accessToken && result.refreshToken) {
+        storeTokens({ accessToken: result.accessToken, refreshToken: result.refreshToken });
+        const user = await apiRequest<{ user_type: string }>("/auth/me");
+        if (user.user_type !== "admin") {
+          clearSession();
+          throw new Error("This account does not have admin access.");
+        }
+        navigate("/Dashboard");
+        return;
+      }
+
+      throw new Error("Unexpected response from the login service.");
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : "Unable to sign in.");
+    } finally {
+      setSubmitting(false);
+    }
   };
   
   return (
@@ -104,8 +142,8 @@ function Login() {
 
           {error && <p className="error">{error}</p>}
 
-          <button className="btn" type="submit">
-            Login
+          <button className="btn" type="submit" disabled={submitting}>
+            {submitting ? "Signing in..." : "Login"}
           </button>
         </form>
       </div>
