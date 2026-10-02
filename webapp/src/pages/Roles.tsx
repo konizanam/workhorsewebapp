@@ -150,43 +150,8 @@ const permissions: Permission[] = [
   },
 ];
 
-const initialRoles: Role[] = [
-  {
-    id: "1",
-    name: "Super Admin",
-    description: "Full access to all platform features.",
-    permissions: 21,
-    type: "System",
-    status: "Active",
-  },
-  {
-    id: "2",
-    name: "Administrator",
-    description: "Manages users, drivers, companies and trips.",
-    permissions: 15,
-    type: "System",
-    status: "Active",
-  },
-  {
-    id: "3",
-    name: "Operations Manager",
-    description: "Manages requests, trips and drivers.",
-    permissions: 11,
-    type: "Custom",
-    status: "Active",
-  },
-  {
-    id: "4",
-    name: "Finance Manager",
-    description: "Manages payments and financial records.",
-    permissions: 5,
-    type: "Custom",
-    status: "Active",
-  },
-];
-
 function RolesPermissions() {
-  const [roles, setRoles] = useState<Role[]>(initialRoles);
+  const [roles, setRoles] = useState<Role[]>([]);
 
   const [showModal, setShowModal] = useState(false);
 

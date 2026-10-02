@@ -27,17 +27,8 @@ function Drivers() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const [driverRows, setDriverRows] = useState([
-    { Name: "Michael Adams", Email: "michael@example.com", Phone: "0856781234", "Driver's License Number": "600255555M9KP", "Car's License Plate": "N456789W", "Driver Image": "", "ID Certified Copy": "", "Driver License Certified Copy": "", "Car Registration Certified Copy": "", Rating: "4.8", Availability: "Disabled", Status: "Approved" },
-    { Name: "David Smith", Email: "david@example.com", Phone: "0812345678", "Driver's License Number": "781234567N4QR", "Car's License Plate": "N123456W", "Driver Image": "", "ID Certified Copy": "", "Driver License Certified Copy": "", "Car Registration Certified Copy": "", Rating: "4.5", Availability: "Unavailable", Status: "Approved" },
-    { Name: "James Wilson", Email: "james@example.com", Phone: "0823456789", "Driver's License Number": "923456789P2LX", "Car's License Plate": "N987654W", "Driver Image": "", "ID Certified Copy": "", "Driver License Certified Copy": "", "Car Registration Certified Copy": "", Rating: "4.9", Availability: "Available", Status: "Approved" },
-  ]);
-  const [caseRows, setCaseRows] = useState<DriverCase[]>([
-    { id: "CASE-1001", driverEmail: "michael@example.com", customer: "Olivia Ndeitunga", report: "Delivery arrived later than the agreed time.", reportedOn: "2026-09-28", status: "Under Review" },
-    { id: "CASE-1002", driverEmail: "michael@example.com", customer: "Peter Shilongo", report: "Customer reported unsafe driving during the trip.", reportedOn: "2026-09-30", status: "In Violation" },
-    { id: "CASE-1003", driverEmail: "david@example.com", customer: "Amelia Hamutenya", report: "Missing item from a completed delivery.", reportedOn: "2026-09-25", status: "Resolved" },
-    { id: "CASE-1004", driverEmail: "james@example.com", customer: "Daniel Nghidinwa", report: "Customer withdrew the duplicate report.", reportedOn: "2026-09-27", status: "Cancelled" },
-  ]);
+  const [driverRows, setDriverRows] = useState<Record<string, string>[]>([]);
+  const [caseRows, setCaseRows] = useState<DriverCase[]>([]);
 
   const filteredDrivers = driverRows.filter((driver) =>
     Object.entries(driver)

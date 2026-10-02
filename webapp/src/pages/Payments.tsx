@@ -14,12 +14,7 @@ function Payments() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const paymentRows = [
-    { "Payment ID": "#PAY-1001", "Request ID": "#REQ-1002", Customer: "John Smith", Amount: "N$ 2,500.00", "Payment Method": "Card", Status: "Completed", "Payment Date": "12 Aug 2026" },
-    { "Payment ID": "#PAY-1002", "Request ID": "#REQ-1003", Customer: "Sarah Williams", Amount: "N$ 1,200.00", "Payment Method": "Mobile Money", Status: "Pending", "Payment Date": "12 Aug 2026" },
-    { "Payment ID": "#PAY-1003", "Request ID": "#REQ-1004", Customer: "ABC Construction", Amount: "N$ 5,800.00", "Payment Method": "Bank Transfer", Status: "Completed", "Payment Date": "11 Aug 2026" },
-    { "Payment ID": "#PAY-1004", "Request ID": "#REQ-1005", Customer: "NamBuild Supplies", Amount: "N$ 3,400.00", "Payment Method": "Card", Status: "Pending", "Payment Date": "11 Aug 2026" },
-  ];
+  const paymentRows: Record<string, string>[] = [];
 
   const filteredPayments = paymentRows.filter((payment) =>
     Object.values(payment).join(" ").toLowerCase().includes(searchTerm.toLowerCase())

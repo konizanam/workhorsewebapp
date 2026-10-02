@@ -16,11 +16,7 @@ function Companies() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const [companyRows, setCompanyRows] = useState([
-    { Name: "ABC Construction", Email: "info@abcconstruction.com", Phone: "0612345678", "Registration Number": "REG-458921", Status: "Verified" },
-    { Name: "NamBuild Supplies", Email: "info@nambuild.com", Phone: "0623456789", "Registration Number": "REG-782341", Status: "Submitted" },
-    { Name: "Heavy Haul Logistics", Email: "contact@heavyhaul.com", Phone: "0634567890", "Registration Number": "REG-923451", Status: "Approved" },
-  ]);
+  const [companyRows, setCompanyRows] = useState<Record<string, string>[]>([]);
 
   const filteredCompanies = companyRows.filter((company) =>
     Object.values(company).join(" ").toLowerCase().includes(searchTerm.toLowerCase())

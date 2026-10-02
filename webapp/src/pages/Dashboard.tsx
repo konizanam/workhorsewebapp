@@ -33,7 +33,7 @@ function AdminDashboard() {
 
             <div>
               <p>Total Users</p>
-              <h2>1,250</h2>
+              <h2>0</h2>
             </div>
           </div>
 
@@ -45,7 +45,7 @@ function AdminDashboard() {
 
             <div>
               <p>Drivers</p>
-              <h2>320</h2>
+              <h2>0</h2>
             </div>
           </div>
 
@@ -57,7 +57,7 @@ function AdminDashboard() {
 
             <div>
               <p>Companies</p>
-              <h2>85</h2>
+              <h2>0</h2>
             </div>
           </div>
 
@@ -69,7 +69,7 @@ function AdminDashboard() {
 
             <div>
               <p>Requests</p>
-              <h2>540</h2>
+              <h2>0</h2>
             </div>
           </div>
 
@@ -81,7 +81,7 @@ function AdminDashboard() {
 
             <div>
               <p>Active Trips</p>
-              <h2>42</h2>
+              <h2>0</h2>
             </div>
           </div>
 
@@ -93,7 +93,7 @@ function AdminDashboard() {
 
             <div>
               <p>Pending Verification</p>
-              <h2>18</h2>
+              <h2>0</h2>
             </div>
           </div>
 
@@ -106,27 +106,7 @@ function AdminDashboard() {
           <h2>Recent Activity</h2>
 
           <div className="activity-list">
-
-            <div className="activity-item">
-              <span>👤</span>
-              <p>New customer registered</p>
-            </div>
-
-            <div className="activity-item">
-              <span>🚚</span>
-              <p>New driver registration submitted</p>
-            </div>
-
-            <div className="activity-item">
-              <span>📦</span>
-              <p>New transport request created</p>
-            </div>
-
-            <div className="activity-item">
-              <span>🏢</span>
-              <p>Company verification pending</p>
-            </div>
-
+            <p>No recent activity.</p>
           </div>
 
         </div>

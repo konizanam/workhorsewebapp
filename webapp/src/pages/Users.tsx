@@ -17,15 +17,8 @@ type User = {
   twoFactor: string;
 };
 
-const initialUsers: User[] = [
-  { id: 1, name: "John Smith", email: "john@example.com", phone: "0812345678", type: "Customer", status: "Active", twoFactor: "Enabled" },
-  { id: 2, name: "Michael Adams", email: "michael@example.com", phone: "0856781234", type: "Driver", status: "Active", twoFactor: "Enabled" },
-  { id: 3, name: "Sarah Williams", email: "sarah@example.com", phone: "0823456789", type: "Company", status: "Pending", twoFactor: "Disabled" },
-  { id: 4, name: "Admin User", email: "admin@workhorse.com", phone: "0811111111", type: "Admin", status: "Active", twoFactor: "Enabled" },
-];
-
 function Users() {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [actionUser, setActionUser] = useState<User | null>(null);

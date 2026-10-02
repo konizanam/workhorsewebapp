@@ -14,12 +14,7 @@ function Requests() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const [requestRows, setRequestRows] = useState<Record<string, string>[]>([
-    { "Request ID": "#REQ-1001", Customer: "John Smith", "Service Type": "Delivery", Pickup: "Windhoek", Destination: "Okahandja", Status: "Pending" },
-    { "Request ID": "#REQ-1002", Customer: "ABC Construction", "Service Type": "Heavy Transport", Pickup: "Windhoek", Destination: "Rehoboth", Status: "Accepted" },
-    { "Request ID": "#REQ-1003", Customer: "Sarah Williams", "Service Type": "Relocation", Pickup: "Windhoek", Destination: "Katutura", Status: "Completed" },
-    { "Request ID": "#REQ-1004", Customer: "NamBuild Supplies", "Service Type": "Material Delivery", Pickup: "Windhoek", Destination: "Ongwediva", Status: "Pending" },
-  ]);
+  const [requestRows, setRequestRows] = useState<Record<string, string>[]>([]);
 
   const filteredRequests = requestRows.filter((request) =>
     Object.values(request).join(" ").toLowerCase().includes(searchTerm.toLowerCase())

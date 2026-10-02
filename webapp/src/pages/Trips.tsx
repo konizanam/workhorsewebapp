@@ -14,12 +14,7 @@ function Trips() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const [tripRows, setTripRows] = useState<Record<string, string>[]>([
-    { "Trip ID": "#TRIP-1001", "Request ID": "#REQ-1002", Driver: "Michael Adams", Vehicle: "N12345W", Pickup: "Windhoek", Destination: "Rehoboth", Status: "In Progress" },
-    { "Trip ID": "#TRIP-1002", "Request ID": "#REQ-1003", Driver: "James Wilson", Vehicle: "N67890W", Pickup: "Windhoek", Destination: "Katutura", Status: "Completed" },
-    { "Trip ID": "#TRIP-1003", "Request ID": "#REQ-1004", Driver: "David Smith", Vehicle: "N24680W", Pickup: "Windhoek", Destination: "Ongwediva", Status: "Assigned" },
-    { "Trip ID": "#TRIP-1004", "Request ID": "#REQ-1005", Driver: "Michael Adams", Vehicle: "N12345W", Pickup: "Windhoek", Destination: "Okahandja", Status: "Pending" },
-  ]);
+  const [tripRows, setTripRows] = useState<Record<string, string>[]>([]);
 
   const filteredTrips = tripRows.filter((trip) =>
     Object.values(trip).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
