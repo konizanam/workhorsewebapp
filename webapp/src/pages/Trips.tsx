@@ -1,0 +1,153 @@
+import "../App.css";
+import AdminSidebar from "../components/AdminSidebar";
+import { useState } from "react";
+import ViewDetailsModal from "../components/ViewDetailsModal";
+import RecordActionsModal from "../components/RecordActionsModal";
+import FeedbackMessage from "../components/FeedbackMessage";
+import TablePagination from "../components/TablePagination";
+
+function Trips() {
+  const [selectedTrip, setSelectedTrip] = useState<Record<string, string> | null>(null);
+  const [actionTrip, setActionTrip] = useState<Record<string, string> | null>(null);
+  const [feedback, setFeedback] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const [tripRows, setTripRows] = useState<Record<string, string>[]>([]);
+
+  const filteredTrips = tripRows.filter((trip) =>
+    Object.values(trip).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filteredTrips.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+
+  return (
+    <div className="admin-page">
+
+      <AdminSidebar />
+
+      <div className="admin-content">
+
+        {feedback && <FeedbackMessage message={feedback} />}
+
+        {/* Header */}
+        <div className="admin-header">
+
+          <div>
+            <h1>Trips</h1>
+            <p>Monitor and manage transport trips.</p>
+          </div>
+
+        </div>
+
+
+        {/* Trips Table */}
+        <div className="users-section">
+
+          <div className="users-section-header">
+
+            <h2>All Trips</h2>
+
+          </div>
+
+
+          <div className="table-toolbar">
+            <input
+              type="text"
+              className="table-search-input"
+              placeholder="Search trips..."
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredTrips.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+
+          <div className="table-container">
+
+            <table className="users-table">
+
+              <thead>
+
+                <tr>
+                  <th>Trip ID</th>
+                  <th>Request ID</th>
+                  <th>Driver</th>
+                  <th>Vehicle</th>
+                  <th>Pickup</th>
+                  <th>Destination</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                {filteredTrips.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((trip) => (
+                  <tr key={trip["Trip ID"]}>
+                    <td>{trip["Trip ID"]}</td>
+                    <td>{trip["Request ID"]}</td>
+                    <td>{trip.Driver}</td>
+                    <td>{trip.Vehicle}</td>
+                    <td>{trip.Pickup}</td>
+                    <td>{trip.Destination}</td>
+                    <td>
+                      <span className={`status ${trip.Status === "Completed" || trip.Status === "In Progress" ? "active" : "pending"}`}>
+                        {trip.Status}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedTrip(trip)}>View</button><button className="action-btn" onClick={() => trip.Status === "Completed" ? window.alert("You cannot edit a completed trip.") : setActionTrip(trip)}>Edit</button></div>
+                    </td>
+                  </tr>
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredTrips.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+
+        </div>
+
+      </div>
+
+      {selectedTrip && (
+        <ViewDetailsModal
+          title={selectedTrip["Trip ID"]}
+          details={selectedTrip}
+          onClose={() => setSelectedTrip(null)}
+        />
+      )}
+
+      {actionTrip && (
+        <RecordActionsModal
+          title={`Manage ${actionTrip["Trip ID"]}`}
+          values={actionTrip}
+          fields={[{ key: "Driver", label: "Driver" }, { key: "Vehicle", label: "Vehicle" }, { key: "Pickup", label: "Pickup", type: "location" }, { key: "Destination", label: "Destination", type: "location" }, { key: "Status", label: "Status", options: ["Pending", "Assigned", "In Progress", "Completed", "Cancelled"] }]}
+          actions={[{ label: "Cancel Trip", onClick: () => setFeedback("Trip cancelled.") }]}
+          onClose={() => setActionTrip(null)}
+          onSave={(values) => {
+            setTripRows((current) => current.map((trip) =>
+              trip["Trip ID"] === actionTrip["Trip ID"] ? { ...trip, ...values } : trip
+            ));
+            setFeedback(`${values["Trip ID"]} was updated.`);
+            setActionTrip(null);
+          }}
+        />
+      )}
+
+    </div>
+  );
+}
+
+export default Trips;
