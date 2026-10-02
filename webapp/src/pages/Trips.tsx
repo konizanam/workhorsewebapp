@@ -109,7 +109,7 @@ function Trips() {
                       </span>
                     </td>
                     <td>
-                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedTrip(trip)}>View</button><button className="action-btn" onClick={() => setActionTrip(trip)}>Edit</button></div>
+                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedTrip(trip)}>View</button><button className="action-btn" onClick={() => trip.Status === "Completed" ? window.alert("You cannot edit a completed trip.") : setActionTrip(trip)}>Edit</button></div>
                     </td>
                   </tr>
                 ))}
