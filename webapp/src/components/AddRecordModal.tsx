@@ -17,7 +17,8 @@ type AddRecordModalProps = {
   description: string;
   fields: AddRecordField[];
   onClose: () => void;
-  onSubmit: (values: Record<string, string>) => void;
+  onSubmit: (values: Record<string, string>) => void | Promise<void>;
+  isSubmitting?: boolean;
 };
 
 function AddRecordModal({
@@ -26,6 +27,7 @@ function AddRecordModal({
   fields,
   onClose,
   onSubmit,
+  isSubmitting = false,
 }: AddRecordModalProps) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [fileErrors, setFileErrors] = useState<Record<string, string>>({});
@@ -143,8 +145,8 @@ function AddRecordModal({
           <button className="secondary-btn" type="button" onClick={onClose}>
             Cancel
           </button>
-          <button className="primary-btn" type="submit" disabled={isReadingFile}>
-            Add {title.replace("Add New ", "")}
+          <button className="primary-btn" type="submit" disabled={isReadingFile || isSubmitting}>
+            {isSubmitting ? "Saving..." : `Add ${title.replace("Add New ", "")}`}
           </button>
         </div>
       </form>

@@ -883,6 +883,94 @@ h1 {
   border-bottom: 1px solid #eeeeee;
 }
 
+.driver-image-preview-trigger {
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.image-preview-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px 24px;
+  background: rgba(0, 0, 0, 0.86);
+  cursor: zoom-out;
+}
+
+.image-preview-overlay img {
+  max-width: min(100%, 1100px);
+  max-height: 100%;
+  object-fit: contain;
+  cursor: default;
+}
+
+.image-preview-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.driver-documents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.driver-document-item {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(28, 62, 112, 0.16);
+  border-radius: 4px;
+}
+
+.driver-document-preview {
+  display: block;
+  width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.driver-document-viewer {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(28, 62, 112, 0.16);
+}
+
+.driver-document-full-image {
+  display: block;
+  width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+.driver-document-pdf {
+  display: block;
+  width: 100%;
+  height: min(60vh, 640px);
+  border: 1px solid rgba(28, 62, 112, 0.2);
+}
+
 .driver-details-image .driver-photo,
 .driver-details-image .driver-photo-placeholder {
   width: 96px;
@@ -965,6 +1053,16 @@ h1 {
 .status.resolved {
   background: #e8f5e9;
   color: #2e7d32;
+}
+
+.status.open {
+  background: #eaf3ff;
+  color: #1976d2;
+}
+
+.status.escalated {
+  background: #fff3e0;
+  color: #ef6c00;
 }
 
 .status.cancelled {
@@ -1521,6 +1619,58 @@ h1 {
   color: #263238;
   font: inherit;
   font-size: 12px;
+}
+
+.support-ticket-section {
+  min-width: 0;
+}
+
+.support-ticket-table {
+  min-width: 850px;
+}
+
+.support-ticket-table td p {
+  max-width: 320px;
+  margin: 7px 0 0;
+  color: #555;
+  white-space: pre-wrap;
+}
+
+.support-ticket-table td small {
+  display: inline-block;
+  margin-top: 4px;
+  color: #777;
+}
+
+.support-case-link {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.support-ticket-form .modal-body {
+  display: grid;
+  gap: 14px;
+}
+
+.support-ticket-form .modal-body .form-group {
+  margin-bottom: 0;
+}
+
+.support-ticket-form textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px 12px;
+  border: 1px solid #d6d6d6;
+  border-radius: 0;
+  color: #263238;
+  font: inherit;
+  resize: vertical;
+}
+
+.support-ticket-form textarea:focus {
+  outline: 2px solid #1976d2;
+  outline-offset: 1px;
 }
 
 .case-violation-notice {
@@ -2184,13 +2334,50 @@ h1 {
 }
 
 .feedback-message {
-  margin: 0 0 20px;
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(440px, calc(100vw - 32px));
+  margin: 0;
   padding: 12px 16px;
   border-left: 4px solid #2e9d62;
   background: #eaf8ef;
   color: #216b42;
   font-size: 14px;
   font-weight: 500;
+  box-shadow: 0 8px 24px rgba(25, 35, 45, 0.18);
+  border-radius: 4px;
+  animation: feedback-enter 180ms ease-out;
+}
+
+.feedback-dismiss {
+  flex: 0 0 auto;
+  border: 0;
+  padding: 0 2px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@keyframes feedback-enter {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .feedback-message {
+    top: 12px;
+    right: 12px;
+    width: calc(100vw - 24px);
+  }
 }
 
 .feedback-message.error {

@@ -14,7 +14,7 @@ function VerifyOTP() {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
     
   const [timer, setTimer] = useState(OTP_RESEND_SECONDS);
-  const [canResend, setCanResend] = useState(false);
+  const canResend = timer === 0;
   const [feedback, setFeedback] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,17 +27,12 @@ function VerifyOTP() {
   // Countdown timer effect
     useEffect(() => {
 
-        if (timer === 0) {
-
-            setCanResend(true);
-            return;
-
-        }
+        if (timer <= 0) return;
 
 
         const countdown = setInterval(() => {
 
-            setTimer((previous) => previous - 1);
+            setTimer((previous) => Math.max(previous - 1, 0));
 
         }, 1000);
 
@@ -64,7 +59,6 @@ const resendOTP = async () => {
       body: JSON.stringify({ pendingToken }),
     });
     setTimer(OTP_RESEND_SECONDS);
-    setCanResend(false);
     setOtp(["", "", "", "", "", ""]);
     inputRefs.current[0]?.focus();
     setFeedback(result.message);

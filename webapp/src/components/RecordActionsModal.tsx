@@ -19,6 +19,7 @@ type RecordActionsModalProps = {
   actions?: { label: string; onClick: () => void }[];
   onClose: () => void;
   onSave: (values: Record<string, string>) => void;
+  isSaving?: boolean;
 };
 
 function RecordActionsModal({
@@ -28,6 +29,7 @@ function RecordActionsModal({
   actions = [],
   onClose,
   onSave,
+  isSaving = false,
 }: RecordActionsModalProps) {
   const [fileValues, setFileValues] = useState<Record<string, string>>({});
   const [fileError, setFileError] = useState("");
@@ -37,14 +39,17 @@ function RecordActionsModal({
     const file = event.currentTarget.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setFileError("Choose an image file.");
+    const acceptsPdf = field.accept?.includes("application/pdf") ?? false;
+    const isAcceptedFile = file.type.startsWith("image/") || (acceptsPdf && file.type === "application/pdf");
+    if (!isAcceptedFile) {
+      setFileError(acceptsPdf ? "Choose an image or PDF file." : "Choose an image file.");
       event.currentTarget.value = "";
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setFileError("Choose an image smaller than 5 MB.");
+    const maxSize = acceptsPdf ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setFileError(`Choose a file smaller than ${acceptsPdf ? "10" : "5"} MB.`);
       event.currentTarget.value = "";
       return;
     }
@@ -59,7 +64,7 @@ function RecordActionsModal({
       setIsReadingFile(false);
     };
     reader.onerror = () => {
-      setFileError("The image could not be read. Please try another file.");
+      setFileError("The file could not be read. Please try another file.");
       setIsReadingFile(false);
     };
     reader.readAsDataURL(file);
@@ -119,6 +124,9 @@ function RecordActionsModal({
                   {(fileValues[field.key] ?? values[field.key])?.startsWith("data:image/") && (
                     <img className="driver-photo-preview" src={fileValues[field.key] ?? values[field.key]} alt={`${field.label} preview`} />
                   )}
+                  {(fileValues[field.key] ?? values[field.key])?.startsWith("data:application/pdf;") && (
+                    <span>PDF selected</span>
+                  )}
                   {fileError && <span className="file-upload-error" role="alert">{fileError}</span>}
                 </>
               ) : (
@@ -134,7 +142,9 @@ function RecordActionsModal({
               {action.label}
             </button>
           ))}
-          <button className="primary-btn" type="submit" disabled={isReadingFile || Boolean(fileError)}>Save Changes</button>
+          <button className="primary-btn" type="submit" disabled={isReadingFile || Boolean(fileError) || isSaving}>
+            {isSaving ? "Saving..." : "Save Changes"}
+          </button>
         </div>
       </form>
     </div>

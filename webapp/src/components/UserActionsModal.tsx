@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 type ManagedUser = {
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -8,38 +9,40 @@ type ManagedUser = {
   status: string;
 };
 
+type RoleOption = { role_id: string; name: string };
+
 type UserActionsModalProps = {
   user: ManagedUser;
+  roles: RoleOption[];
+  assignedRoles: RoleOption[];
   onClose: () => void;
   onUpdate: (values: Pick<ManagedUser, "name" | "email" | "phone">) => void;
-  onChangeRole: (role: string) => void;
   onSetPassword: (password: string) => void;
-  onDisable: () => void;
-  onEnable: () => void;
+  onAssignRole: (roleId: string) => void;
+  onRemoveRole: (roleId: string) => void;
+  onToggleStatus: () => void;
 };
 
 function UserActionsModal({
   user,
+  roles,
+  assignedRoles,
   onClose,
   onUpdate,
-  onChangeRole,
   onSetPassword,
-  onDisable,
-  onEnable,
+  onAssignRole,
+  onRemoveRole,
+  onToggleStatus,
 }: UserActionsModalProps) {
   const [name, setName] = useState(user.name);
   const [email, setEmail] = useState(user.email);
   const [phone, setPhone] = useState(user.phone);
-  const [role, setRole] = useState(user.type);
+  const [roleId, setRoleId] = useState("");
   const [password, setPassword] = useState("");
 
   const saveProfile = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     onUpdate({ name, email, phone });
-  };
-
-  const saveRole = () => {
-    onChangeRole(role);
   };
 
   const savePassword = (event: React.FormEvent<HTMLFormElement>) => {
@@ -83,16 +86,28 @@ function UserActionsModal({
 
           <div className="action-control-row">
             <div>
-              <h3 className="actions-section-title">Change role</h3>
-              <select value={role} onChange={(event) => setRole(event.target.value)}>
-                <option>Customer</option>
-                <option>Driver</option>
-                <option>Company</option>
-                <option>Admin</option>
+              <h3 className="actions-section-title">Assigned roles</h3>
+              <select value={roleId} onChange={(event) => setRoleId(event.target.value)}>
+                <option value="">Select a role</option>
+                {roles.map((role) => (
+                  <option key={role.role_id} value={role.role_id}>{role.name}</option>
+                ))}
               </select>
             </div>
-            <button className="secondary-btn" type="button" onClick={saveRole}>Change Role</button>
+            <button className="secondary-btn" type="button" disabled={!roleId} onClick={() => {
+              onAssignRole(roleId);
+              setRoleId("");
+            }}>Assign Role</button>
           </div>
+
+          {assignedRoles.map((role) => (
+            <div className="action-control-row" key={role.role_id}>
+              <span>{role.name}</span>
+              <button className="secondary-btn" type="button" onClick={() => onRemoveRole(role.role_id)}>
+                Remove Role
+              </button>
+            </div>
+          ))}
 
           <form className="action-control-row" onSubmit={savePassword}>
             <div>
@@ -110,7 +125,7 @@ function UserActionsModal({
           </form>
 
           <div className="account-status-actions">
-            <button className="secondary-btn" type="button" onClick={user.status === "Disabled" ? onEnable : onDisable}>
+            <button className="secondary-btn" type="button" onClick={onToggleStatus}>
               {user.status === "Disabled" ? "Enable User" : "Disable User"}
             </button>
           </div>

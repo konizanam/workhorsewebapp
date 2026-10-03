@@ -1,6 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { apiRequest } from "../lib/api";
+
+type ApiSettings = {
+  platformName: string;
+  supportEmail: string;
+  supportPhone: string;
+  timezone: string;
+  currency: string;
+  notifications: { newUsers?: boolean; bookings?: boolean; payments?: boolean; systemAlerts?: boolean };
+  security: { twoFactor?: boolean; loginAlerts?: boolean; sessionTimeout?: number; passwordExpiration?: number };
+};
 
 const Settings = () => {
   const [notifications, setNotifications] = useState({
@@ -13,6 +24,8 @@ const Settings = () => {
   const [security, setSecurity] = useState({
     twoFactor: true,
     loginAlerts: true,
+    sessionTimeout: 30,
+    passwordExpiration: 90,
   });
 
   const [platform, setPlatform] = useState({
@@ -23,6 +36,28 @@ const Settings = () => {
     currency: "NAD",
   });
   const [feedback, setFeedback] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const saved = await apiRequest<ApiSettings>("/settings");
+        setPlatform({
+          platformName: saved.platformName,
+          supportEmail: saved.supportEmail,
+          supportPhone: saved.supportPhone,
+          timezone: saved.timezone,
+          currency: saved.currency,
+        });
+        setNotifications((current) => ({ ...current, ...saved.notifications }));
+        setSecurity((current) => ({ ...current, ...saved.security }));
+      } catch (error) {
+        setFeedback(error instanceof Error ? error.message : "Unable to load settings.");
+      }
+    };
+
+    void loadSettings();
+  }, []);
 
   const handlePlatformChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -58,7 +93,15 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    setFeedback("Settings saved successfully.");
+    setIsSaving(true);
+    void apiRequest<ApiSettings>("/settings", {
+      method: "PUT",
+      body: JSON.stringify({ platformName: platform.platformName, supportEmail: platform.supportEmail,
+        supportPhone: platform.supportPhone, timezone: platform.timezone, currency: platform.currency,
+        notifications, security }),
+    }).then(() => setFeedback("Settings saved successfully."))
+      .catch((error: unknown) => setFeedback(error instanceof Error ? error.message : "Unable to save settings."))
+      .finally(() => setIsSaving(false));
   };
 
   return (
@@ -297,12 +340,7 @@ const Settings = () => {
                 </div>
 
                 <label className="switch">
-                  <input
-                    type="checkbox"
-                    name="twoFactor"
-                    checked={security.twoFactor}
-                    onChange={handleSecurityChange}
-                  />
+                  <input type="checkbox" name="twoFactor" checked={security.twoFactor} onChange={handleSecurityChange} />
 
                   <span className="slider"></span>
                 </label>
@@ -317,12 +355,7 @@ const Settings = () => {
                 </div>
 
                 <label className="switch">
-                  <input
-                    type="checkbox"
-                    name="loginAlerts"
-                    checked={security.loginAlerts}
-                    onChange={handleSecurityChange}
-                  />
+                  <input type="checkbox" name="loginAlerts" checked={security.loginAlerts} onChange={handleSecurityChange} />
 
                   <span className="slider"></span>
                 </label>
@@ -335,7 +368,7 @@ const Settings = () => {
               <div className="settings-field">
                 <label>Session Timeout</label>
 
-                <select defaultValue="30">
+                <select value={security.sessionTimeout} onChange={(event) => setSecurity((current) => ({ ...current, sessionTimeout: Number(event.target.value) }))}>
                   <option value="15">15 Minutes</option>
                   <option value="30">30 Minutes</option>
                   <option value="60">1 Hour</option>
@@ -346,7 +379,7 @@ const Settings = () => {
               <div className="settings-field">
                 <label>Password Expiration</label>
 
-                <select defaultValue="90">
+                <select value={security.passwordExpiration} onChange={(event) => setSecurity((current) => ({ ...current, passwordExpiration: Number(event.target.value) }))}>
                   <option value="30">30 Days</option>
                   <option value="60">60 Days</option>
                   <option value="90">90 Days</option>
@@ -363,8 +396,9 @@ const Settings = () => {
               type="button"
               className="primary-btn settings-save-btn"
               onClick={handleSave}
+              disabled={isSaving}
             >
-              Save Changes
+              {isSaving ? "Saving..." : "Save Changes"}
             </button>
           </div>
 

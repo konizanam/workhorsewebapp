@@ -1,14 +1,15 @@
 import "../App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import UserActionsModal from "../components/UserActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import { apiRequest } from "../lib/api";
 
 type User = {
-  id: number;
+  id: string;
   name: string;
   email: string;
   phone: string;
@@ -16,6 +17,35 @@ type User = {
   status: string;
   twoFactor: string;
 };
+
+type ApiUser = {
+  user_id: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  name?: string;
+  email: string;
+  phone_number?: string | null;
+  phone?: string;
+  user_type?: string;
+  type?: string;
+  status?: string;
+  display_status?: string;
+  two_factor_enabled?: boolean;
+  two_factor_display?: string;
+};
+
+type UserListResponse = { data: ApiUser[] };
+type ApiRole = { role_id: string; name: string };
+
+const mapUser = (user: ApiUser): User => ({
+  id: user.user_id,
+  name: user.name ?? [user.first_name, user.last_name].filter(Boolean).join(" "),
+  email: user.email,
+  phone: user.phone ?? user.phone_number ?? "",
+  type: (user.type ?? user.user_type ?? "").replace(/^./, (letter) => letter.toUpperCase()),
+  status: user.display_status ?? (user.status === "disabled" ? "Disabled" : user.status === "active" ? "Active" : "Pending"),
+  twoFactor: user.two_factor_display ?? (user.two_factor_enabled ? "Enabled" : "Disabled"),
+});
 
 function Users() {
   const [users, setUsers] = useState<User[]>([]);
@@ -26,6 +56,22 @@ function Users() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [roleOptions, setRoleOptions] = useState<ApiRole[]>([]);
+  const [assignedRoles, setAssignedRoles] = useState<ApiRole[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const response = await apiRequest<UserListResponse>("/users?limit=100");
+        setUsers((response.data ?? []).map(mapUser));
+      } catch (error) {
+        setFeedback(error instanceof Error ? error.message : "Unable to load users.");
+      }
+    };
+
+    void loadUsers();
+  }, []);
 
   const filteredUsers = users.filter((user) =>
     [user.name, user.email, user.phone, user.type, user.status, user.twoFactor]
@@ -37,53 +83,103 @@ function Users() {
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
   const currentPage = Math.min(page, totalPages);
 
-  const addUser = (values: Record<string, string>) => {
-    setUsers((current) => [
-      ...current,
-      {
-        id: Date.now(),
-        name: values.name,
-        email: values.email,
-        phone: values.phone,
-        type: values.type,
-        status: "Pending",
-        twoFactor: "Disabled",
-      },
-    ]);
-    setShowModal(false);
-    setFeedback(`${values.name} was added successfully.`);
+  const addUser = async (values: Record<string, string>) => {
+    setIsSaving(true);
+    try {
+      const created = await apiRequest<ApiUser>("/users", {
+        method: "POST",
+        body: JSON.stringify(values),
+      });
+      setUsers((current) => [mapUser(created), ...current]);
+      setShowModal(false);
+      setFeedback(`${values.name} was saved successfully.`);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to save the user.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const updateUser = (values: Pick<User, "name" | "email" | "phone">) => {
-    setUsers((current) => current.map((user) =>
-      user.id === actionUser?.id ? { ...user, ...values } : user
-    ));
-    setActionUser((current) => current ? { ...current, ...values } : current);
+  const openUserActions = async (user: User) => {
+    setActionUser(user);
+    try {
+      const [roles, assigned] = await Promise.all([
+        apiRequest<ApiRole[]>("/roles"),
+        apiRequest<ApiRole[]>(`/users/${user.id}/roles`),
+      ]);
+      setRoleOptions(roles);
+      setAssignedRoles(assigned);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to load user roles.");
+    }
   };
 
-  const changeRole = (type: string) => {
-    setUsers((current) => current.map((user) =>
-      user.id === actionUser?.id ? { ...user, type } : user
-    ));
-    setActionUser((current) => current ? { ...current, type } : current);
+  const updateUser = async (values: Pick<User, "name" | "email" | "phone">) => {
+    if (!actionUser) return;
+    try {
+      const updated = await apiRequest<ApiUser>(`/users/${actionUser.id}`, {
+        method: "PUT",
+        body: JSON.stringify(values),
+      });
+      const mapped = mapUser(updated);
+      setUsers((current) => current.map((user) => user.id === mapped.id ? mapped : user));
+      setActionUser(mapped);
+      setFeedback(`${values.name} was updated.`);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to update the user.");
+    }
   };
 
-  const setPassword = () => {
-    setFeedback("Password updated successfully.");
+  const assignRole = async (roleId: string) => {
+    if (!actionUser) return;
+    try {
+      await apiRequest(`/users/${actionUser.id}/roles`, {
+        method: "POST",
+        body: JSON.stringify({ role_id: roleId }),
+      });
+      setAssignedRoles(await apiRequest<ApiRole[]>(`/users/${actionUser.id}/roles`));
+      setFeedback("Role assigned successfully.");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to assign role.");
+    }
   };
 
-  const disableUser = () => {
-    setUsers((current) => current.map((user) =>
-      user.id === actionUser?.id ? { ...user, status: "Disabled" } : user
-    ));
-    setActionUser((current) => current ? { ...current, status: "Disabled" } : current);
+  const removeRole = async (roleId: string) => {
+    if (!actionUser) return;
+    try {
+      await apiRequest(`/users/${actionUser.id}/roles/${roleId}`, { method: "DELETE" });
+      setAssignedRoles((current) => current.filter((role) => role.role_id !== roleId));
+      setFeedback("Role removed successfully.");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to remove role.");
+    }
   };
 
-  const enableUser = () => {
-    setUsers((current) => current.map((user) =>
-      user.id === actionUser?.id ? { ...user, status: "Active" } : user
-    ));
-    setActionUser((current) => current ? { ...current, status: "Active" } : current);
+  const setPassword = async (password: string) => {
+    if (!actionUser) return;
+    try {
+      await apiRequest(`/users/${actionUser.id}`, { method: "PUT", body: JSON.stringify({ password }) });
+      setFeedback("Password updated successfully.");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to update password.");
+    }
+  };
+
+  const toggleUserStatus = async () => {
+    if (!actionUser) return;
+    const status = actionUser.status === "Disabled" ? "active" : "disabled";
+    try {
+      const updated = await apiRequest<ApiUser>(`/users/${actionUser.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ status }),
+      });
+      const mapped = mapUser(updated);
+      setUsers((current) => current.map((user) => user.id === mapped.id ? mapped : user));
+      setActionUser(mapped);
+      setFeedback(`User ${status === "active" ? "enabled" : "disabled"}.`);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to update user status.");
+    }
   };
 
   return (
@@ -162,7 +258,7 @@ function Users() {
                     <td>
                       <div className="table-actions">
                         <button className="action-btn" onClick={() => setSelectedUser(user)}>View</button>
-                        <button className="action-btn" onClick={() => setActionUser(user)}>Edit</button>
+                        <button className="action-btn" onClick={() => void openUserActions(user)}>Edit</button>
                       </div>
                     </td>
                   </tr>
@@ -191,6 +287,7 @@ function Users() {
           ]}
           onClose={() => setShowModal(false)}
           onSubmit={addUser}
+          isSubmitting={isSaving}
         />
       )}
 
@@ -211,12 +308,14 @@ function Users() {
       {actionUser && (
         <UserActionsModal
           user={actionUser}
+          roles={roleOptions}
+          assignedRoles={assignedRoles}
           onClose={() => setActionUser(null)}
           onUpdate={updateUser}
-          onChangeRole={changeRole}
+          onAssignRole={assignRole}
+          onRemoveRole={removeRole}
           onSetPassword={setPassword}
-          onDisable={disableUser}
-          onEnable={enableUser}
+          onToggleStatus={toggleUserStatus}
         />
       )}
 

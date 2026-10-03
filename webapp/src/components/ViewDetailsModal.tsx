@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 
 type ViewDetailsModalProps = {
   title: string;
@@ -8,6 +9,17 @@ type ViewDetailsModalProps = {
 };
 
 function ViewDetailsModal({ title, details, children, onClose }: ViewDetailsModalProps) {
+  const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
+
+  useEffect(() => {
+    if (!imagePreviewOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setImagePreviewOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [imagePreviewOpen]);
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="role-modal" onClick={(event) => event.stopPropagation()}>
@@ -26,7 +38,14 @@ function ViewDetailsModal({ title, details, children, onClose }: ViewDetailsModa
             {details["Driver Image"] !== undefined && (
               <div className="driver-details-image">
                 {details["Driver Image"] ? (
-                  <img className="driver-photo" src={details["Driver Image"]} alt={`${title} profile`} />
+                  <button
+                    className="driver-image-preview-trigger"
+                    type="button"
+                    aria-label={`View ${title}'s profile image`}
+                    onClick={() => setImagePreviewOpen(true)}
+                  >
+                    <img className="driver-photo" src={details["Driver Image"]} alt={`${title} profile`} />
+                  </button>
                 ) : (
                   <span className="driver-photo-placeholder">
                     {(details.Name ?? title).split(" ").map((part) => part[0]).join("").slice(0, 2)}
@@ -55,6 +74,12 @@ function ViewDetailsModal({ title, details, children, onClose }: ViewDetailsModa
           </button>
         </div>
       </div>
+      {imagePreviewOpen && details["Driver Image"] && (
+        <div className="image-preview-overlay" role="dialog" aria-modal="true" aria-label={`${title} profile image`} onClick={() => setImagePreviewOpen(false)}>
+          <button className="image-preview-close" type="button" aria-label="Close image preview" onClick={() => setImagePreviewOpen(false)}>×</button>
+          <img src={details["Driver Image"]} alt={`${title} profile`} onClick={(event) => event.stopPropagation()} />
+        </div>
+      )}
     </div>
   );
 }
