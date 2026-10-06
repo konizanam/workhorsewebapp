@@ -1,13 +1,50 @@
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
+import { useEffect, useState } from "react";
+import FeedbackMessage from "../components/FeedbackMessage";
+import { apiRequest } from "../lib/api";
+
+type DashboardSummary = {
+  users: number;
+  drivers: number;
+  companies: number;
+  requests: number;
+  activeTrips: number;
+  pendingVerifications: number;
+  activity: { log_id: string; actor: string; method: string; endpoint: string; created_at: string }[];
+};
 
 
 function AdminDashboard() {
+  const [summary, setSummary] = useState<DashboardSummary>({
+    users: 0,
+    drivers: 0,
+    companies: 0,
+    requests: 0,
+    activeTrips: 0,
+    pendingVerifications: 0,
+    activity: [],
+  });
+  const [feedback, setFeedback] = useState("");
+
+  useEffect(() => {
+    const loadSummary = async () => {
+      try {
+        setSummary(await apiRequest<DashboardSummary>("/dashboard/summary"));
+      } catch (error) {
+        setFeedback(error instanceof Error ? error.message : "Unable to load dashboard data.");
+      }
+    };
+
+    void loadSummary();
+  }, []);
+
   return (
     <div className="admin-page">
       <AdminSidebar />
 
       <div className="admin-content">
+        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -33,7 +70,7 @@ function AdminDashboard() {
 
             <div>
               <p>Total Users</p>
-              <h2>1,250</h2>
+              <h2>{summary.users}</h2>
             </div>
           </div>
 
@@ -45,7 +82,7 @@ function AdminDashboard() {
 
             <div>
               <p>Drivers</p>
-              <h2>320</h2>
+              <h2>{summary.drivers}</h2>
             </div>
           </div>
 
@@ -57,7 +94,7 @@ function AdminDashboard() {
 
             <div>
               <p>Companies</p>
-              <h2>85</h2>
+              <h2>{summary.companies}</h2>
             </div>
           </div>
 
@@ -69,7 +106,7 @@ function AdminDashboard() {
 
             <div>
               <p>Requests</p>
-              <h2>540</h2>
+              <h2>{summary.requests}</h2>
             </div>
           </div>
 
@@ -81,7 +118,7 @@ function AdminDashboard() {
 
             <div>
               <p>Active Trips</p>
-              <h2>42</h2>
+              <h2>{summary.activeTrips}</h2>
             </div>
           </div>
 
@@ -93,7 +130,7 @@ function AdminDashboard() {
 
             <div>
               <p>Pending Verification</p>
-              <h2>18</h2>
+              <h2>{summary.pendingVerifications}</h2>
             </div>
           </div>
 
@@ -106,27 +143,11 @@ function AdminDashboard() {
           <h2>Recent Activity</h2>
 
           <div className="activity-list">
-
-            <div className="activity-item">
-              <span>👤</span>
-              <p>New customer registered</p>
-            </div>
-
-            <div className="activity-item">
-              <span>🚚</span>
-              <p>New driver registration submitted</p>
-            </div>
-
-            <div className="activity-item">
-              <span>📦</span>
-              <p>New transport request created</p>
-            </div>
-
-            <div className="activity-item">
-              <span>🏢</span>
-              <p>Company verification pending</p>
-            </div>
-
+            {summary.activity.length === 0 ? <p>No recent activity.</p> : summary.activity.map((item) => (
+              <p key={item.log_id}>
+                {item.actor} {item.method} {item.endpoint} · {new Date(item.created_at).toLocaleString()}
+              </p>
+            ))}
           </div>
 
         </div>

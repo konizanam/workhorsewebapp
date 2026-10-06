@@ -20,6 +20,15 @@ function TablePagination({
 
   return (
     <div className="table-pagination">
+      <label className="page-size-control">
+        Show
+        <select
+          value={pageSize}
+          onChange={(event) => onPageSizeChange(Number(event.target.value))}
+        >
+          {[10, 50, 100, 250].map((size) => <option value={size} key={size}>{size}</option>)}
+        </select>
+      </label>
       <button type="button" disabled={page === 1} onClick={() => onPageChange(page - 1)}>
         Previous
       </button>
@@ -40,15 +49,6 @@ function TablePagination({
       <button type="button" disabled={page === totalPages} onClick={() => onPageChange(page + 1)}>
         Next
       </button>
-      <label className="page-size-control">
-        Show
-        <select
-          value={pageSize}
-          onChange={(event) => onPageSizeChange(Number(event.target.value))}
-        >
-          {[10, 50, 100, 250].map((size) => <option value={size} key={size}>{size}</option>)}
-        </select>
-      </label>
     </div>
   );
 }

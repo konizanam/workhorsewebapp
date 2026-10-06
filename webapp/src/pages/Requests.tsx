@@ -1,10 +1,46 @@
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import { apiRequest } from "../lib/api";
+
+type ApiRequest = {
+  request_id: string;
+  customer_id: string;
+  customer_name?: string;
+  Customer?: string;
+  service_type?: string;
+  "Service Type"?: string;
+  pickup: string;
+  destination: string;
+  status: string;
+  Status?: string;
+  description?: string | null;
+  price?: number | null;
+  estimated_weight_kg?: number | null;
+  scheduled_date_time?: string | null;
+  requires_helpers?: boolean;
+};
+
+type RequestListResponse = { data: ApiRequest[] };
+
+const mapRequest = (request: ApiRequest): Record<string, string> => ({
+  ID: request.request_id,
+  "Request ID": request.request_id,
+  Customer: request.Customer ?? request.customer_name ?? request.customer_id,
+  "Service Type": request["Service Type"] ?? request.service_type ?? "General",
+  Pickup: request.pickup,
+  Destination: request.destination,
+  Status: request.Status ?? (request.status === "searching" ? "Pending" : request.status[0].toUpperCase() + request.status.slice(1)),
+  "Description": request.description ?? "",
+  Price: request.price == null ? "" : String(request.price),
+  "Estimated Weight (kg)": request.estimated_weight_kg == null ? "" : String(request.estimated_weight_kg),
+  "Scheduled Date": request.scheduled_date_time ?? "",
+  "Requires Helpers": request.requires_helpers ? "Yes" : "No",
+});
 
 function Requests() {
   const [selectedRequest, setSelectedRequest] = useState<Record<string, string> | null>(null);
@@ -13,13 +49,22 @@ function Requests() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const requestRows = [
-    { "Request ID": "#REQ-1001", Customer: "John Smith", "Service Type": "Delivery", Pickup: "Windhoek", Destination: "Okahandja", Status: "Pending" },
-    { "Request ID": "#REQ-1002", Customer: "ABC Construction", "Service Type": "Heavy Transport", Pickup: "Windhoek", Destination: "Rehoboth", Status: "Accepted" },
-    { "Request ID": "#REQ-1003", Customer: "Sarah Williams", "Service Type": "Relocation", Pickup: "Windhoek", Destination: "Katutura", Status: "Completed" },
-    { "Request ID": "#REQ-1004", Customer: "NamBuild Supplies", "Service Type": "Material Delivery", Pickup: "Windhoek", Destination: "Ongwediva", Status: "Pending" },
-  ];
+  const [requestRows, setRequestRows] = useState<Record<string, string>[]>([]);
+
+  useEffect(() => {
+    const loadRequests = async () => {
+      try {
+        const response = await apiRequest<RequestListResponse>("/requests?limit=100");
+        setRequestRows((response.data ?? []).map(mapRequest));
+      } catch (error) {
+        setFeedback(error instanceof Error ? error.message : "Unable to load requests.");
+      }
+    };
+
+    void loadRequests();
+  }, []);
 
   const filteredRequests = requestRows.filter((request) =>
     Object.values(request).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
@@ -27,6 +72,41 @@ function Requests() {
 
   const totalPages = Math.max(1, Math.ceil(filteredRequests.length / pageSize));
   const currentPage = Math.min(page, totalPages);
+
+  const saveRequest = async (values: Record<string, string>) => {
+    if (!actionRequest) return;
+    setIsSaving(true);
+    try {
+      const updated = await apiRequest<ApiRequest>(`/requests/${actionRequest.ID}`, {
+        method: "PUT",
+        body: JSON.stringify(values),
+      });
+      const row = mapRequest({ ...updated, request_id: updated.request_id ?? actionRequest.ID });
+      setRequestRows((current) => current.map((request) => request.ID === actionRequest.ID ? row : request));
+      setFeedback(`Request ${actionRequest.ID} was saved.`);
+      setActionRequest(null);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to update the request.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const cancelRequest = async () => {
+    if (!actionRequest) return;
+    try {
+      const updated = await apiRequest<ApiRequest>(`/requests/${actionRequest.ID}`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "Cancelled" }),
+      });
+      const row = mapRequest({ ...updated, request_id: updated.request_id ?? actionRequest.ID });
+      setRequestRows((current) => current.map((request) => request.ID === actionRequest.ID ? row : request));
+      setFeedback(`Request ${actionRequest.ID} was cancelled.`);
+      setActionRequest(null);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to cancel the request.");
+    }
+  };
 
   return (
     <div className="admin-page">
@@ -69,12 +149,11 @@ function Requests() {
                 setPage(1);
               }}
             />
-            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRequests.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
           </div>
 
-          <div className="table-container">
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRequests.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
-            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRequests.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <div className="table-container">
 
             <table className="users-table">
 
@@ -108,7 +187,7 @@ function Requests() {
                       </span>
                     </td>
                     <td>
-                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedRequest(request)}>View</button><button className="action-btn" onClick={() => setActionRequest(request)}>Actions</button></div>
+                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedRequest(request)}>View</button><button className="action-btn" onClick={() => request.Status === "Completed" ? window.alert("You cannot edit a completed request.") : setActionRequest(request)}>Edit</button></div>
                     </td>
                   </tr>
                 ))}
@@ -137,10 +216,11 @@ function Requests() {
         <RecordActionsModal
           title={`Manage ${actionRequest["Request ID"]}`}
           values={actionRequest}
-          fields={[{ key: "Customer", label: "Customer" }, { key: "Service Type", label: "Service Type" }, { key: "Pickup", label: "Pickup" }, { key: "Destination", label: "Destination" }, { key: "Status", label: "Status", options: ["Pending", "Accepted", "Completed", "Cancelled"] }]}
-          actions={[{ label: "Cancel Request", onClick: () => setFeedback("Request cancelled.") }, { label: "Delete Request", onClick: () => { setFeedback("Request deleted."); setActionRequest(null); }, danger: true }]}
+          fields={[{ key: "Customer", label: "Customer" }, { key: "Service Type", label: "Service Type" }, { key: "Pickup", label: "Pickup", type: "location" }, { key: "Destination", label: "Destination", type: "location" }, { key: "Status", label: "Status", options: ["Pending", "Accepted", "Completed", "Cancelled"] }]}
+          actions={[{ label: "Cancel Request", onClick: () => void cancelRequest() }]}
           onClose={() => setActionRequest(null)}
-          onSave={(values) => { setFeedback(`${values["Request ID"]} was updated.`); setActionRequest(null); }}
+          onSave={(values) => void saveRequest(values)}
+          isSaving={isSaving}
         />
       )}
 

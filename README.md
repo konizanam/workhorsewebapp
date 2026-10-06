@@ -124,13 +124,19 @@ http://localhost:5173 || http://localhost:5173
 
 ---
 
+create a .env.local file in the root folder and insert:
+
+VITE_GOOGLE_MAPS_API_KEY=replace with maps demo api key 
+
+---
+
 # Available Routes
 
 | Page | Route |
 |---|---|
 | Login | `/` |
-| Forgot Password | `/ForgotPassword` |
 | Verify OTP | `/VerifyOTP` |
+| Forgot Password | `/ForgotPassword` |
 | Reset Password | `/ResetPassword` |
 
 ---
@@ -140,15 +146,15 @@ http://localhost:5173 || http://localhost:5173
 ```
 Login
  |
+ | Verify Code
+ ↓
+ Verify OTP
+ |
  | Forgot Password
  ↓
 Forgot Password
  |
  | Send Reset Link
- ↓
-Verify OTP
- |
- | Verify Code
  ↓
 Reset Password
 ```

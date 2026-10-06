@@ -1,5 +1,15 @@
 # React + TypeScript + Vite
 
+## Google Places Locations
+
+Pickup and destination fields in Requests and Trips use Google Places Autocomplete when configured. Selected places save the formatted address, latitude, longitude, and Google Place ID with the record.
+
+1. Create a Google Maps Platform API key with billing enabled and the Maps JavaScript API and Places API (New) enabled.
+2. Copy `.env.example` to `.env.local` and set `VITE_GOOGLE_MAPS_API_KEY` to the key.
+3. Restrict the browser key by HTTP referrer and API; do not use a server-side secret as a Vite environment variable.
+
+Without a configured key, location fields remain manually editable, but selections will not have Google coordinates.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

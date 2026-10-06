@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import { apiRequest } from "../lib/api";
 
 interface Permission {
   id: string;
@@ -18,217 +19,41 @@ interface Role {
   permissions: number;
   type: "System" | "Custom";
   status: "Active" | "Inactive";
+  isSystem: boolean;
 }
 
-const permissions: Permission[] = [
-  {
-    id: "1",
-    module: "Users",
-    action: "Create",
-    key: "users:create",
-  },
-  {
-    id: "2",
-    module: "Users",
-    action: "Read",
-    key: "users:read",
-  },
-  {
-    id: "3",
-    module: "Users",
-    action: "Update",
-    key: "users:update",
-  },
-  {
-    id: "4",
-    module: "Users",
-    action: "Delete",
-    key: "users:delete",
-  },
+type ApiRole = {
+  role_id: string;
+  name: string;
+  description?: string | null;
+  is_system: boolean;
+  is_active: boolean;
+  permission_count?: number;
+  permissions?: string[] | { permission_id: string; key: string }[];
+};
 
-  {
-    id: "5",
-    module: "Drivers",
-    action: "Create",
-    key: "drivers:create",
-  },
-  {
-    id: "6",
-    module: "Drivers",
-    action: "Read",
-    key: "drivers:read",
-  },
-  {
-    id: "7",
-    module: "Drivers",
-    action: "Update",
-    key: "drivers:update",
-  },
-  {
-    id: "8",
-    module: "Drivers",
-    action: "Delete",
-    key: "drivers:delete",
-  },
+type ApiModule = {
+  module_name: string;
+  permissions: { permission_id: string; key: string; action: string }[];
+};
 
-  {
-    id: "9",
-    module: "Companies",
-    action: "Create",
-    key: "companies:create",
-  },
-  {
-    id: "10",
-    module: "Companies",
-    action: "Read",
-    key: "companies:read",
-  },
-  {
-    id: "11",
-    module: "Companies",
-    action: "Update",
-    key: "companies:update",
-  },
-  {
-    id: "12",
-    module: "Companies",
-    action: "Delete",
-    key: "companies:delete",
-  },
+type ApiRoleDetail = ApiRole & {
+  permissions?: { permission_id: string; key: string }[];
+};
 
-  {
-    id: "13",
-    module: "Vehicles",
-    action: "Create",
-    key: "vehicles:create",
-  },
-  {
-    id: "14",
-    module: "Vehicles",
-    action: "Read",
-    key: "vehicles:read",
-  },
-  {
-    id: "15",
-    module: "Vehicles",
-    action: "Update",
-    key: "vehicles:update",
-  },
-  {
-    id: "16",
-    module: "Vehicles",
-    action: "Delete",
-    key: "vehicles:delete",
-  },
-
-  {
-    id: "17",
-    module: "Requests",
-    action: "Create",
-    key: "requests:create",
-  },
-  {
-    id: "18",
-    module: "Requests",
-    action: "Read",
-    key: "requests:read",
-  },
-  {
-    id: "19",
-    module: "Requests",
-    action: "Update",
-    key: "requests:update",
-  },
-  {
-    id: "20",
-    module: "Requests",
-    action: "Delete",
-    key: "requests:delete",
-  },
-
-  {
-    id: "21",
-    module: "Trips",
-    action: "Create",
-    key: "trips:create",
-  },
-  {
-    id: "22",
-    module: "Trips",
-    action: "Read",
-    key: "trips:read",
-  },
-  {
-    id: "23",
-    module: "Trips",
-    action: "Update",
-    key: "trips:update",
-  },
-  {
-    id: "24",
-    module: "Trips",
-    action: "Delete",
-    key: "trips:delete",
-  },
-
-  {
-    id: "25",
-    module: "Payments",
-    action: "Read",
-    key: "payments:read",
-  },
-  {
-    id: "26",
-    module: "Payments",
-    action: "Update",
-    key: "payments:update",
-  },
-
-  {
-    id: "27",
-    module: "Audit Logs",
-    action: "Read",
-    key: "audit_logs:read",
-  },
-];
-
-const initialRoles: Role[] = [
-  {
-    id: "1",
-    name: "Super Admin",
-    description: "Full access to all platform features.",
-    permissions: 27,
-    type: "System",
-    status: "Active",
-  },
-  {
-    id: "2",
-    name: "Administrator",
-    description: "Manages users, drivers, companies and trips.",
-    permissions: 20,
-    type: "System",
-    status: "Active",
-  },
-  {
-    id: "3",
-    name: "Operations Manager",
-    description: "Manages requests, trips and drivers.",
-    permissions: 14,
-    type: "Custom",
-    status: "Active",
-  },
-  {
-    id: "4",
-    name: "Finance Manager",
-    description: "Manages payments and financial records.",
-    permissions: 6,
-    type: "Custom",
-    status: "Active",
-  },
-];
+const mapRole = (role: ApiRole): Role => ({
+  id: role.role_id,
+  name: role.name,
+  description: role.description ?? "",
+  permissions: role.permission_count ?? role.permissions?.length ?? 0,
+  type: role.is_system ? "System" : "Custom",
+  status: role.is_active ? "Active" : "Inactive",
+  isSystem: role.is_system,
+});
 
 function RolesPermissions() {
-  const [roles, setRoles] = useState<Role[]>(initialRoles);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [permissions, setPermissions] = useState<Permission[]>([]);
 
   const [showModal, setShowModal] = useState(false);
 
@@ -242,6 +67,40 @@ function RolesPermissions() {
   const [feedback, setFeedback] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const loadRolesAndPermissions = async () => {
+    const [roleRecords, modules] = await Promise.all([
+      apiRequest<ApiRole[]>("/roles"),
+      apiRequest<ApiModule[]>("/modules"),
+    ]);
+    setRoles(roleRecords.map(mapRole));
+    setPermissions(modules.flatMap((module) => module.permissions.map((permission) => ({
+      id: permission.permission_id,
+      module: module.module_name,
+      action: permission.action,
+      key: permission.key,
+    }))));
+  };
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([apiRequest<ApiRole[]>("/roles"), apiRequest<ApiModule[]>("/modules")])
+      .then(([roleRecords, modules]) => {
+        if (!active) return;
+        setRoles(roleRecords.map(mapRole));
+        setPermissions(modules.flatMap((module) => module.permissions.map((permission) => ({
+          id: permission.permission_id,
+          module: module.module_name,
+          action: permission.action,
+          key: permission.key,
+        }))));
+      })
+      .catch((error: unknown) => {
+        if (active) setFeedback(error instanceof Error ? error.message : "Unable to load roles and permissions.");
+      });
+    return () => { active = false; };
+  }, []);
 
   const filteredRoles = roles.filter((role) =>
     [role.name, role.description, role.type, role.status, String(role.permissions)]
@@ -261,18 +120,18 @@ function RolesPermissions() {
     setShowModal(true);
   };
 
-  const openEditRole = (role: Role) => {
-    setEditingRole(role);
-    setRoleName(role.name);
-    setDescription(role.description);
-
-    const rolePermissions = permissions
-      .slice(0, role.permissions)
-      .map((permission) => permission.id);
-
-    setSelectedPermissions(rolePermissions);
-
-    setShowModal(true);
+  const openEditRole = async (role: Role) => {
+    if (role.isSystem) return;
+    try {
+      const details = await apiRequest<ApiRoleDetail>(`/roles/${role.id}`);
+      setEditingRole(role);
+      setRoleName(details.name);
+      setDescription(details.description ?? "");
+      setSelectedPermissions((details.permissions ?? []).map((permission) => permission.permission_id));
+      setShowModal(true);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to load role details.");
+    }
   };
 
   const closeModal = () => {
@@ -288,57 +147,53 @@ function RolesPermissions() {
     );
   };
 
-  const saveRole = () => {
+  const saveRole = async () => {
     if (!roleName.trim()) {
       setFeedback("Please enter a role name.");
       return;
     }
 
-    if (editingRole) {
-      setRoles((current) =>
-        current.map((role) =>
-          role.id === editingRole.id
-            ? {
-                ...role,
-                name: roleName,
-                description,
-                permissions: selectedPermissions.length,
-              }
-            : role
-        )
-      );
-    } else {
-      const newRole: Role = {
-        id: Date.now().toString(),
-        name: roleName,
-        description,
-        permissions: selectedPermissions.length,
-        type: "Custom",
-        status: "Active",
-      };
-
-      setRoles((current) => [...current, newRole]);
+    setIsSaving(true);
+    try {
+      if (editingRole) {
+        await apiRequest(`/roles/${editingRole.id}`, {
+          method: "PUT",
+          body: JSON.stringify({ name: roleName, description }),
+        });
+        await apiRequest(`/roles/${editingRole.id}/permissions`, {
+          method: "PUT",
+          body: JSON.stringify({ permission_ids: selectedPermissions }),
+        });
+      } else {
+        await apiRequest("/roles", {
+          method: "POST",
+          body: JSON.stringify({ name: roleName, description, permission_ids: selectedPermissions }),
+        });
+      }
+      await loadRolesAndPermissions();
+      closeModal();
+      setFeedback(editingRole ? "Role updated successfully." : "Role created successfully.");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to save the role.");
+    } finally {
+      setIsSaving(false);
     }
-
-    closeModal();
-    setFeedback(editingRole ? "Role updated successfully." : "Role created successfully.");
   };
 
-  const deleteRole = (role: Role) => {
-    if (role.type === "System") {
-      setFeedback("System roles cannot be deleted.");
-      return;
-    }
-
-    const confirmed = window.confirm(
-      `Are you sure you want to delete the "${role.name}" role?`
-    );
-
-    if (confirmed) {
-      setRoles((current) =>
-        current.filter((item) => item.id !== role.id)
-      );
-      setFeedback("Role deleted successfully.");
+  const toggleRoleStatus = async (role: Role) => {
+    if (role.isSystem) return;
+    const is_active = role.status !== "Active";
+    try {
+      await apiRequest(`/roles/${role.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ is_active }),
+      });
+      setRoles((current) => current.map((item) =>
+        item.id === role.id ? { ...item, status: is_active ? "Active" : "Inactive" } : item
+      ));
+      setFeedback(`${role.name} ${is_active ? "enabled" : "disabled"}.`);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to update role status.");
     }
   };
 
@@ -393,14 +248,13 @@ function RolesPermissions() {
                 setPage(1);
               }}
             />
-            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRoles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
             <button className="primary-btn" onClick={openAddRole}>+ Add Role</button>
           </div>
 
 
-          <div className="table-container">
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRoles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
-            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRoles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <div className="table-container">
 
             <table className="users-table">
 
@@ -454,7 +308,7 @@ function RolesPermissions() {
 
                     <td>
 
-                      <span className="status active">
+                      <span className={`status ${role.status === "Active" ? "active" : "pending"}`}>
                         {role.status}
                       </span>
 
@@ -467,15 +321,17 @@ function RolesPermissions() {
                         <button
                           className="action-btn"
                           onClick={() => openEditRole(role)}
+                          disabled={role.isSystem}
                         >
                           Edit
                         </button>
 
                         <button
-                          className="delete-btn"
-                          onClick={() => deleteRole(role)}
+                          className="action-btn"
+                          onClick={() => void toggleRoleStatus(role)}
+                          disabled={role.isSystem}
                         >
-                          Delete
+                          {role.status === "Active" ? "Disable" : "Enable"}
                         </button>
 
                       </div>
@@ -492,7 +348,7 @@ function RolesPermissions() {
 
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRoles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination page={page} pageSize={pageSize} totalRecords={roles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
         </div>
 
@@ -717,9 +573,10 @@ function RolesPermissions() {
 
               <button
                 className="primary-btn"
-                onClick={saveRole}
+                onClick={() => void saveRole()}
+                disabled={isSaving}
               >
-                {editingRole
+                {isSaving ? "Saving..." : editingRole
                   ? "Save Changes"
                   : "Create Role"}
               </button>

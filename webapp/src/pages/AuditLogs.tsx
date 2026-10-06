@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
 import TablePagination from "../components/TablePagination";
+import { apiRequest } from "../lib/api";
 
 interface AuditLog {
   id: string;
@@ -16,107 +17,41 @@ interface AuditLog {
   metadata: string;
 }
 
-const initialLogs: AuditLog[] = [
-  {
-    id: "LOG-1001",
-    user: "Admin User",
-    permission: "users:update",
-    resource: "Users",
-    resourceId: "USR-1005",
-    method: "PUT",
-    endpoint: "/api/users/USR-1005",
-    ipAddress: "192.168.1.10",
-    createdAt: "13 Aug 2026, 09:32",
-    metadata: "Updated user account status",
-  },
-  {
-    id: "LOG-1002",
-    user: "Admin User",
-    permission: "drivers:verify",
-    resource: "Drivers",
-    resourceId: "DRV-1002",
-    method: "PUT",
-    endpoint: "/api/drivers/DRV-1002/verify",
-    ipAddress: "192.168.1.10",
-    createdAt: "13 Aug 2026, 09:18",
-    metadata: "Driver verification approved",
-  },
-  {
-    id: "LOG-1003",
-    user: "Operations Manager",
-    permission: "trips:update",
-    resource: "Trips",
-    resourceId: "TRIP-1001",
-    method: "PUT",
-    endpoint: "/api/trips/TRIP-1001",
-    ipAddress: "192.168.1.25",
-    createdAt: "13 Aug 2026, 08:54",
-    metadata: "Trip status changed to in_transit",
-  },
-  {
-    id: "LOG-1004",
-    user: "Admin User",
-    permission: "companies:create",
-    resource: "Companies",
-    resourceId: "CMP-1004",
-    method: "POST",
-    endpoint: "/api/companies",
-    ipAddress: "192.168.1.10",
-    createdAt: "12 Aug 2026, 16:42",
-    metadata: "Created new company account",
-  },
-  {
-    id: "LOG-1005",
-    user: "Finance Manager",
-    permission: "payments:update",
-    resource: "Payments",
-    resourceId: "PAY-1003",
-    method: "PUT",
-    endpoint: "/api/payments/PAY-1003",
-    ipAddress: "192.168.1.35",
-    createdAt: "12 Aug 2026, 15:20",
-    metadata: "Payment marked as successful",
-  },
-  {
-    id: "LOG-1006",
-    user: "Admin User",
-    permission: "vehicles:update",
-    resource: "Vehicles",
-    resourceId: "VEH-1008",
-    method: "PUT",
-    endpoint: "/api/vehicles/VEH-1008",
-    ipAddress: "192.168.1.10",
-    createdAt: "12 Aug 2026, 14:05",
-    metadata: "Vehicle information updated",
-  },
-  {
-    id: "LOG-1007",
-    user: "Operations Manager",
-    permission: "requests:read",
-    resource: "Requests",
-    resourceId: "REQ-1005",
-    method: "GET",
-    endpoint: "/api/requests/REQ-1005",
-    ipAddress: "192.168.1.25",
-    createdAt: "12 Aug 2026, 13:47",
-    metadata: "Viewed transport request",
-  },
-  {
-    id: "LOG-1008",
-    user: "Admin User",
-    permission: "roles:update",
-    resource: "Roles",
-    resourceId: "ROLE-1002",
-    method: "PUT",
-    endpoint: "/api/roles/ROLE-1002",
-    ipAddress: "192.168.1.10",
-    createdAt: "12 Aug 2026, 11:30",
-    metadata: "Updated role permissions",
-  },
-];
+type ApiAuditLog = {
+  log_id: string;
+  permission_key?: string | null;
+  resource_type?: string | null;
+  resource_id?: string | null;
+  method: string;
+  endpoint?: string | null;
+  ip_address?: string | null;
+  created_at: string;
+  actor?: string;
+  metadata?: unknown;
+};
+
+type AuditLogResponse = {
+  data: ApiAuditLog[];
+  pagination: { total: number };
+};
+
+const mapAuditLog = (log: ApiAuditLog): AuditLog => ({
+  id: log.log_id,
+  user: log.actor ?? "Unknown",
+  permission: log.permission_key ?? "",
+  resource: log.resource_type ?? "",
+  resourceId: log.resource_id ?? "",
+  method: log.method,
+  endpoint: log.endpoint ?? "",
+  ipAddress: log.ip_address ?? "",
+  createdAt: new Date(log.created_at).toLocaleString(),
+  metadata: typeof log.metadata === "string" ? log.metadata : JSON.stringify(log.metadata ?? {}),
+});
 
 function AuditLogs() {
-  const [logs] = useState<AuditLog[]>(initialLogs);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [totalLogs, setTotalLogs] = useState(0);
+  const [feedback, setFeedback] = useState("");
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -127,24 +62,24 @@ function AuditLogs() {
   const [selectedLog, setSelectedLog] =
     useState<AuditLog | null>(null);
 
-  const filteredLogs = logs.filter((log) => {
-    const searchValue = search.toLowerCase();
+  useEffect(() => {
+    const loadLogs = async () => {
+      const query = new URLSearchParams({ page: String(page), limit: String(pageSize) });
+      if (search.trim()) query.set("search", search.trim());
+      if (methodFilter !== "All") query.set("method", methodFilter);
+      try {
+        const response = await apiRequest<AuditLogResponse>(`/audit-logs?${query.toString()}`);
+        setLogs((response.data ?? []).map(mapAuditLog));
+        setTotalLogs(response.pagination?.total ?? 0);
+      } catch (error) {
+        setFeedback(error instanceof Error ? error.message : "Unable to load audit logs.");
+      }
+    };
 
-    const matchesSearch =
-      log.id.toLowerCase().includes(searchValue) ||
-      log.user.toLowerCase().includes(searchValue) ||
-      log.permission.toLowerCase().includes(searchValue) ||
-      log.resource.toLowerCase().includes(searchValue) ||
-      log.resourceId.toLowerCase().includes(searchValue) ||
-      log.endpoint.toLowerCase().includes(searchValue) ||
-      log.ipAddress.toLowerCase().includes(searchValue);
+    void loadLogs();
+  }, [page, pageSize, search, methodFilter]);
 
-    const matchesMethod =
-      methodFilter === "All" ||
-      log.method === methodFilter;
-
-    return matchesSearch && matchesMethod;
-  });
+  const filteredLogs = logs;
 
   const getMethodClass = (method: string) => {
     switch (method) {
@@ -211,9 +146,10 @@ function AuditLogs() {
                 type="text"
                 placeholder="Search logs..."
                 value={search}
-                onChange={(event) =>
-                  setSearch(event.target.value)
-                }
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setPage(1);
+                }}
               />
 
             </div>
@@ -225,9 +161,10 @@ function AuditLogs() {
 
               <select
                 value={methodFilter}
-                onChange={(event) =>
-                  setMethodFilter(event.target.value)
-                }
+                onChange={(event) => {
+                  setMethodFilter(event.target.value);
+                  setPage(1);
+                }}
               >
                 <option value="All">All Methods</option>
                 <option value="GET">GET</option>
@@ -244,15 +181,16 @@ function AuditLogs() {
           {/* Results */}
           <div className="audit-results">
 
-            Showing {filteredLogs.length} of {logs.length} logs
+            Showing {Math.min((page - 1) * pageSize + filteredLogs.length, totalLogs)} of {totalLogs} logs
 
           </div>
+          {feedback && <p className="error">{feedback}</p>}
 
 
           {/* Table */}
-          <div className="table-container">
+          <TablePagination page={page} pageSize={pageSize} totalRecords={totalLogs} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
-            <TablePagination page={page} pageSize={pageSize} totalRecords={filteredLogs.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <div className="table-container">
 
             <table className="users-table audit-table">
 
@@ -277,7 +215,7 @@ function AuditLogs() {
 
                 {filteredLogs.length > 0 ? (
 
-                  filteredLogs.slice((page - 1) * pageSize, page * pageSize).map((log) => (
+                  filteredLogs.map((log) => (
 
                     <tr key={log.id}>
 

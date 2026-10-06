@@ -1,10 +1,39 @@
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import { apiRequest } from "../lib/api";
+
+type ApiPayment = {
+  payment_id: string;
+  "Payment ID"?: string;
+  "Request ID"?: string;
+  Customer?: string;
+  amount: number | string;
+  Amount?: number | string;
+  method: string;
+  "Payment Method"?: string;
+  status: string;
+  Status?: string;
+  paid_at?: string | null;
+  "Payment Date"?: string | null;
+};
+
+type PaymentListResponse = { data: ApiPayment[] };
+
+const mapPayment = (payment: ApiPayment): Record<string, string> => ({
+  ID: payment.payment_id,
+  "Payment ID": payment["Payment ID"] ?? payment.payment_id,
+  "Request ID": payment["Request ID"] ?? "",
+  Customer: payment.Customer ?? "",
+  Amount: String(payment.Amount ?? payment.amount),
+  "Payment Method": payment["Payment Method"] ?? payment.method,
+  Status: payment.Status ?? (payment.status === "successful" ? "Completed" : payment.status[0].toUpperCase() + payment.status.slice(1)),
+  "Payment Date": payment["Payment Date"] ?? payment.paid_at ?? "",
+});
 
 function Payments() {
   const [selectedPayment, setSelectedPayment] = useState<Record<string, string> | null>(null);
@@ -13,13 +42,22 @@ function Payments() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const paymentRows = [
-    { "Payment ID": "#PAY-1001", "Request ID": "#REQ-1002", Customer: "John Smith", Amount: "N$ 2,500.00", "Payment Method": "Card", Status: "Completed", "Payment Date": "12 Aug 2026" },
-    { "Payment ID": "#PAY-1002", "Request ID": "#REQ-1003", Customer: "Sarah Williams", Amount: "N$ 1,200.00", "Payment Method": "Mobile Money", Status: "Pending", "Payment Date": "12 Aug 2026" },
-    { "Payment ID": "#PAY-1003", "Request ID": "#REQ-1004", Customer: "ABC Construction", Amount: "N$ 5,800.00", "Payment Method": "Bank Transfer", Status: "Completed", "Payment Date": "11 Aug 2026" },
-    { "Payment ID": "#PAY-1004", "Request ID": "#REQ-1005", Customer: "NamBuild Supplies", Amount: "N$ 3,400.00", "Payment Method": "Card", Status: "Pending", "Payment Date": "11 Aug 2026" },
-  ];
+  const [paymentRows, setPaymentRows] = useState<Record<string, string>[]>([]);
+
+  useEffect(() => {
+    const loadPayments = async () => {
+      try {
+        const response = await apiRequest<PaymentListResponse>("/payments?limit=100");
+        setPaymentRows((response.data ?? []).map(mapPayment));
+      } catch (error) {
+        setFeedback(error instanceof Error ? error.message : "Unable to load payments.");
+      }
+    };
+
+    void loadPayments();
+  }, []);
 
   const filteredPayments = paymentRows.filter((payment) =>
     Object.values(payment).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
@@ -27,6 +65,51 @@ function Payments() {
 
   const totalPages = Math.max(1, Math.ceil(filteredPayments.length / pageSize));
   const currentPage = Math.min(page, totalPages);
+
+  const savePayment = async (values: Record<string, string>) => {
+    if (!actionPayment) return;
+    setIsSaving(true);
+    try {
+      const updated = await apiRequest<ApiPayment>(`/payments/${actionPayment.ID}`, {
+        method: "PUT",
+        body: JSON.stringify(values),
+      });
+      const row = mapPayment({
+        ...updated,
+        payment_id: updated.payment_id ?? actionPayment.ID,
+        Customer: actionPayment.Customer,
+        "Request ID": actionPayment["Request ID"],
+      });
+      setPaymentRows((current) => current.map((payment) => payment.ID === actionPayment.ID ? row : payment));
+      setFeedback(`Payment ${actionPayment.ID} was saved.`);
+      setActionPayment(null);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to update the payment.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const refundPayment = async () => {
+    if (!actionPayment) return;
+    try {
+      const updated = await apiRequest<ApiPayment>(`/payments/${actionPayment.ID}`, {
+        method: "PUT",
+        body: JSON.stringify({ status: "refunded" }),
+      });
+      const row = mapPayment({
+        ...updated,
+        payment_id: updated.payment_id ?? actionPayment.ID,
+        Customer: actionPayment.Customer,
+        "Request ID": actionPayment["Request ID"],
+      });
+      setPaymentRows((current) => current.map((payment) => payment.ID === actionPayment.ID ? row : payment));
+      setFeedback(`Payment ${actionPayment.ID} was marked for refund.`);
+      setActionPayment(null);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "Unable to refund the payment.");
+    }
+  };
 
   return (
     <div className="admin-page">
@@ -69,12 +152,11 @@ function Payments() {
                 setPage(1);
               }}
             />
-            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredPayments.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
           </div>
 
-          <div className="table-container">
+          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredPayments.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
-            <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredPayments.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <div className="table-container">
 
             <table className="users-table">
 
@@ -110,7 +192,7 @@ function Payments() {
                     </td>
                     <td>{payment["Payment Date"]}</td>
                     <td>
-                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment(payment)}>View</button><button className="action-btn" onClick={() => setActionPayment(payment)}>Actions</button></div>
+                      <div className="table-actions"><button className="action-btn" onClick={() => setSelectedPayment(payment)}>View</button><button className="action-btn" onClick={() => setActionPayment(payment)}>Edit</button></div>
                     </td>
                   </tr>
                 ))}
@@ -140,9 +222,10 @@ function Payments() {
           title={`Manage ${actionPayment["Payment ID"]}`}
           values={actionPayment}
           fields={[{ key: "Customer", label: "Customer" }, { key: "Amount", label: "Amount" }, { key: "Payment Method", label: "Payment Method", options: ["Card", "Mobile Money", "Bank Transfer"] }, { key: "Status", label: "Status", options: ["Pending", "Completed", "Failed", "Refunded"] }]}
-          actions={[{ label: "Refund Payment", onClick: () => setFeedback("Payment marked for refund.") }, { label: "Delete Payment", onClick: () => { setFeedback("Payment deleted."); setActionPayment(null); }, danger: true }]}
+          actions={[{ label: "Refund Payment", onClick: () => void refundPayment() }]}
           onClose={() => setActionPayment(null)}
-          onSave={(values) => { setFeedback(`${values["Payment ID"]} was updated.`); setActionPayment(null); }}
+          onSave={(values) => void savePayment(values)}
+          isSaving={isSaving}
         />
       )}
 
