@@ -17,6 +17,7 @@ import Payments from "./pages/Payments";
 import Roles from "./pages/Roles";
 import AuditLogs from "./pages/AuditLogs";
 import Settings from "./pages/Settings";
+import CustomerTrips from "./pages/CustomerTrips";
 
 function Login() {
 
@@ -62,9 +63,13 @@ function Login() {
       if (result.accessToken && result.refreshToken) {
         storeTokens({ accessToken: result.accessToken, refreshToken: result.refreshToken });
         const user = await apiRequest<{ user_type: string }>("/auth/me");
+        if (user.user_type === "customer") {
+          navigate("/MyTrips");
+          return;
+        }
         if (user.user_type !== "admin") {
           clearSession();
-          throw new Error("This account does not have admin access.");
+          throw new Error("This account does not have access to this portal.");
         }
         navigate("/Dashboard");
         return;
@@ -159,6 +164,7 @@ function App() {
       <Route path="/ForgotPassword" element={<ForgotPassword />} />
       <Route path="/VerifyOTP" element={<VerifyOTP />} />
       <Route path="/ResetPassword" element={<ResetPassword />} />
+      <Route path="/MyTrips" element={<CustomerTrips />} />
       <Route path="/Dashboard" element={<Dashboard />} />
       <Route path="/Users" element={<Users />} />
       <Route path="/Drivers" element={<Drivers />} />
