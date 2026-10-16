@@ -390,7 +390,6 @@ function Drivers() {
                 <tr>
                   <th>Image</th>
                   <th>Name</th>
-                  <th>Email</th>
                   <th>Phone</th>
                   <th>Driver's License Number</th>
                   <th>Car's License Plate</th>
@@ -417,7 +416,6 @@ function Drivers() {
                       )}
                     </td>
                     <td>{driver.Name}</td>
-                    <td>{driver.Email}</td>
                     <td>{driver.Phone}</td>
                     <td>{driver["Driver's License Number"]}</td>
                     <td>{driver["Car's License Plate"]}</td>
