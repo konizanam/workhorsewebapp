@@ -143,9 +143,13 @@ const handleVerify = async (
       sessionStorage.removeItem("workhorse.pendingToken");
       storeTokens(tokens);
       const user = await apiRequest<{ user_type: string }>("/auth/me");
+      if (user.user_type === "customer") {
+        navigate("/MyTrips");
+        return;
+      }
       if (user.user_type !== "admin") {
         clearSession();
-        throw new Error("This account does not have admin access.");
+        throw new Error("This account does not have access to this portal.");
       }
       navigate("/Dashboard");
     } catch (requestError) {
