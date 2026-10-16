@@ -1,6 +1,7 @@
 import "../App.css";
 import { useEffect, useState } from "react";
-import { FiEye, FiFileText } from "react-icons/fi";
+import type { IconType } from "react-icons";
+import { LuCarFront, LuEye, LuFileBadge, LuFolderOpen, LuIdCard, LuShieldAlert } from "react-icons/lu";
 import AdminSidebar from "../components/AdminSidebar";
 import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
@@ -83,6 +84,12 @@ const documentStatusLabels: Record<string, string> = {
   verified: "Verified",
   submitted: "Pending review",
   rejected: "Rejected",
+};
+
+const driverDocumentIcons: Record<ApiDriverDocument["document_type"], IconType> = {
+  id: LuIdCard,
+  driver_license: LuFileBadge,
+  car_registration: LuCarFront,
 };
 
 const driverDocumentLabels: Record<ApiDriverDocument["document_type"], string> = {
@@ -497,10 +504,10 @@ function Drivers() {
                 setDocumentPreviewUrl("");
               }}
             >
-              <section className="driver-cases driver-documents-section">
+              <section className="driver-cases driver-documents-section detail-section">
                 <div className="driver-cases-header">
                   <div>
-                    <h3>Documents</h3>
+                    <h3><LuFolderOpen aria-hidden="true" /> Documents</h3>
                     <p>Uploaded driver documents and verification status.</p>
                   </div>
                   <span>{documents.length} {documents.length === 1 ? "document" : "documents"}</span>
@@ -512,22 +519,30 @@ function Drivers() {
                       const contentType = document.content_type ?? url.slice(5, url.indexOf(";"));
                       return (
                         <div className="driver-document-item" key={document.document_id}>
-                          <span className="driver-document-thumb" aria-hidden="true">
-                            {contentType.startsWith("image/") ? <img src={url} alt="" /> : <FiFileText />}
-                          </span>
-                          <span className="driver-document-info">
-                            <strong title={driverDocumentLabels[document.document_type]}>{driverDocumentLabels[document.document_type]}</strong>
+                          <div className="driver-document-top">
+                            <span className="driver-document-icon" aria-hidden="true">
+                              {(() => {
+                                const Icon = driverDocumentIcons[document.document_type];
+                                return <Icon />;
+                              })()}
+                            </span>
                             <span className={`status-badge status-${document.verification_status}`}>
                               {documentStatusLabels[document.verification_status] ?? document.verification_status.replaceAll("_", " ")}
                             </span>
-                          </span>
+                          </div>
+                          <div className="driver-document-info">
+                            <strong>{driverDocumentLabels[document.document_type]}</strong>
+                            <span>
+                              {contentType.startsWith("image/") ? "Image" : "PDF"} · Uploaded {new Date(document.uploaded_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+                            </span>
+                          </div>
                           <button
-                            className="secondary-btn btn-sm"
+                            className="secondary-btn"
                             type="button"
                             aria-label={`View ${driverDocumentLabels[document.document_type]}`}
                             onClick={() => viewDriverDocument(document)}
                           >
-                            <FiEye aria-hidden="true" /> View
+                            <LuEye aria-hidden="true" /> View document
                           </button>
                         </div>
                       );
@@ -554,10 +569,10 @@ function Drivers() {
                 )}
               </section>
 
-              <section className="driver-cases">
+              <section className="driver-cases detail-section">
                 <div className="driver-cases-header">
                   <div>
-                    <h3>Cases</h3>
+                    <h3><LuShieldAlert aria-hidden="true" /> Cases</h3>
                     <p>Customer reports linked to this driver.</p>
                   </div>
                   <span>{driverCases.length} {driverCases.length === 1 ? "report" : "reports"}</span>
