@@ -38,8 +38,8 @@
   --font-size-3xl: 1.875rem;
 
   /* Controls (fields and buttons) */
-  --control-height: 2.4rem;
-  --control-height-sm: 1.9rem;
+  --control-height: 2.1rem;
+  --control-height-sm: var(--control-height); /* one size for every field and button */
   --control-padding-x: 0.7rem;
   --control-font-size: var(--font-size-sm);
   --control-border: #d7dce2;
@@ -212,14 +212,14 @@ body {
 ) {
   height: var(--control-height-sm);
   padding: 0 0.7rem;
-  font-size: var(--font-size-xs);
+  font-size: var(--control-font-size);
 }
 
 :where(.table-pagination button, .page-size-control select, .case-status-select, .table-search-input, .table-filter-select) {
   height: var(--control-height-sm);
   min-height: var(--control-height-sm);
   padding: 0 0.6rem;
-  font-size: var(--font-size-xs);
+  font-size: var(--control-font-size);
 }
 
 :where(.table-pagination button) {
@@ -228,7 +228,7 @@ body {
   justify-content: center;
   border: 1px solid var(--control-border);
   font: inherit;
-  font-size: var(--font-size-xs);
+  font-size: var(--control-font-size);
   cursor: pointer;
 }
 
@@ -238,4 +238,28 @@ body {
   align-items: center;
   gap: 0.4rem;
   font-weight: 500;
+}
+
+/* =========================================
+   CARDS
+   One card style for every white panel in the app.
+   Use className="card" on new panels.
+========================================= */
+
+:root {
+  --card-bg: var(--brand-white);
+  --card-border: #e3e7ee;
+  --card-shadow: 0 1px 3px rgba(28, 62, 112, 0.06);
+  --card-padding: 1.25rem;
+}
+
+:where(.card, .users-section, .dashboard-card, .dashboard-section, .permission-card, .auth-card, .chart-card) {
+  border: 1px solid var(--card-border);
+  border-radius: var(--control-radius);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+}
+
+:where(.card, .users-section, .dashboard-card, .dashboard-section, .permission-card, .chart-card) {
+  padding: var(--card-padding);
 }
