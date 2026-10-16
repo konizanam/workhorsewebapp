@@ -2575,14 +2575,17 @@ body:has(.admin-sidebar) .modal-overlay {
 
 /* =========================================
    PAGE HEADER
-   No space above the page header, and the
-   page name is underlined.
+   A small space above the page header, and
+   the page name is underlined.
 ========================================= */
 
-.admin-page,
+.admin-page {
+  padding-top: 0;
+}
+
 .admin-content,
 .admin-page:has(.admin-sidebar.collapsed) .admin-content {
-  padding-top: 0;
+  padding-top: 1.25rem;
 }
 
 .admin-header h1 {
