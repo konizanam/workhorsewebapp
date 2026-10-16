@@ -9,6 +9,7 @@ import TablePagination from "../components/TablePagination";
 import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
+import { shortRef } from "../lib/format";
 
 const supportStatuses = ["Open", "Resolved", "Cancelled", "Escalated"] as const;
 type SupportTicketStatus = typeof supportStatuses[number];
@@ -451,7 +452,8 @@ function Trips() {
 
       {actionTrip && (
         <RecordActionsModal
-          title={`Manage ${actionTrip["Trip ID"]}`}
+          title={`Manage trip ${shortRef("TRP", actionTrip["Trip ID"] ?? actionTrip.ID)}`}
+          description={`${actionTrip.Driver} · ${actionTrip.Pickup} → ${actionTrip.Destination}`}
           values={actionTrip}
           fields={[
             { key: "Driver", label: "Driver" },

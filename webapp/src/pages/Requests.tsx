@@ -9,6 +9,7 @@ import TablePagination from "../components/TablePagination";
 import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
+import { shortRef } from "../lib/format";
 
 type ApiRequest = {
   request_id: string;
@@ -203,7 +204,8 @@ function Requests() {
 
       {actionRequest && (
         <RecordActionsModal
-          title={`Manage ${actionRequest["Request ID"]}`}
+          title={`Manage request ${shortRef("REQ", actionRequest["Request ID"] ?? actionRequest.ID)}`}
+          description={`${actionRequest.Customer} · ${actionRequest.Pickup} → ${actionRequest.Destination}`}
           values={actionRequest}
           fields={[{ key: "Customer", label: "Customer" }, { key: "Service Type", label: "Service Type" }, { key: "Pickup", label: "Pickup", type: "location" }, { key: "Destination", label: "Destination", type: "location" }, { key: "Status", label: "Status", options: ["Pending", "Accepted", "Completed", "Cancelled"] }]}
           actions={[{ label: "Cancel Request", onClick: () => void cancelRequest() }]}

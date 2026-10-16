@@ -9,6 +9,7 @@ import TablePagination from "../components/TablePagination";
 import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
+import { shortRef } from "../lib/format";
 
 type ApiPayment = {
   payment_id: string;
@@ -208,7 +209,8 @@ function Payments() {
 
       {actionPayment && (
         <RecordActionsModal
-          title={`Manage ${actionPayment["Payment ID"]}`}
+          title={`Manage payment ${shortRef("PAY", actionPayment["Payment ID"] ?? actionPayment.ID)}`}
+          description={`${actionPayment.Customer} · ${actionPayment.Amount}`}
           values={actionPayment}
           fields={[{ key: "Customer", label: "Customer" }, { key: "Amount", label: "Amount" }, { key: "Payment Method", label: "Payment Method", options: ["Card", "Mobile Money", "Bank Transfer"] }, { key: "Status", label: "Status", options: ["Pending", "Completed", "Failed", "Refunded"] }]}
           actions={[{ label: "Refund Payment", onClick: () => void refundPayment() }]}

@@ -19,6 +19,8 @@ type RecordField = {
 
 type RecordActionsModalProps = {
   title: string;
+  /** Shown under the title; defaults to a generic hint. */
+  description?: string;
   values: Record<string, string>;
   fields: RecordField[];
   actions?: { label: string; onClick: () => void }[];
@@ -29,6 +31,7 @@ type RecordActionsModalProps = {
 
 function RecordActionsModal({
   title,
+  description = "Update this record and manage its status.",
   values,
   fields,
   actions = [],
@@ -96,7 +99,7 @@ function RecordActionsModal({
         <div className="modal-header">
           <div>
             <h2>{title}</h2>
-            <p>Update this record and manage its status.</p>
+            <p>{description}</p>
           </div>
           <button className="modal-close" type="button" onClick={onClose}>×</button>
         </div>

@@ -551,21 +551,28 @@ body:has(.modal-overlay) .admin-content > .feedback-message {
   color: var(--error-accent);
 }
 
-/* Line up fields in a row even when one label wraps onto two lines:
-   the label takes the spare height, so every control starts at the same level. */
+/* Line up fields in a row. Each field spans three shared grid rows (label, control,
+   help or error text), so across a row the labels end at the same line, the controls start
+   at the same line, and help text below one field never pushes its neighbours down. */
 .modal-form-grid {
-  align-items: stretch;
+  row-gap: 0;
+  align-items: start;
 }
 
 .modal-form-grid > .form-group {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  align-content: start;
+  padding-bottom: 0.9rem;
 }
 
 .modal-form-grid > .form-group > label:first-child {
-  display: flex;
-  flex-grow: 1;
-  align-items: flex-end;
+  align-self: end;
+}
+
+.modal-form-grid > .form-group > :nth-child(3) {
+  margin-top: 0.3rem;
 }
 
 .modal-form-grid .file-upload {
@@ -598,4 +605,33 @@ body:has(.modal-overlay) .admin-content > .feedback-message {
   bottom: 0;
   z-index: 3;
   background: var(--brand-white);
+}
+
+/* Upload fields need more room than text fields, so their rows use wider columns. */
+.modal-form-grid:has(> .form-group > .file-upload) {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+}
+
+/* =========================================
+   TABLE ROW STRIPES
+   Every table alternates light yellow and
+   light blue rows, with a stronger tint on hover.
+========================================= */
+
+:root {
+  --row-odd: #fffbeb;
+  --row-even: #eef4fb;
+  --row-hover: #fdf0c2;
+}
+
+:where(table) > tbody > tr:nth-child(odd) > td {
+  background: var(--row-odd);
+}
+
+:where(table) > tbody > tr:nth-child(even) > td {
+  background: var(--row-even);
+}
+
+:where(table) > tbody > tr:hover > td {
+  background: var(--row-hover);
 }
