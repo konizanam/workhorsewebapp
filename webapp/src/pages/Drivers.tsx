@@ -1,5 +1,6 @@
 import "../App.css";
 import { useEffect, useState } from "react";
+import { FiEye, FiFileText } from "react-icons/fi";
 import AdminSidebar from "../components/AdminSidebar";
 import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
@@ -76,6 +77,12 @@ type ApiDriverDocument = {
   content_type?: string | null;
   verification_status: string;
   uploaded_at: string;
+};
+
+const documentStatusLabels: Record<string, string> = {
+  verified: "Verified",
+  submitted: "Pending review",
+  rejected: "Rejected",
 };
 
 const driverDocumentLabels: Record<ApiDriverDocument["document_type"], string> = {
@@ -505,14 +512,23 @@ function Drivers() {
                       const contentType = document.content_type ?? url.slice(5, url.indexOf(";"));
                       return (
                         <div className="driver-document-item" key={document.document_id}>
-                          <strong>{driverDocumentLabels[document.document_type]}</strong>
-                          <span>{document.verification_status.replaceAll("_", " ")}</span>
-                          {contentType.startsWith("image/") ? (
-                            <img className="driver-document-preview" src={url} alt={driverDocumentLabels[document.document_type]} />
-                          ) : (
-                            <span>PDF document</span>
-                          )}
-                          <button className="action-btn" type="button" onClick={() => viewDriverDocument(document)}>View</button>
+                          <span className="driver-document-thumb" aria-hidden="true">
+                            {contentType.startsWith("image/") ? <img src={url} alt="" /> : <FiFileText />}
+                          </span>
+                          <span className="driver-document-info">
+                            <strong title={driverDocumentLabels[document.document_type]}>{driverDocumentLabels[document.document_type]}</strong>
+                            <span className={`status-badge status-${document.verification_status}`}>
+                              {documentStatusLabels[document.verification_status] ?? document.verification_status.replaceAll("_", " ")}
+                            </span>
+                          </span>
+                          <button
+                            className="secondary-btn btn-sm"
+                            type="button"
+                            aria-label={`View ${driverDocumentLabels[document.document_type]}`}
+                            onClick={() => viewDriverDocument(document)}
+                          >
+                            <FiEye aria-hidden="true" /> View
+                          </button>
                         </div>
                       );
                     })}
