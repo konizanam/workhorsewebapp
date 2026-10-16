@@ -2665,3 +2665,29 @@ body:has(.admin-sidebar) .modal-overlay {
 .admin-sidebar .sidebar-nav {
   padding-right: 0;
 }
+
+/* =========================================
+   ACTIVE MENU, SQUARE TOGGLE, CONTENT BACKGROUND
+========================================= */
+
+.admin-sidebar .sidebar-link.active,
+.admin-sidebar .sidebar-link.active:hover,
+.admin-sidebar .sidebar-link.active:focus {
+  background: var(--brand-navy);
+  color: var(--brand-white);
+}
+
+.admin-sidebar .sidebar-toggle {
+  border-radius: 0;
+}
+
+.admin-page,
+.admin-content {
+  background: #f2f4f7;
+}
+
+.admin-sidebar .sidebar-link.active span,
+.admin-sidebar .sidebar-link.active:hover span,
+.admin-sidebar .sidebar-link.active:focus span {
+  color: var(--brand-white);
+}

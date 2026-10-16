@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import type { IconType } from "react-icons";
 import {
@@ -38,10 +38,10 @@ const navItems: SidebarItem[] = [
 function SidebarLink({ item, className = "sidebar-link" }: { item: SidebarItem; className?: string }) {
   const Icon = item.icon;
   return (
-    <Link to={item.to} className={className} title={item.label}>
+    <NavLink to={item.to} end className={className} title={item.label}>
       <span className="sidebar-icon"><Icon aria-hidden="true" /></span>
       <b>{item.label}</b>
-    </Link>
+    </NavLink>
   );
 }
 
