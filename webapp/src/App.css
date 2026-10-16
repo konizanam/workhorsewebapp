@@ -3026,3 +3026,65 @@ html {
 .modal-overlay .audit-modal {
   max-height: calc(100vh - 80px);
 }
+
+/* =========================================
+   COMPACT FIELDS AND LABELS
+   Labels, inputs, selects and textareas use
+   rem sizing so they follow the app font scale.
+========================================= */
+
+.form-group {
+  margin-bottom: 0.9rem;
+}
+
+.form-group label,
+.settings-field label,
+.audit-filter label {
+  margin-bottom: 0.35rem;
+  font-size: 0.8125rem;
+}
+
+.form-group input,
+.form-group textarea,
+.location-autocomplete > input[type="text"],
+.action-control-row input,
+.action-control-row select,
+.settings-field input,
+.settings-field select,
+.admin-content select,
+.modal-overlay select,
+.audit-search input,
+.audit-filter select,
+.support-ticket-form textarea {
+  padding: 0.45rem 0.7rem;
+  font-size: 0.8125rem;
+}
+
+.form-group > input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.location-autocomplete > input[type="text"],
+.action-control-row input,
+.action-control-row select,
+.settings-field input,
+.settings-field select,
+.admin-content select,
+.modal-overlay select,
+.audit-search input,
+.audit-filter select {
+  height: 2.4rem;
+  box-sizing: border-box;
+}
+
+.form-group input[type="file"] {
+  padding: 0.35rem 0.5rem;
+}
+
+.input-box input {
+  padding: 0.7rem 0.85rem;
+  font-size: 0.875rem;
+}
+
+.modal-form-grid,
+.actions-form-grid,
+.details-grid {
+  gap: 0.9rem 1.1rem;
+}
