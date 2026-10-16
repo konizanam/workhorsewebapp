@@ -35,6 +35,25 @@ type DriverApiRecord = {
   onboarding_status?: string | null;
   "Driver's License Number"?: string | null;
   "Car's License Plate"?: string | null;
+  plate_number?: string | null;
+  id_type?: string | null;
+  id_number?: string | null;
+  date_of_birth?: string | null;
+  vehicle_make?: string | null;
+  vehicle_model?: string | null;
+  vehicle_year?: number | string | null;
+  vehicle_colour?: string | null;
+  vehicle_type?: string | null;
+  max_load_kg?: number | string | null;
+  "ID Type"?: string | null;
+  "ID / Passport Number"?: string | null;
+  "Date of Birth"?: string | null;
+  "Vehicle Make"?: string | null;
+  "Vehicle Model"?: string | null;
+  "Vehicle Year"?: number | string | null;
+  "Vehicle Colour"?: string | null;
+  "Vehicle Type"?: string | null;
+  "Max Load (kg)"?: number | string | null;
   Availability?: string | null;
   Status?: string | null;
 };
@@ -74,6 +93,13 @@ const createPdfBlobUrl = (dataUrl: string, contentType: string) => {
   return URL.createObjectURL(new Blob([bytes], { type: contentType }));
 };
 
+/** The latest date of birth allowed: drivers must be at least 18. */
+const latestBirthDate = () => {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() - 18);
+  return date.toISOString().slice(0, 10);
+};
+
 const mapDriverCase = (item: ApiDriverCase): DriverCase => ({
   id: item.case_id,
   driverEmail: item.reporter_email ?? "",
@@ -103,6 +129,15 @@ const mapDriver = (driver: DriverApiRecord): Record<string, string> => ({
   Phone: driver.phone_number ?? "",
   "Driver's License Number": driver["Driver's License Number"] ?? "",
   "Car's License Plate": driver["Car's License Plate"] ?? "",
+  "ID Type": driver["ID Type"] ?? (driver.id_type === "passport" ? "Passport" : driver.id_type === "national_id" ? "National ID" : ""),
+  "ID / Passport Number": driver["ID / Passport Number"] ?? driver.id_number ?? "",
+  "Date of Birth": driver["Date of Birth"] ?? driver.date_of_birth ?? "",
+  "Vehicle Make": driver["Vehicle Make"] ?? driver.vehicle_make ?? "",
+  "Vehicle Model": driver["Vehicle Model"] ?? driver.vehicle_model ?? "",
+  "Vehicle Year": String(driver["Vehicle Year"] ?? driver.vehicle_year ?? ""),
+  "Vehicle Colour": driver["Vehicle Colour"] ?? driver.vehicle_colour ?? "",
+  "Vehicle Type": driver["Vehicle Type"] ?? driver.vehicle_type ?? "",
+  "Max Load (kg)": String(driver["Max Load (kg)"] ?? driver.max_load_kg ?? ""),
   "Driver Image": driver.profile_image_data ?? "",
   "ID Certified Copy": "",
   "Driver License Certified Copy": "",
@@ -206,7 +241,7 @@ function Drivers() {
         phone_number: created.phone_number ?? values.phone,
         profile_image_data: created.profile_image_data ?? values.image,
         "Driver's License Number": created["Driver's License Number"] ?? values.license,
-        "Car's License Plate": created["Car's License Plate"] ?? values.carLicensePlate,
+        "Car's License Plate": created["Car's License Plate"] ?? created.plate_number ?? values.carLicensePlate,
       });
       setDriverRows((current) => [row, ...current]);
       table.reset();
@@ -405,10 +440,19 @@ function Drivers() {
             { name: "first_name", label: "First Name", placeholder: "e.g. Alex", section: "Personal details" },
             { name: "initials", label: "Initials", placeholder: "e.g. J.K.", section: "Personal details" },
             { name: "last_name", label: "Surname", placeholder: "e.g. Morgan", section: "Personal details" },
+            { name: "id_type", label: "Identification Type", options: ["National ID", "Passport"], section: "Personal details" },
+            { name: "id_number", label: "ID or Passport Number", placeholder: "Enter ID or passport number", section: "Personal details" },
+            { name: "date_of_birth", label: "Date of Birth", type: "date", max: latestBirthDate(), section: "Personal details" },
             { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com", section: "Contact details" },
             { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678", section: "Contact details" },
-            { name: "license", label: "Driver's License Number", placeholder: "Enter driver's license number", section: "License and vehicle" },
-            { name: "carLicensePlate", label: "Car's License Plate", placeholder: "Enter car's license plate", section: "License and vehicle" },
+            { name: "license", label: "Driver's License Number", placeholder: "Enter driver's license number", section: "Driver's license" },
+            { name: "carLicensePlate", label: "License Plate", placeholder: "e.g. N 12345 W", section: "Vehicle" },
+            { name: "vehicle_make", label: "Make", placeholder: "e.g. Toyota", section: "Vehicle" },
+            { name: "vehicle_model", label: "Model", placeholder: "e.g. Hilux", section: "Vehicle" },
+            { name: "vehicle_year", label: "Year", type: "number", min: "1950", max: String(new Date().getFullYear() + 1), placeholder: "e.g. 2020", section: "Vehicle" },
+            { name: "vehicle_colour", label: "Colour", placeholder: "e.g. White", section: "Vehicle" },
+            { name: "vehicle_type", label: "Vehicle Type", options: ["Car", "Bakkie / Pickup", "Panel Van", "Minibus", "Light Truck", "Medium Truck", "Heavy Truck"], section: "Vehicle" },
+            { name: "max_load_kg", label: "Maximum Load (kg)", type: "number", min: "1", placeholder: "e.g. 1000", section: "Vehicle" },
             { name: "image", label: "Driver Image", type: "file", accept: "image/*", section: "Documents" },
             { name: "idCopy", label: "Certified Copy of ID", type: "file", accept: "image/*,application/pdf", section: "Documents" },
             { name: "driverLicenseCopy", label: "Certified Copy of Driver License", type: "file", accept: "image/*,application/pdf", section: "Documents" },
@@ -556,10 +600,19 @@ function Drivers() {
             { key: "First Name", label: "First Name", section: "Personal details" },
             { key: "Initials", label: "Initials", section: "Personal details" },
             { key: "Surname", label: "Surname", section: "Personal details" },
+            { key: "ID Type", label: "Identification Type", options: ["National ID", "Passport"], section: "Personal details" },
+            { key: "ID / Passport Number", label: "ID or Passport Number", section: "Personal details" },
+            { key: "Date of Birth", label: "Date of Birth", type: "date", max: latestBirthDate(), section: "Personal details" },
             { key: "Email", label: "Email", type: "email", section: "Contact details" },
             { key: "Phone", label: "Phone", section: "Contact details" },
-            { key: "Driver's License Number", label: "Driver's License Number", section: "License and vehicle" },
-            { key: "Car's License Plate", label: "Car's License Plate", section: "License and vehicle" },
+            { key: "Driver's License Number", label: "Driver's License Number", section: "Driver's license" },
+            { key: "Car's License Plate", label: "License Plate", section: "Vehicle" },
+            { key: "Vehicle Make", label: "Make", section: "Vehicle" },
+            { key: "Vehicle Model", label: "Model", section: "Vehicle" },
+            { key: "Vehicle Year", label: "Year", type: "number", min: "1950", max: String(new Date().getFullYear() + 1), section: "Vehicle" },
+            { key: "Vehicle Colour", label: "Colour", section: "Vehicle" },
+            { key: "Vehicle Type", label: "Vehicle Type", options: ["Car", "Bakkie / Pickup", "Panel Van", "Minibus", "Light Truck", "Medium Truck", "Heavy Truck"], section: "Vehicle" },
+            { key: "Max Load (kg)", label: "Maximum Load (kg)", type: "number", min: "1", section: "Vehicle" },
             { key: "Availability", label: "Availability", options: ["Available", "Unavailable", "Disabled"], section: "Status" },
             { key: "Status", label: "Onboarding Status", options: ["Submitted", "Verified", "Approved", "Rejected"], section: "Status" },
             { key: "Driver Image", label: "Driver Image", type: "file", accept: "image/*", required: false, section: "Documents" },

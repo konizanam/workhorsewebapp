@@ -6,7 +6,9 @@ import FileUpload from "./FileUpload";
 type RecordField = {
   key: string;
   label: string;
-  type?: "text" | "email" | "number" | "file" | "location";
+  type?: "text" | "email" | "number" | "date" | "file" | "location";
+  min?: string;
+  max?: string;
   options?: string[];
   pattern?: string;
   title?: string;
@@ -105,7 +107,7 @@ function RecordActionsModal({
               <label htmlFor={`record-${field.key}`}>{field.label}{(field.required ?? (field.type !== "file" && field.type !== "location" && !field.options)) && <span className="required-mark" aria-hidden="true">*</span>}</label>
               {field.options ? (
                 <select id={`record-${field.key}`} name={field.key} defaultValue={values[field.key]}>
-                  {field.options.map((option) => <option key={option}>{option}</option>)}
+                  {[...field.options, ...(values[field.key] && !field.options.includes(values[field.key]) ? [values[field.key]] : [])].map((option) => <option key={option}>{option}</option>)}
                 </select>
               ) : field.type === "location" ? (
                 <LocationAutocomplete
@@ -128,7 +130,7 @@ function RecordActionsModal({
                     onChange={(event) => handleFileChange(field, event)}
                   />
               ) : (
-                <input id={`record-${field.key}`} name={field.key} type={field.type ?? "text"} defaultValue={values[field.key]} pattern={field.pattern} title={field.title} required={field.required ?? true} />
+                <input id={`record-${field.key}`} name={field.key} type={field.type ?? "text"} defaultValue={values[field.key]} pattern={field.pattern} title={field.title} min={field.min} max={field.max} required={field.required ?? true} />
               )}
             </div>
           )} />

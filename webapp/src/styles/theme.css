@@ -550,3 +550,24 @@ body:has(.modal-overlay) .admin-content > .feedback-message {
   margin-left: 0.2rem;
   color: var(--error-accent);
 }
+
+/* Line up fields in a row even when one label wraps onto two lines:
+   the label takes the spare height, so every control starts at the same level. */
+.modal-form-grid {
+  align-items: stretch;
+}
+
+.modal-form-grid > .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-form-grid > .form-group > label:first-child {
+  display: flex;
+  flex-grow: 1;
+  align-items: flex-end;
+}
+
+.modal-form-grid .file-upload {
+  height: 4.25rem;
+}

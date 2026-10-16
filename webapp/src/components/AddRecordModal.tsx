@@ -5,7 +5,9 @@ import FileUpload from "./FileUpload";
 type AddRecordField = {
   name: string;
   label: string;
-  type?: "text" | "email" | "tel" | "file";
+  type?: "text" | "email" | "tel" | "file" | "date" | "number";
+  min?: string;
+  max?: string;
   options?: string[];
   placeholder?: string;
   pattern?: string;
@@ -137,6 +139,8 @@ function AddRecordModal({
                   onChange={(event) => handleFieldChange(field, event)}
                   placeholder={field.placeholder}
                   pattern={field.pattern}
+                  min={field.min}
+                  max={field.max}
                   title={field.title}
                   required={field.required ?? true}
                 />
