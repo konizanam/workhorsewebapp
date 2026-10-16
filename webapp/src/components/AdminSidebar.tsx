@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
+import { clearSession } from "../lib/api";
 import type { IconType } from "react-icons";
 import {
   FiBriefcase,
@@ -35,10 +36,10 @@ const navItems: SidebarItem[] = [
   { to: "/AuditLogs", label: "Audit Logs", icon: FiFileText },
 ];
 
-function SidebarLink({ item, className = "sidebar-link" }: { item: SidebarItem; className?: string }) {
+function SidebarLink({ item, className = "sidebar-link", onClick }: { item: SidebarItem; className?: string; onClick?: () => void }) {
   const Icon = item.icon;
   return (
-    <NavLink to={item.to} end className={className} title={item.label}>
+    <NavLink to={item.to} end className={className} title={item.label} onClick={onClick}>
       <span className="sidebar-icon"><Icon aria-hidden="true" /></span>
       <b>{item.label}</b>
     </NavLink>
@@ -70,7 +71,7 @@ function AdminSidebar() {
 
       <div className="sidebar-bottom">
         <SidebarLink item={{ to: "/Settings", label: "Settings", icon: FiSettings }} />
-        <SidebarLink item={{ to: "/", label: "Logout", icon: FiLogOut }} className="sidebar-link logout" />
+        <SidebarLink item={{ to: "/", label: "Logout", icon: FiLogOut }} className="sidebar-link logout" onClick={clearSession} />
       </div>
 
     </aside>

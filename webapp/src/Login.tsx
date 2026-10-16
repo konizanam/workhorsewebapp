@@ -6,7 +6,8 @@ import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { VerifyOTP } from "./pages/VerifyOTP";
 import ResetPassword from "./pages/ResetPassword";
-import { apiRequest, clearSession, storeTokens } from "./lib/api";
+import { apiRequest, clearSession, getLogoutReason, storeTokens } from "./lib/api";
+import RequireAuth from "./components/RequireAuth";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
 import Drivers from "./pages/Drivers";
@@ -27,7 +28,8 @@ function Login() {
   
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  // Shows why the user was logged out, e.g. when their session expired.
+  const [error, setError] = useState(getLogoutReason);
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,17 +166,17 @@ function App() {
       <Route path="/ForgotPassword" element={<ForgotPassword />} />
       <Route path="/VerifyOTP" element={<VerifyOTP />} />
       <Route path="/ResetPassword" element={<ResetPassword />} />
-      <Route path="/MyTrips" element={<CustomerTrips />} />
-      <Route path="/Dashboard" element={<Dashboard />} />
-      <Route path="/Users" element={<Users />} />
-      <Route path="/Drivers" element={<Drivers />} />
-      <Route path="/Companies" element={<Companies />} />
-      <Route path="/Requests" element={<Requests />} />
-      <Route path="/Trips" element={<Trips />} />
-      <Route path="/Payments" element={<Payments />} />
-      <Route path="/Roles" element={<Roles />} />
-      <Route path="/AuditLogs" element={<AuditLogs />} />
-      <Route path="/Settings" element={<Settings />} />
+      <Route path="/MyTrips" element={<RequireAuth><CustomerTrips /></RequireAuth>} />
+      <Route path="/Dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+      <Route path="/Users" element={<RequireAuth><Users /></RequireAuth>} />
+      <Route path="/Drivers" element={<RequireAuth><Drivers /></RequireAuth>} />
+      <Route path="/Companies" element={<RequireAuth><Companies /></RequireAuth>} />
+      <Route path="/Requests" element={<RequireAuth><Requests /></RequireAuth>} />
+      <Route path="/Trips" element={<RequireAuth><Trips /></RequireAuth>} />
+      <Route path="/Payments" element={<RequireAuth><Payments /></RequireAuth>} />
+      <Route path="/Roles" element={<RequireAuth><Roles /></RequireAuth>} />
+      <Route path="/AuditLogs" element={<RequireAuth><AuditLogs /></RequireAuth>} />
+      <Route path="/Settings" element={<RequireAuth><Settings /></RequireAuth>} />
     </Routes>
   );
 
