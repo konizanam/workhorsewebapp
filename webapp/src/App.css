@@ -3053,3 +3053,11 @@ body:has(.admin-sidebar) .modal-overlay {
   white-space: normal;
   min-width: 9rem;
 }
+
+/* Driver photos are square, matching the app's square style. */
+.driver-photo,
+.driver-photo-placeholder,
+.driver-photo-preview,
+.driver-image-preview-trigger {
+  border-radius: 0;
+}
