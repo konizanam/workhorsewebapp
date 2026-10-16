@@ -10,6 +10,7 @@ import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 import { shortRef } from "../lib/format";
+import RecordHistory from "../components/RecordHistory";
 
 type ApiRequest = {
   request_id: string;
@@ -196,10 +197,12 @@ function Requests() {
 
       {selectedRequest && (
         <ViewDetailsModal
-          title={selectedRequest["Request ID"]}
+          title={`Request ${shortRef("REQ", selectedRequest["Request ID"] ?? selectedRequest.ID)}`}
           details={selectedRequest}
           onClose={() => setSelectedRequest(null)}
-        />
+        >
+          <RecordHistory path={`/requests/${selectedRequest.ID}/history`} description="Submission, matching, delivery and every change made to this request." />
+        </ViewDetailsModal>
       )}
 
       {actionRequest && (

@@ -10,6 +10,7 @@ import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 import { shortRef } from "../lib/format";
+import RecordHistory from "../components/RecordHistory";
 
 const supportStatuses = ["Open", "Resolved", "Cancelled", "Escalated"] as const;
 type SupportTicketStatus = typeof supportStatuses[number];
@@ -343,11 +344,11 @@ function Trips() {
 
       {selectedTrip && (
         <ViewDetailsModal
-          title={selectedTrip["Trip ID"]}
+          title={`Trip ${shortRef("TRP", selectedTrip["Trip ID"] ?? selectedTrip.ID)}`}
           details={selectedTrip}
           onClose={() => setSelectedTrip(null)}
         >
-          <section className="driver-cases support-ticket-section">
+          <section className="driver-cases support-ticket-section detail-section">
             <div className="driver-cases-header">
               <div>
                 <h3>Support tickets</h3>
@@ -404,6 +405,7 @@ function Trips() {
               <p className="cases-empty">No support tickets for this trip yet.</p>
             )}
           </section>
+          <RecordHistory path={`/trips/${selectedTrip.ID}/history`} description="Milestones, payments, tickets, ratings and every change made to this trip." />
         </ViewDetailsModal>
       )}
 
