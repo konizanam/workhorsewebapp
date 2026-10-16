@@ -395,3 +395,121 @@ body:has(.modal-overlay) .admin-content > .feedback-message {
   color: var(--error-accent);
   font-size: var(--font-size-xs);
 }
+
+/* =========================================
+   FILE UPLOAD
+   Drop zone used for every file field
+   (components/FileUpload).
+========================================= */
+
+.file-upload {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 4.25rem;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px dashed #b9c3d3;
+  background: #f8fafc;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+/* The real input covers the zone: click or drop a file anywhere on it. */
+.file-upload input[type="file"] {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-upload:hover,
+.file-upload.is-dragging {
+  border-color: var(--brand-navy);
+  background: #eff4fb;
+}
+
+.file-upload:focus-within {
+  border-color: var(--brand-gold);
+  box-shadow: var(--control-focus-ring);
+}
+
+.file-upload.has-file {
+  border-style: solid;
+  border-color: var(--success-border);
+  background: var(--success-bg);
+}
+
+.file-upload.has-error {
+  border-color: var(--error-accent);
+  background: var(--error-bg);
+}
+
+.file-upload-preview {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: var(--brand-white);
+  color: var(--brand-navy);
+  font-size: 1.35rem;
+}
+
+.file-upload-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.file-upload.has-file .file-upload-preview {
+  color: var(--success-accent);
+}
+
+.file-upload-text {
+  display: grid;
+  flex: 1;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.file-upload-text strong {
+  overflow: hidden;
+  color: var(--brand-navy);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-upload-text span {
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+}
+
+.file-upload-action {
+  flex-shrink: 0;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--brand-navy);
+  background: var(--brand-white);
+  color: var(--brand-navy);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.file-upload:hover .file-upload-action,
+.file-upload:focus-within .file-upload-action {
+  border-color: var(--brand-gold);
+  background: var(--brand-gold);
+}
+
+.file-upload + .file-upload-error {
+  display: block;
+  margin-top: 0.35rem;
+}

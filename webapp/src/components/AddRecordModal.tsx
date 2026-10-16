@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FileUpload from "./FileUpload";
 
 type AddRecordField = {
   name: string;
@@ -116,27 +117,28 @@ function AddRecordModal({
                   <option value="" disabled>Select {field.label.toLowerCase()}</option>
                   {field.options.map((option) => <option key={option} value={option}>{option}</option>)}
                 </select>
+              ) : field.type === "file" ? (
+                <FileUpload
+                  id={`add-${field.name}`}
+                  label={field.label}
+                  accept={field.accept}
+                  required={field.required ?? true}
+                  value={values[field.name]}
+                  error={fileErrors[field.name]}
+                  onChange={(event) => handleFieldChange(field, event)}
+                />
               ) : (
                 <input
                   id={`add-${field.name}`}
                   type={field.type ?? "text"}
-                  value={field.type === "file" ? undefined : values[field.name] ?? ""}
+                  value={values[field.name] ?? ""}
                   onChange={(event) => handleFieldChange(field, event)}
                   placeholder={field.placeholder}
                   pattern={field.pattern}
                   title={field.title}
-                  accept={field.accept}
                   required={field.required ?? true}
                 />
               )}
-              {field.type === "file" && values[field.name] && (
-                values[field.name].startsWith("data:image/") ? (
-                  <img className="driver-photo-preview" src={values[field.name]} alt={`${field.label} preview`} />
-                ) : (
-                  <span>File uploaded</span>
-                )
-              )}
-              {field.type === "file" && fileErrors[field.name] && <span className="file-upload-error" role="alert">{fileErrors[field.name]}</span>}
             </div>
           ))}
         </div>

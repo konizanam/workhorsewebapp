@@ -1,5 +1,6 @@
 import { useState } from "react";
 import LocationAutocomplete from "./LocationAutocomplete";
+import FileUpload from "./FileUpload";
 
 type RecordField = {
   key: string;
@@ -32,12 +33,14 @@ function RecordActionsModal({
   isSaving = false,
 }: RecordActionsModalProps) {
   const [fileValues, setFileValues] = useState<Record<string, string>>({});
-  const [fileError, setFileError] = useState("");
+  const [fileErrors, setFileErrors] = useState<Record<string, string>>({});
+  const hasFileError = Object.values(fileErrors).some(Boolean);
   const [isReadingFile, setIsReadingFile] = useState(false);
 
   const handleFileChange = (field: RecordField, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.currentTarget.files?.[0];
     if (!file) return;
+    const setFileError = (message: string) => setFileErrors((current) => ({ ...current, [field.key]: message }));
 
     const acceptsPdf = field.accept?.includes("application/pdf") ?? false;
     const isAcceptedFile = file.type.startsWith("image/") || (acceptsPdf && file.type === "application/pdf");
@@ -72,7 +75,7 @@ function RecordActionsModal({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (fileError) return;
+    if (hasFileError) return;
     const formData = new FormData(event.currentTarget);
     const updatedValues = Object.fromEntries(formData.entries()) as Record<string, string>;
     for (const field of fields) {
@@ -112,23 +115,16 @@ function RecordActionsModal({
                   initialPlaceId={values[`${field.key} Place ID`]}
                 />
               ) : field.type === "file" ? (
-                <>
-                  <input
+                  <FileUpload
                     id={`record-${field.key}`}
                     name={field.key}
-                    type="file"
+                    label={field.label}
                     accept={field.accept}
                     required={field.required ?? false}
+                    value={fileValues[field.key] ?? values[field.key]}
+                    error={fileErrors[field.key]}
                     onChange={(event) => handleFileChange(field, event)}
                   />
-                  {(fileValues[field.key] ?? values[field.key])?.startsWith("data:image/") && (
-                    <img className="driver-photo-preview" src={fileValues[field.key] ?? values[field.key]} alt={`${field.label} preview`} />
-                  )}
-                  {(fileValues[field.key] ?? values[field.key])?.startsWith("data:application/pdf;") && (
-                    <span>PDF selected</span>
-                  )}
-                  {fileError && <span className="file-upload-error" role="alert">{fileError}</span>}
-                </>
               ) : (
                 <input id={`record-${field.key}`} name={field.key} type={field.type ?? "text"} defaultValue={values[field.key]} pattern={field.pattern} title={field.title} required={field.required ?? true} />
               )}
@@ -142,7 +138,7 @@ function RecordActionsModal({
               {action.label}
             </button>
           ))}
-          <button className="primary-btn" type="submit" disabled={isReadingFile || Boolean(fileError) || isSaving}>
+          <button className="primary-btn" type="submit" disabled={isReadingFile || hasFileError || isSaving}>
             {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
