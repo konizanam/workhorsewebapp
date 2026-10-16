@@ -3042,3 +3042,14 @@ body:has(.admin-sidebar) .modal-overlay {
   gap: 0.5rem;
   padding-bottom: 12px;
 }
+
+/* Drivers table: keep IDs, plates, phones and badges on one line. */
+.drivers-table th,
+.drivers-table td {
+  white-space: nowrap;
+}
+
+.drivers-table td:nth-child(2) {
+  white-space: normal;
+  min-width: 9rem;
+}

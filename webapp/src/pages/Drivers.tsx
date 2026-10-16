@@ -156,7 +156,7 @@ const mapDriver = (driver: DriverApiRecord): Record<string, string> => ({
   "ID Certified Copy": "",
   "Driver License Certified Copy": "",
   "Car Registration Certified Copy": "",
-  Rating: driver.rating == null ? "Not rated" : String(driver.rating),
+  Rating: driver.rating == null || Number(driver.rating) === 0 ? "Not rated" : Number(driver.rating).toFixed(1),
   Availability: driver.Availability ?? (driver.availability_status === "online" ? "Available" : "Unavailable"),
   Status: driver.Status ?? driver.onboarding_status ?? "Submitted",
 });
@@ -383,7 +383,7 @@ function Drivers() {
 
           <div className="table-container">
 
-            <table className="users-table">
+            <table className="users-table drivers-table">
 
               <thead>
 
@@ -391,8 +391,8 @@ function Drivers() {
                   <th>Image</th>
                   <th>Name</th>
                   <th>Phone</th>
-                  <th>Driver's License Number</th>
-                  <th>Car's License Plate</th>
+                  <th>License No.</th>
+                  <th>Plate</th>
                   <th>Rating</th>
                   <th>Availability</th>
                   <th>Status</th>
