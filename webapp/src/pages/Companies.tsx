@@ -17,14 +17,27 @@ type ApiCompany = {
   email: string;
   phone_number?: string | null;
   registration_number: string;
+  physical_address?: string | null;
+  city?: string | null;
+  region?: string | null;
+  postal_code?: string | null;
   onboarding_status?: string | null;
   status?: string | null;
   Name?: string;
   Email?: string;
   Phone?: string | null;
   "Registration Number"?: string;
+  "Physical Address"?: string | null;
+  "City / Town"?: string | null;
+  Region?: string | null;
+  "Postal Code"?: string | null;
   Status?: string;
 };
+
+const NAMIBIAN_REGIONS = [
+  "Erongo", "Hardap", "//Karas", "Kavango East", "Kavango West", "Khomas", "Kunene",
+  "Ohangwena", "Omaheke", "Omusati", "Oshana", "Oshikoto", "Otjozondjupa", "Zambezi",
+];
 
 type CompanyListResponse = { data: ApiCompany[] };
 
@@ -34,6 +47,10 @@ const mapCompany = (company: ApiCompany): Record<string, string> => ({
   Email: company.Email ?? company.email,
   Phone: company.Phone ?? company.phone_number ?? "",
   "Registration Number": company["Registration Number"] ?? company.registration_number,
+  "Physical Address": company["Physical Address"] ?? company.physical_address ?? "",
+  "City / Town": company["City / Town"] ?? company.city ?? "",
+  Region: company.Region ?? company.region ?? "",
+  "Postal Code": company["Postal Code"] ?? company.postal_code ?? "",
   Status: company.Status ?? company.onboarding_status ?? "Submitted",
   "Account Status": company.status ?? "invited",
 });
@@ -64,6 +81,7 @@ function Companies() {
     searchText: (company) => Object.values(company).join(" "),
     filters: [
       { key: "status", label: "Status", allLabel: "All statuses", getValue: (row) => row["Status"] ?? "" },
+      { key: "region", label: "Region", allLabel: "All regions", getValue: (row) => row["Region"] ?? "" },
     ],
   });
 
@@ -208,10 +226,14 @@ function Companies() {
           title="Add New Company"
           description="Enter the details for the new company."
           fields={[
-            { name: "name", label: "Company Name", placeholder: "e.g. North Star Logistics" },
-            { name: "email", label: "Email Address", type: "email", placeholder: "info@example.com" },
-            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0612345678" },
-            { name: "registration", label: "Registration Number", placeholder: "REG-123456" },
+            { name: "name", label: "Company Name", placeholder: "e.g. North Star Logistics", section: "Company details" },
+            { name: "registration", label: "Registration Number", placeholder: "e.g. CC/2015/04521", section: "Company details" },
+            { name: "email", label: "Email Address", type: "email", placeholder: "info@example.com", section: "Contact details" },
+            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0612345678", section: "Contact details" },
+            { name: "address", label: "Physical Address", placeholder: "e.g. 14 Nasmith Street, Southern Industrial", section: "Physical address" },
+            { name: "City", label: "City / Town", placeholder: "e.g. Windhoek", section: "Physical address" },
+            { name: "Region", label: "Region", options: NAMIBIAN_REGIONS, section: "Physical address" },
+            { name: "Postal Code", label: "Postal Code", placeholder: "e.g. 9000", required: false, section: "Physical address" },
           ]}
           onClose={() => setShowModal(false)}
           onSubmit={addCompany}
@@ -231,7 +253,17 @@ function Companies() {
         <RecordActionsModal
           title={`Manage ${actionCompany.Name}`}
           values={actionCompany}
-          fields={[{ key: "Name", label: "Company Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Registration Number", label: "Registration Number" }, { key: "Status", label: "Onboarding Status", options: ["Submitted", "Verified", "Approved", "Rejected"] }]}
+          fields={[
+            { key: "Name", label: "Company Name", section: "Company details" },
+            { key: "Registration Number", label: "Registration Number", section: "Company details" },
+            { key: "Status", label: "Onboarding Status", options: ["Submitted", "Verified", "Approved", "Rejected"], section: "Company details" },
+            { key: "Email", label: "Email", type: "email", section: "Contact details" },
+            { key: "Phone", label: "Phone", section: "Contact details" },
+            { key: "Physical Address", label: "Physical Address", section: "Physical address" },
+            { key: "City / Town", label: "City / Town", section: "Physical address" },
+            { key: "Region", label: "Region", options: NAMIBIAN_REGIONS, section: "Physical address" },
+            { key: "Postal Code", label: "Postal Code", required: false, section: "Physical address" },
+          ]}
           actions={[{ label: actionCompany["Account Status"] === "disabled" ? "Enable Company" : "Disable Company", onClick: () => void toggleCompanyStatus() }]}
           onClose={() => setActionCompany(null)}
           onSave={(values) => void saveCompany(values)}

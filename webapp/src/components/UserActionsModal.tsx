@@ -74,7 +74,7 @@ function UserActionsModal({
             <h3 className="actions-section-title">Update details</h3>
             <div className="actions-form-grid">
               <div className="form-group">
-                <label htmlFor="user-first-name">First Name</label>
+                <label htmlFor="user-first-name">First Name<span className="required-mark" aria-hidden="true">*</span></label>
                 <input id="user-first-name" value={firstName} onChange={(event) => setFirstName(event.target.value)} required />
               </div>
               <div className="form-group">
@@ -82,15 +82,15 @@ function UserActionsModal({
                 <input id="user-initials" value={initials} placeholder="e.g. J.K." onChange={(event) => setInitials(event.target.value)} />
               </div>
               <div className="form-group">
-                <label htmlFor="user-surname">Surname</label>
+                <label htmlFor="user-surname">Surname<span className="required-mark" aria-hidden="true">*</span></label>
                 <input id="user-surname" value={surname} onChange={(event) => setSurname(event.target.value)} required />
               </div>
               <div className="form-group">
-                <label htmlFor="user-email">Email Address</label>
+                <label htmlFor="user-email">Email Address<span className="required-mark" aria-hidden="true">*</span></label>
                 <input id="user-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
               </div>
               <div className="form-group">
-                <label htmlFor="user-phone">Phone Number</label>
+                <label htmlFor="user-phone">Phone Number<span className="required-mark" aria-hidden="true">*</span></label>
                 <input id="user-phone" value={phone} onChange={(event) => setPhone(event.target.value)} required />
               </div>
             </div>
