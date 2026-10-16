@@ -571,3 +571,31 @@ body:has(.modal-overlay) .admin-content > .feedback-message {
 .modal-form-grid .file-upload {
   height: 4.25rem;
 }
+
+/* =========================================
+   STICKY MODAL HEADER AND FOOTER
+   The title and close button stay at the top,
+   and the action buttons at the bottom, while
+   a long modal scrolls.
+========================================= */
+
+:where(.role-modal, .audit-modal) > .modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--brand-white);
+}
+
+:where(.role-modal, .audit-modal) > .modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  background: var(--brand-white);
+}
+
+:where(.role-modal, .audit-modal) > form > .modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  background: var(--brand-white);
+}

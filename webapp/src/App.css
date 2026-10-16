@@ -3025,3 +3025,20 @@ body:has(.admin-sidebar) .modal-overlay {
 .driver-document-item .secondary-btn {
   width: 100%;
 }
+
+/* =========================================
+   DETAILS PHOTO IN THE FIELD GRID
+   The photo is the first field, spanning two
+   rows, so other fields sit beside it.
+========================================= */
+
+.details-grid .driver-details-image {
+  grid-column: auto;
+  grid-row: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding-bottom: 12px;
+}
