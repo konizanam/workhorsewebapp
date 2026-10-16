@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FormSections from "./FormSections";
 import LocationAutocomplete from "./LocationAutocomplete";
 import FileUpload from "./FileUpload";
 
@@ -11,6 +12,7 @@ type RecordField = {
   title?: string;
   accept?: string;
   required?: boolean;
+  section?: string;
 };
 
 type RecordActionsModalProps = {
@@ -97,10 +99,10 @@ function RecordActionsModal({
           <button className="modal-close" type="button" onClick={onClose}>×</button>
         </div>
 
-        <div className="modal-body modal-form-grid">
-          {fields.map((field) => (
+        <div className="modal-body">
+          <FormSections fields={fields} renderField={(field) => (
             <div className="form-group" key={field.key}>
-              <label htmlFor={`record-${field.key}`}>{field.label}</label>
+              <label htmlFor={`record-${field.key}`}>{field.label}{(field.required ?? (field.type !== "file" && field.type !== "location" && !field.options)) && <span className="required-mark" aria-hidden="true">*</span>}</label>
               {field.options ? (
                 <select id={`record-${field.key}`} name={field.key} defaultValue={values[field.key]}>
                   {field.options.map((option) => <option key={option}>{option}</option>)}
@@ -129,7 +131,7 @@ function RecordActionsModal({
                 <input id={`record-${field.key}`} name={field.key} type={field.type ?? "text"} defaultValue={values[field.key]} pattern={field.pattern} title={field.title} required={field.required ?? true} />
               )}
             </div>
-          ))}
+          )} />
         </div>
 
         <div className="modal-footer">

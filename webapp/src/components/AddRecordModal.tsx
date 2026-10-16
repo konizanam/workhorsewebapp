@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FormSections from "./FormSections";
 import FileUpload from "./FileUpload";
 
 type AddRecordField = {
@@ -11,6 +12,7 @@ type AddRecordField = {
   title?: string;
   accept?: string;
   required?: boolean;
+  section?: string;
 };
 
 type AddRecordModalProps = {
@@ -103,10 +105,10 @@ function AddRecordModal({
           </button>
         </div>
 
-        <div className="modal-body modal-form-grid">
-          {fields.map((field) => (
+        <div className="modal-body">
+          <FormSections fields={fields} renderField={(field) => (
             <div className="form-group" key={field.name}>
-              <label htmlFor={`add-${field.name}`}>{field.label}</label>
+              <label htmlFor={`add-${field.name}`}>{field.label}{(field.required ?? true) && <span className="required-mark" aria-hidden="true">*</span>}</label>
               {field.options ? (
                 <select
                   id={`add-${field.name}`}
@@ -140,7 +142,7 @@ function AddRecordModal({
                 />
               )}
             </div>
-          ))}
+          )} />
         </div>
 
         <div className="modal-footer">

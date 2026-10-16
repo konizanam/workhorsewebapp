@@ -25,6 +25,7 @@ type DriverCase = {
 type DriverApiRecord = {
   user_id: string;
   first_name?: string | null;
+  initials?: string | null;
   last_name?: string | null;
   email: string;
   phone_number?: string | null;
@@ -94,7 +95,10 @@ type DriverListResponse = {
 
 const mapDriver = (driver: DriverApiRecord): Record<string, string> => ({
   ID: driver.user_id,
-  Name: [driver.first_name, driver.last_name].filter(Boolean).join(" "),
+  Name: [driver.first_name, driver.initials, driver.last_name].filter(Boolean).join(" "),
+  "First Name": driver.first_name ?? "",
+  Initials: driver.initials ?? "",
+  Surname: driver.last_name ?? "",
   Email: driver.email,
   Phone: driver.phone_number ?? "",
   "Driver's License Number": driver["Driver's License Number"] ?? "",
@@ -196,8 +200,9 @@ function Drivers() {
       });
       const row = mapDriver({
         ...created,
-        first_name: created.first_name ?? values.name.trim().split(/\s+/)[0],
-        last_name: created.last_name ?? values.name.trim().split(/\s+/).slice(1).join(" "),
+        first_name: created.first_name ?? values.first_name,
+        initials: created.initials ?? values.initials,
+        last_name: created.last_name ?? values.last_name,
         phone_number: created.phone_number ?? values.phone,
         profile_image_data: created.profile_image_data ?? values.image,
         "Driver's License Number": created["Driver's License Number"] ?? values.license,
@@ -206,7 +211,7 @@ function Drivers() {
       setDriverRows((current) => [row, ...current]);
       table.reset();
       setShowModal(false);
-      notify.success(`${values.name} was saved successfully.`);
+      notify.success(`${values.first_name} ${values.last_name} was saved successfully.`);
     } catch (error) {
       notify.error(error, "Unable to save the driver.");
     } finally {
@@ -397,15 +402,17 @@ function Drivers() {
           title="Add New Driver"
           description="Enter the details for the new driver."
           fields={[
-            { name: "name", label: "Full Name", placeholder: "e.g. Alex Morgan" },
-            { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com" },
-            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678" },
-            { name: "license", label: "Driver's License Number", placeholder: "Enter driver's license number" },
-            { name: "carLicensePlate", label: "Car's License Plate", placeholder: "Enter car's license plate" },
-            { name: "image", label: "Driver Image", type: "file", accept: "image/*", required: false },
-            { name: "idCopy", label: "Certified Copy of ID", type: "file", accept: "image/*,application/pdf", required: false },
-            { name: "driverLicenseCopy", label: "Certified Copy of Driver License", type: "file", accept: "image/*,application/pdf", required: false },
-            { name: "carRegistrationCopy", label: "Certified Copy of Car Registration", type: "file", accept: "image/*,application/pdf", required: false },
+            { name: "first_name", label: "First Name", placeholder: "e.g. Alex", section: "Personal details" },
+            { name: "initials", label: "Initials", placeholder: "e.g. J.K.", section: "Personal details" },
+            { name: "last_name", label: "Surname", placeholder: "e.g. Morgan", section: "Personal details" },
+            { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com", section: "Contact details" },
+            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678", section: "Contact details" },
+            { name: "license", label: "Driver's License Number", placeholder: "Enter driver's license number", section: "License and vehicle" },
+            { name: "carLicensePlate", label: "Car's License Plate", placeholder: "Enter car's license plate", section: "License and vehicle" },
+            { name: "image", label: "Driver Image", type: "file", accept: "image/*", section: "Documents" },
+            { name: "idCopy", label: "Certified Copy of ID", type: "file", accept: "image/*,application/pdf", section: "Documents" },
+            { name: "driverLicenseCopy", label: "Certified Copy of Driver License", type: "file", accept: "image/*,application/pdf", section: "Documents" },
+            { name: "carRegistrationCopy", label: "Certified Copy of Car Registration", type: "file", accept: "image/*,application/pdf", section: "Documents" },
           ]}
           onClose={() => setShowModal(false)}
           onSubmit={addDriver}
@@ -426,6 +433,9 @@ function Drivers() {
             <ViewDetailsModal
               title={driver.Name}
               details={Object.fromEntries(Object.entries(driver).filter(([label]) => ![
+                "First Name",
+                "Initials",
+                "Surname",
                 "ID Certified Copy",
                 "Driver License Certified Copy",
                 "Car Registration Certified Copy",
@@ -542,7 +552,21 @@ function Drivers() {
         <RecordActionsModal
           title={`Manage ${actionDriver.Name}`}
           values={actionDriver}
-          fields={[{ key: "Name", label: "Full Name" }, { key: "Email", label: "Email", type: "email" }, { key: "Phone", label: "Phone" }, { key: "Driver's License Number", label: "Driver's License Number" }, { key: "Car's License Plate", label: "Car's License Plate" }, { key: "Driver Image", label: "Driver Image", type: "file", accept: "image/*", required: false }, { key: "ID Certified Copy", label: "Certified Copy of ID", type: "file", accept: "image/*,application/pdf", required: false }, { key: "Driver License Certified Copy", label: "Certified Copy of Driver License", type: "file", accept: "image/*,application/pdf", required: false }, { key: "Car Registration Certified Copy", label: "Certified Copy of Car Registration", type: "file", accept: "image/*,application/pdf", required: false }, { key: "Availability", label: "Availability", options: ["Available", "Unavailable", "Disabled"] }, { key: "Status", label: "Onboarding Status", options: ["Submitted", "Verified", "Approved", "Rejected"] }]}
+          fields={[
+            { key: "First Name", label: "First Name", section: "Personal details" },
+            { key: "Initials", label: "Initials", section: "Personal details" },
+            { key: "Surname", label: "Surname", section: "Personal details" },
+            { key: "Email", label: "Email", type: "email", section: "Contact details" },
+            { key: "Phone", label: "Phone", section: "Contact details" },
+            { key: "Driver's License Number", label: "Driver's License Number", section: "License and vehicle" },
+            { key: "Car's License Plate", label: "Car's License Plate", section: "License and vehicle" },
+            { key: "Availability", label: "Availability", options: ["Available", "Unavailable", "Disabled"], section: "Status" },
+            { key: "Status", label: "Onboarding Status", options: ["Submitted", "Verified", "Approved", "Rejected"], section: "Status" },
+            { key: "Driver Image", label: "Driver Image", type: "file", accept: "image/*", required: false, section: "Documents" },
+            { key: "ID Certified Copy", label: "Certified Copy of ID", type: "file", accept: "image/*,application/pdf", required: false, section: "Documents" },
+            { key: "Driver License Certified Copy", label: "Certified Copy of Driver License", type: "file", accept: "image/*,application/pdf", required: false, section: "Documents" },
+            { key: "Car Registration Certified Copy", label: "Certified Copy of Car Registration", type: "file", accept: "image/*,application/pdf", required: false, section: "Documents" },
+          ]}
           actions={[{ label: actionDriver.Availability === "Disabled" ? "Enable Driver" : "Disable Driver", onClick: () => void toggleDriverStatus() }]}
           onClose={() => setActionDriver(null)}
           onSave={(values) => void saveDriver(values)}

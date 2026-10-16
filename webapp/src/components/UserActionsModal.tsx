@@ -3,6 +3,9 @@ import { useState } from "react";
 type ManagedUser = {
   id: string;
   name: string;
+  firstName: string;
+  initials: string;
+  surname: string;
   email: string;
   phone: string;
   type: string;
@@ -16,7 +19,7 @@ type UserActionsModalProps = {
   roles: RoleOption[];
   assignedRoles: RoleOption[];
   onClose: () => void;
-  onUpdate: (values: Pick<ManagedUser, "name" | "email" | "phone">) => void;
+  onUpdate: (values: { first_name: string; initials: string; last_name: string; email: string; phone: string }) => void;
   onSetPassword: (password: string) => void;
   onAssignRole: (roleId: string) => void;
   onRemoveRole: (roleId: string) => void;
@@ -34,7 +37,9 @@ function UserActionsModal({
   onRemoveRole,
   onToggleStatus,
 }: UserActionsModalProps) {
-  const [name, setName] = useState(user.name);
+  const [firstName, setFirstName] = useState(user.firstName);
+  const [initials, setInitials] = useState(user.initials);
+  const [surname, setSurname] = useState(user.surname);
   const [email, setEmail] = useState(user.email);
   const [phone, setPhone] = useState(user.phone);
   const [roleId, setRoleId] = useState("");
@@ -42,7 +47,7 @@ function UserActionsModal({
 
   const saveProfile = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onUpdate({ name, email, phone });
+    onUpdate({ first_name: firstName, initials, last_name: surname, email, phone });
   };
 
   const savePassword = (event: React.FormEvent<HTMLFormElement>) => {
@@ -69,8 +74,16 @@ function UserActionsModal({
             <h3 className="actions-section-title">Update details</h3>
             <div className="actions-form-grid">
               <div className="form-group">
-                <label htmlFor="user-name">Full Name</label>
-                <input id="user-name" value={name} onChange={(event) => setName(event.target.value)} required />
+                <label htmlFor="user-first-name">First Name</label>
+                <input id="user-first-name" value={firstName} onChange={(event) => setFirstName(event.target.value)} required />
+              </div>
+              <div className="form-group">
+                <label htmlFor="user-initials">Initials</label>
+                <input id="user-initials" value={initials} placeholder="e.g. J.K." onChange={(event) => setInitials(event.target.value)} />
+              </div>
+              <div className="form-group">
+                <label htmlFor="user-surname">Surname</label>
+                <input id="user-surname" value={surname} onChange={(event) => setSurname(event.target.value)} required />
               </div>
               <div className="form-group">
                 <label htmlFor="user-email">Email Address</label>

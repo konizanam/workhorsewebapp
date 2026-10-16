@@ -14,6 +14,9 @@ import { apiRequest } from "../lib/api";
 type User = {
   id: string;
   name: string;
+  firstName: string;
+  initials: string;
+  surname: string;
   email: string;
   phone: string;
   type: string;
@@ -24,6 +27,7 @@ type User = {
 type ApiUser = {
   user_id: string;
   first_name?: string | null;
+  initials?: string | null;
   last_name?: string | null;
   name?: string;
   email: string;
@@ -42,7 +46,10 @@ type ApiRole = { role_id: string; name: string };
 
 const mapUser = (user: ApiUser): User => ({
   id: user.user_id,
-  name: user.name ?? [user.first_name, user.last_name].filter(Boolean).join(" "),
+  name: user.name ?? [user.first_name, user.initials, user.last_name].filter(Boolean).join(" "),
+  firstName: user.first_name ?? "",
+  initials: user.initials ?? "",
+  surname: user.last_name ?? "",
   email: user.email,
   phone: user.phone ?? user.phone_number ?? "",
   type: (user.type ?? user.user_type ?? "").replace(/^./, (letter) => letter.toUpperCase()),
@@ -91,7 +98,7 @@ function Users() {
       });
       setUsers((current) => [mapUser(created), ...current]);
       setShowModal(false);
-      notify.success(`${values.name} was saved successfully.`);
+      notify.success(`${values.first_name} ${values.last_name} was saved successfully.`);
     } catch (error) {
       notify.error(error, "Unable to save the user.");
     } finally {
@@ -113,7 +120,7 @@ function Users() {
     }
   };
 
-  const updateUser = async (values: Pick<User, "name" | "email" | "phone">) => {
+  const updateUser = async (values: { first_name: string; initials: string; last_name: string; email: string; phone: string }) => {
     if (!actionUser) return;
     try {
       const updated = await apiRequest<ApiUser>(`/users/${actionUser.id}`, {
@@ -123,7 +130,7 @@ function Users() {
       const mapped = mapUser(updated);
       setUsers((current) => current.map((user) => user.id === mapped.id ? mapped : user));
       setActionUser(mapped);
-      notify.success(`${values.name} was updated.`);
+      notify.success(`${values.first_name} ${values.last_name} was updated.`);
     } catch (error) {
       notify.error(error, "Unable to update the user.");
     }
@@ -267,10 +274,12 @@ function Users() {
           title="Add New User"
           description="Enter the details for the new user."
           fields={[
-            { name: "name", label: "Full Name", placeholder: "e.g. Alex Morgan" },
-            { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com" },
-            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678" },
-            { name: "type", label: "User Type", options: ["Admin", "Customer", "Driver"] },
+            { name: "first_name", label: "First Name", placeholder: "e.g. Alex", section: "Personal details" },
+            { name: "initials", label: "Initials", placeholder: "e.g. J.K.", required: false, section: "Personal details" },
+            { name: "last_name", label: "Surname", placeholder: "e.g. Morgan", section: "Personal details" },
+            { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com", section: "Contact details" },
+            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678", section: "Contact details" },
+            { name: "type", label: "User Type", options: ["Admin", "Customer"], section: "Account" },
           ]}
           onClose={() => setShowModal(false)}
           onSubmit={addUser}

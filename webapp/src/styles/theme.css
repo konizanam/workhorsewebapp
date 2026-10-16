@@ -513,3 +513,40 @@ body:has(.modal-overlay) .admin-content > .feedback-message {
   display: block;
   margin-top: 0.35rem;
 }
+
+/* =========================================
+   FORM SECTIONS
+   Titled groups of fields inside modals
+   (components/FormSections).
+========================================= */
+
+.form-section + .form-section {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--card-border);
+}
+
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.8rem;
+  color: var(--brand-navy);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.form-section-title::before {
+  content: "";
+  width: 3px;
+  height: 0.9rem;
+  background: var(--brand-gold);
+}
+
+/* Required field marker */
+.required-mark {
+  margin-left: 0.2rem;
+  color: var(--error-accent);
+}
