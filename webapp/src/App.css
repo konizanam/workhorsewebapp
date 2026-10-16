@@ -2651,3 +2651,17 @@ body:has(.admin-sidebar) .modal-overlay {
   text-decoration-thickness: 2px;
   text-underline-offset: 0.35em;
 }
+
+/* =========================================
+   SIDEBAR DIVIDERS
+   A gold line under each menu item, matching
+   the hover colour.
+========================================= */
+
+.admin-sidebar .sidebar-link {
+  border-bottom: 1px solid var(--brand-gold);
+}
+
+.admin-sidebar .sidebar-nav {
+  padding-right: 0;
+}
