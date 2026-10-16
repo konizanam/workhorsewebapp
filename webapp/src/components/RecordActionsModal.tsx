@@ -94,7 +94,7 @@ function RecordActionsModal({
           <button className="modal-close" type="button" onClick={onClose}>×</button>
         </div>
 
-        <div className="modal-body actions-form-grid">
+        <div className="modal-body modal-form-grid">
           {fields.map((field) => (
             <div className="form-group" key={field.key}>
               <label htmlFor={`record-${field.key}`}>{field.label}</label>

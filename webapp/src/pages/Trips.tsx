@@ -434,7 +434,7 @@ function Trips() {
               </div>
               <button className="modal-close" type="button" onClick={() => setTicketTrip(null)}>×</button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body modal-form-grid">
               <div className="form-group">
                 <label htmlFor="support-requester">Your name</label>
                 <input id="support-requester" name="requester" required />
@@ -447,7 +447,7 @@ function Trips() {
                 <label htmlFor="support-subject">Subject</label>
                 <input id="support-subject" name="subject" required maxLength={120} />
               </div>
-              <div className="form-group">
+              <div className="form-group form-group-full">
                 <label htmlFor="support-description">What happened?</label>
                 <textarea id="support-description" name="description" required maxLength={2000} rows={5} />
               </div>

@@ -102,7 +102,7 @@ function AddRecordModal({
           </button>
         </div>
 
-        <div className="modal-body">
+        <div className="modal-body modal-form-grid">
           {fields.map((field) => (
             <div className="form-group" key={field.name}>
               <label htmlFor={`add-${field.name}`}>{field.label}</label>

@@ -480,7 +480,7 @@ function RolesPermissions() {
             </div>
 
 
-            <div className="modal-body">
+            <div className="modal-body modal-form-grid">
 
               <div className="form-group">
 
@@ -518,7 +518,7 @@ function RolesPermissions() {
               </div>
 
 
-              <div className="form-group">
+              <div className="form-group form-group-full">
 
                 <label>
                   Permissions
