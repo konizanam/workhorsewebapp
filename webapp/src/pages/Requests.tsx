@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
 import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
@@ -47,7 +48,7 @@ const mapRequest = (request: ApiRequest): Record<string, string> => ({
 function Requests() {
   const [selectedRequest, setSelectedRequest] = useState<Record<string, string> | null>(null);
   const [actionRequest, setActionRequest] = useState<Record<string, string> | null>(null);
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
   const [isSaving, setIsSaving] = useState(false);
 
   const [requestRows, setRequestRows] = useState<Record<string, string>[]>([]);
@@ -58,12 +59,12 @@ function Requests() {
         const response = await apiRequest<RequestListResponse>("/requests?limit=100");
         setRequestRows((response.data ?? []).map(mapRequest));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load requests.");
+        notify.error(error, "Unable to load requests.");
       }
     };
 
     void loadRequests();
-  }, []);
+  }, [notify]);
 
   const table = useTableControls(requestRows, {
     searchText: (request) => Object.values(request).join(" "),
@@ -83,10 +84,10 @@ function Requests() {
       });
       const row = mapRequest({ ...updated, request_id: updated.request_id ?? actionRequest.ID });
       setRequestRows((current) => current.map((request) => request.ID === actionRequest.ID ? row : request));
-      setFeedback(`Request ${actionRequest.ID} was saved.`);
+      notify.success(`Request ${actionRequest.ID} was saved.`);
       setActionRequest(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the request.");
+      notify.error(error, "Unable to update the request.");
     } finally {
       setIsSaving(false);
     }
@@ -101,10 +102,10 @@ function Requests() {
       });
       const row = mapRequest({ ...updated, request_id: updated.request_id ?? actionRequest.ID });
       setRequestRows((current) => current.map((request) => request.ID === actionRequest.ID ? row : request));
-      setFeedback(`Request ${actionRequest.ID} was cancelled.`);
+      notify.success(`Request ${actionRequest.ID} was cancelled.`);
       setActionRequest(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to cancel the request.");
+      notify.error(error, "Unable to cancel the request.");
     }
   };
 
@@ -115,7 +116,6 @@ function Requests() {
 
       <div className="admin-content">
 
-        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -126,6 +126,8 @@ function Requests() {
           </div>
 
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
 
         {/* Requests Table */}

@@ -30,6 +30,7 @@ import {
   YAxis,
 } from "recharts";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import { apiRequest } from "../lib/api";
 
 type CountBy = { count: number };
@@ -181,7 +182,7 @@ function AdminDashboard() {
     pendingVerifications: 0,
     activity: [],
   });
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
   const [days, setDays] = useState(14);
 
   useEffect(() => {
@@ -189,12 +190,12 @@ function AdminDashboard() {
       try {
         setSummary(await apiRequest<DashboardSummary>(`/dashboard/summary?days=${days}`));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load dashboard data.");
+        notify.error(error, "Unable to load dashboard data.");
       }
     };
 
     void loadSummary();
-  }, [days]);
+  }, [days, notify]);
 
   const currency = summary.currency ?? "NAD";
   const daily = summary.daily ?? [];
@@ -207,7 +208,6 @@ function AdminDashboard() {
       <AdminSidebar />
 
       <div className="admin-content">
-        {feedback && <FeedbackMessage message={feedback} />}
 
         <div className="admin-header">
           <div>
@@ -215,6 +215,8 @@ function AdminDashboard() {
             <p>An overview of activity across the Workhorse platform.</p>
           </div>
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
         {/* Key figures */}
         <div className="dashboard-cards">

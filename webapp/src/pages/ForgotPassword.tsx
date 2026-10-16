@@ -3,10 +3,11 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { apiRequest } from "../lib/api";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const requestReset = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -17,9 +18,9 @@ function ForgotPassword() {
         method: "POST",
         body: JSON.stringify({ email }),
       });
-      setFeedback(response.message);
+      notify.success(response.message);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to request a password reset.");
+      notify.error(error, "Unable to request a password reset.");
     } finally {
       setIsSubmitting(false);
     }
@@ -44,7 +45,7 @@ function ForgotPassword() {
           Enter your email address and we will send you a password reset link.
         </p>
 
-        {feedback && <FeedbackMessage message={feedback} />}
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
         <form onSubmit={(event) => void requestReset(event)}>
 

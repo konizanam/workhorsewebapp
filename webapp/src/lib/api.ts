@@ -69,6 +69,25 @@ export function getLogoutReason() {
   return sessionStorage.getItem(LOGOUT_REASON_KEY) ?? "";
 }
 
+/** Turn an error response such as {"error": "...", "details": [...]} into a readable sentence. */
+async function readErrorMessage(response: Response) {
+  const fallback = response.status >= 500
+    ? "The server ran into a problem. Please try again."
+    : `Request failed (${response.status}).`;
+  const text = await response.text();
+  if (!text) return fallback;
+  try {
+    const body = JSON.parse(text) as { error?: unknown; message?: unknown; details?: unknown };
+    const message = [body.error, body.message].find((value): value is string => typeof value === "string" && value.length > 0);
+    const details = Array.isArray(body.details)
+      ? body.details.map((detail) => typeof detail === "string" ? detail : (detail as { message?: string })?.message).filter(Boolean).join(" ")
+      : typeof body.details === "string" ? body.details : "";
+    return [message ?? fallback, details].filter(Boolean).join(" ");
+  } catch {
+    return text.length > 300 ? fallback : text;
+  }
+}
+
 export async function apiRequest<T>(
   path: string,
   options: RequestInit = {},
@@ -99,7 +118,7 @@ export async function apiRequest<T>(
   }
 
   if (!response.ok) {
-    throw new Error((await response.text()) || `Request failed (${response.status})`);
+    throw new Error(await readErrorMessage(response));
   }
 
   if (response.status === 204) return undefined as T;

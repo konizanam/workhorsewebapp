@@ -263,3 +263,135 @@ body {
 :where(.card, .users-section, .dashboard-card, .dashboard-section, .permission-card, .chart-card) {
   padding: var(--card-padding);
 }
+
+/* =========================================
+   MESSAGES
+   In-page success, error, warning and info
+   banners (components/FeedbackMessage).
+========================================= */
+
+:root {
+  --success-bg: #ecfdf3;
+  --success-border: #abefc6;
+  --success-accent: #079455;
+  --success-text: #05603a;
+
+  --error-bg: #fef3f2;
+  --error-border: #fecdca;
+  --error-accent: #d92d20;
+  --error-text: #912018;
+
+  --warning-bg: #fffaeb;
+  --warning-border: #fedf89;
+  --warning-accent: #dc6803;
+  --warning-text: #93370d;
+
+  --info-bg: #eff4fb;
+  --info-border: #c5d3e8;
+  --info-accent: var(--brand-navy);
+  --info-text: var(--brand-navy);
+}
+
+.feedback-message {
+  --tone-bg: var(--info-bg);
+  --tone-border: var(--info-border);
+  --tone-accent: var(--info-accent);
+  --tone-text: var(--info-text);
+
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--tone-border);
+  border-left: 4px solid var(--tone-accent);
+  border-radius: var(--control-radius);
+  background: var(--tone-bg);
+  color: var(--tone-text);
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+  text-align: left;
+  animation: feedback-enter 180ms ease-out;
+}
+
+.feedback-message.success {
+  --tone-bg: var(--success-bg);
+  --tone-border: var(--success-border);
+  --tone-accent: var(--success-accent);
+  --tone-text: var(--success-text);
+}
+
+.feedback-message.error {
+  --tone-bg: var(--error-bg);
+  --tone-border: var(--error-border);
+  --tone-accent: var(--error-accent);
+  --tone-text: var(--error-text);
+}
+
+.feedback-message.warning {
+  --tone-bg: var(--warning-bg);
+  --tone-border: var(--warning-border);
+  --tone-accent: var(--warning-accent);
+  --tone-text: var(--warning-text);
+}
+
+.feedback-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--tone-accent);
+  font-size: 1.15rem;
+}
+
+.feedback-text {
+  display: grid;
+  flex: 1;
+  gap: 0.1rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.feedback-text strong {
+  font-weight: 600;
+}
+
+.feedback-message .feedback-dismiss {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tone-text);
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.feedback-message .feedback-dismiss:hover,
+.feedback-message .feedback-dismiss:focus-visible {
+  background: rgba(0, 0, 0, 0.06);
+  opacity: 1;
+  outline: none;
+}
+
+/* While a modal is open, page messages float above it so they are not hidden behind the overlay. */
+body:has(.modal-overlay) .admin-content > .feedback-message {
+  position: fixed;
+  top: 1rem;
+  left: calc(var(--sidebar-width, 0px) + 1.5rem);
+  right: 1.5rem;
+  z-index: 1300;
+  width: auto;
+  box-shadow: 0 8px 24px rgba(28, 62, 112, 0.18);
+}
+
+/* Field-level errors under a single input */
+.file-upload-error,
+.location-error {
+  color: var(--error-accent);
+  font-size: var(--font-size-xs);
+}

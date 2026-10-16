@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { apiRequest } from "../lib/api";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 
 
 function ResetPassword() {
@@ -14,18 +15,18 @@ function ResetPassword() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!token) {
-      setFeedback("This reset link is missing its token. Request a new reset link.");
+      notify.error("This reset link is missing its token. Request a new reset link.");
       return;
     }
     if (password !== confirmPassword) {
-      setFeedback("Passwords do not match.");
+      notify.error("Passwords do not match.");
       return;
     }
     setIsSubmitting(true);
@@ -34,10 +35,10 @@ function ResetPassword() {
         method: "POST",
         body: JSON.stringify({ token, newPassword: password }),
       });
-      setFeedback(response.message);
+      notify.success(response.message);
       setIsComplete(true);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to reset the password.");
+      notify.error(error, "Unable to reset the password.");
     } finally {
       setIsSubmitting(false);
     }
@@ -62,7 +63,7 @@ function ResetPassword() {
           Create a new secure password for your account.
         </p>
 
-        {feedback && <FeedbackMessage message={feedback} />}
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
         {isComplete ? (
           <p className="text-center"><Link to="/">Back to Login</Link></p>

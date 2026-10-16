@@ -5,6 +5,7 @@ import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import UserActionsModal from "../components/UserActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
 import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
@@ -54,7 +55,7 @@ function Users() {
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [actionUser, setActionUser] = useState<User | null>(null);
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
   const [roleOptions, setRoleOptions] = useState<ApiRole[]>([]);
   const [assignedRoles, setAssignedRoles] = useState<ApiRole[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -65,12 +66,12 @@ function Users() {
         const response = await apiRequest<UserListResponse>("/users?limit=100");
         setUsers((response.data ?? []).map(mapUser));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load users.");
+        notify.error(error, "Unable to load users.");
       }
     };
 
     void loadUsers();
-  }, []);
+  }, [notify]);
 
   const table = useTableControls(users, {
     searchText: (user) => [user.name, user.email, user.phone, user.type, user.status, user.twoFactor].join(" "),
@@ -90,9 +91,9 @@ function Users() {
       });
       setUsers((current) => [mapUser(created), ...current]);
       setShowModal(false);
-      setFeedback(`${values.name} was saved successfully.`);
+      notify.success(`${values.name} was saved successfully.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to save the user.");
+      notify.error(error, "Unable to save the user.");
     } finally {
       setIsSaving(false);
     }
@@ -108,7 +109,7 @@ function Users() {
       setRoleOptions(roles);
       setAssignedRoles(assigned);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to load user roles.");
+      notify.error(error, "Unable to load user roles.");
     }
   };
 
@@ -122,9 +123,9 @@ function Users() {
       const mapped = mapUser(updated);
       setUsers((current) => current.map((user) => user.id === mapped.id ? mapped : user));
       setActionUser(mapped);
-      setFeedback(`${values.name} was updated.`);
+      notify.success(`${values.name} was updated.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the user.");
+      notify.error(error, "Unable to update the user.");
     }
   };
 
@@ -136,9 +137,9 @@ function Users() {
         body: JSON.stringify({ role_id: roleId }),
       });
       setAssignedRoles(await apiRequest<ApiRole[]>(`/users/${actionUser.id}/roles`));
-      setFeedback("Role assigned successfully.");
+      notify.success("Role assigned successfully.");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to assign role.");
+      notify.error(error, "Unable to assign role.");
     }
   };
 
@@ -147,9 +148,9 @@ function Users() {
     try {
       await apiRequest(`/users/${actionUser.id}/roles/${roleId}`, { method: "DELETE" });
       setAssignedRoles((current) => current.filter((role) => role.role_id !== roleId));
-      setFeedback("Role removed successfully.");
+      notify.success("Role removed successfully.");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to remove role.");
+      notify.error(error, "Unable to remove role.");
     }
   };
 
@@ -157,9 +158,9 @@ function Users() {
     if (!actionUser) return;
     try {
       await apiRequest(`/users/${actionUser.id}`, { method: "PUT", body: JSON.stringify({ password }) });
-      setFeedback("Password updated successfully.");
+      notify.success("Password updated successfully.");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update password.");
+      notify.error(error, "Unable to update password.");
     }
   };
 
@@ -174,9 +175,9 @@ function Users() {
       const mapped = mapUser(updated);
       setUsers((current) => current.map((user) => user.id === mapped.id ? mapped : user));
       setActionUser(mapped);
-      setFeedback(`User ${status === "active" ? "enabled" : "disabled"}.`);
+      notify.success(`User ${status === "active" ? "enabled" : "disabled"}.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update user status.");
+      notify.error(error, "Unable to update user status.");
     }
   };
 
@@ -195,9 +196,10 @@ function Users() {
             <p>Manage all registered users.</p>
           </div>
 
-          {feedback && <FeedbackMessage message={feedback} />}
 
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
 
         {/* Users Table */}

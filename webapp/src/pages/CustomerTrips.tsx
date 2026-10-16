@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import { apiRequest } from "../lib/api";
 import "../App.css";
 
@@ -97,7 +98,7 @@ function CheckoutForm({
         <form onSubmit={(event) => void submitPayment(event)}>
           <div className="modal-body">
             <PaymentElement />
-            {error && <p className="error" role="alert">{error}</p>}
+            {error && <FeedbackMessage tone="error" message={error} />}
           </div>
           <div className="modal-footer">
             <button className="secondary-btn" type="button" onClick={onCancel} disabled={submitting}>Cancel</button>
@@ -114,7 +115,7 @@ function CheckoutForm({
 function CustomerTrips() {
   const [trips, setTrips] = useState<CustomerTrip[]>([]);
   const [checkout, setCheckout] = useState<PaymentIntentResponse | null>(null);
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
   const [loading, setLoading] = useState(true);
   const [startingTrip, setStartingTrip] = useState("");
 
@@ -123,7 +124,7 @@ function CustomerTrips() {
       const rows = await apiRequest<CustomerTrip[]>("/trips/mine");
       setTrips(rows ?? []);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to load your trips.");
+      notify.error(error, "Unable to load your trips.");
     } finally {
       setLoading(false);
     }
@@ -135,7 +136,7 @@ function CustomerTrips() {
 
   const beginPayment = async (trip: CustomerTrip) => {
     setStartingTrip(trip.trip_id);
-    setFeedback("");
+    notify.clear();
     try {
       const result = await apiRequest<PaymentIntentResponse>(`/payments/trips/${trip.trip_id}/intent`, {
         method: "POST",
@@ -146,7 +147,7 @@ function CustomerTrips() {
       }
       setCheckout(result);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to start payment.");
+      notify.error(error, "Unable to start payment.");
     } finally {
       setStartingTrip("");
     }
@@ -154,7 +155,7 @@ function CustomerTrips() {
 
   const completePayment = (message: string) => {
     setCheckout(null);
-    setFeedback(message);
+    notify.success(message);
     void loadTrips();
   };
 
@@ -169,7 +170,7 @@ function CustomerTrips() {
         <button className="secondary-btn" type="button" onClick={() => void loadTrips()} disabled={loading}>Refresh</button>
       </header>
 
-      {feedback && <FeedbackMessage message={feedback} />}
+      {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
       {loading ? (
         <p>Loading trips...</p>

@@ -3,6 +3,8 @@ import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
 import TablePagination from "../components/TablePagination";
 import TableToolbar from "../components/TableToolbar";
+import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import { apiRequest } from "../lib/api";
 
 interface AuditLog {
@@ -52,7 +54,7 @@ const mapAuditLog = (log: ApiAuditLog): AuditLog => ({
 function AuditLogs() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [totalLogs, setTotalLogs] = useState(0);
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -73,12 +75,12 @@ function AuditLogs() {
         setLogs((response.data ?? []).map(mapAuditLog));
         setTotalLogs(response.pagination?.total ?? 0);
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load audit logs.");
+        notify.error(error, "Unable to load audit logs.");
       }
     };
 
     void loadLogs();
-  }, [page, pageSize, search, methodFilter]);
+  }, [page, pageSize, search, methodFilter, notify]);
 
   const filteredLogs = logs;
 
@@ -132,6 +134,8 @@ function AuditLogs() {
 
         </div>
 
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
+
 
         {/* Audit Logs Section */}
         <div className="users-section">
@@ -177,7 +181,6 @@ function AuditLogs() {
             Showing {Math.min((page - 1) * pageSize + filteredLogs.length, totalLogs)} of {totalLogs} logs
 
           </div>
-          {feedback && <p className="error">{feedback}</p>}
 
           <div className="table-container">
 

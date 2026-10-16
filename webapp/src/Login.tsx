@@ -6,7 +6,8 @@ import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import { ForgotPassword } from "./pages/ForgotPassword";
 import { VerifyOTP } from "./pages/VerifyOTP";
 import ResetPassword from "./pages/ResetPassword";
-import { apiRequest, clearSession, getLogoutReason, storeTokens } from "./lib/api";
+import { apiRequest, clearSession, getLogoutReason, SESSION_EXPIRED_MESSAGE, storeTokens } from "./lib/api";
+import FeedbackMessage from "./components/FeedbackMessage";
 import RequireAuth from "./components/RequireAuth";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
@@ -147,7 +148,7 @@ function Login() {
             </Link>
           </div>
 
-          {error && <p className="error">{error}</p>}
+          {error && <FeedbackMessage tone={error === SESSION_EXPIRED_MESSAGE ? "warning" : "error"} message={error} onDismiss={() => setError("")} />}
 
           <button className="btn" type="submit" disabled={submitting}>
             {submitting ? "Signing in..." : "Login"}

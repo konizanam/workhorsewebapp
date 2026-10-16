@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
 import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
@@ -133,7 +134,7 @@ function Trips() {
   const [selectedTrip, setSelectedTrip] = useState<Record<string, string> | null>(null);
   const [actionTrip, setActionTrip] = useState<Record<string, string> | null>(null);
   const [ticketTrip, setTicketTrip] = useState<Record<string, string> | null>(null);
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
 
   const [tripRows, setTripRows] = useState<Record<string, string>[]>([]);
   const [tripTickets, setTripTickets] = useState<Record<string, SupportTicket[]>>({});
@@ -145,12 +146,12 @@ function Trips() {
         const response = await apiRequest<TripListResponse>("/trips?limit=100");
         setTripRows((response.data ?? []).map(mapTripToRow));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load trips.");
+        notify.error(error, "Unable to load trips.");
       }
     };
 
     void loadTrips();
-  }, []);
+  }, [notify]);
 
   useEffect(() => {
     if (!selectedTrip) return;
@@ -164,12 +165,12 @@ function Trips() {
           [tripId]: (response ?? []).map(mapApiTicketToSupportTicket),
         }));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load support tickets.");
+        notify.error(error, "Unable to load support tickets.");
       }
     };
 
     void loadTickets();
-  }, [selectedTrip]);
+  }, [selectedTrip, notify]);
 
   const createSupportTicket = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -182,7 +183,7 @@ function Trips() {
     const email = String(form.get("email") ?? "").trim();
 
     if (!subject || !description) {
-      setFeedback("Subject and description are required.");
+      notify.error("Subject and description are required.");
       return;
     }
 
@@ -204,10 +205,10 @@ function Trips() {
         ...current,
         [tripId]: [nextTicket, ...(current[tripId] ?? [])],
       }));
-      setFeedback(`Ticket ${nextTicket.id} was submitted for trip ${tripId}.`);
+      notify.success(`Ticket ${nextTicket.id} was submitted for trip ${tripId}.`);
       setTicketTrip(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to submit the ticket.");
+      notify.error(error, "Unable to submit the ticket.");
     }
   };
 
@@ -222,10 +223,10 @@ function Trips() {
       });
       const row = mapTripToRow(updated);
       setTripRows((current) => current.map((trip) => trip.ID === actionTrip.ID ? row : trip));
-      setFeedback(cancel ? `Trip ${actionTrip["Trip ID"]} was cancelled.` : `Trip ${actionTrip["Trip ID"]} was saved.`);
+      notify.success(cancel ? `Trip ${actionTrip["Trip ID"]} was cancelled.` : `Trip ${actionTrip["Trip ID"]} was saved.`);
       setActionTrip(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the trip.");
+      notify.error(error, "Unable to update the trip.");
     } finally {
       setIsSaving(false);
     }
@@ -251,13 +252,13 @@ function Trips() {
         ),
       }));
 
-      setFeedback(
+      notify.success(
         status === "Escalated"
           ? `Ticket ${ticketId} was escalated into a support case.`
           : `Ticket ${ticketId} was marked ${status.toLowerCase()}.`
       );
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the ticket status.");
+      notify.error(error, "Unable to update the ticket status.");
     }
   };
 
@@ -276,7 +277,6 @@ function Trips() {
       <AdminSidebar />
 
       <div className="admin-content">
-        {feedback && <FeedbackMessage message={feedback} />}
 
         <div className="admin-header">
           <div>
@@ -284,6 +284,8 @@ function Trips() {
             <p>Monitor and manage transport trips.</p>
           </div>
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
         <div className="users-section">
           <div className="users-section-header">

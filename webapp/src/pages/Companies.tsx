@@ -5,6 +5,7 @@ import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
 import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
@@ -41,7 +42,7 @@ function Companies() {
   const [showModal, setShowModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<Record<string, string> | null>(null);
   const [actionCompany, setActionCompany] = useState<Record<string, string> | null>(null);
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
   const [isSaving, setIsSaving] = useState(false);
 
   const [companyRows, setCompanyRows] = useState<Record<string, string>[]>([]);
@@ -52,12 +53,12 @@ function Companies() {
         const response = await apiRequest<CompanyListResponse>("/companies?limit=100");
         setCompanyRows((response.data ?? []).map(mapCompany));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load companies.");
+        notify.error(error, "Unable to load companies.");
       }
     };
 
     void loadCompanies();
-  }, []);
+  }, [notify]);
 
   const table = useTableControls(companyRows, {
     searchText: (company) => Object.values(company).join(" "),
@@ -68,7 +69,7 @@ function Companies() {
 
   const addCompany = async (values: Record<string, string>) => {
     setIsSaving(true);
-    setFeedback("");
+    notify.clear();
     try {
       const created = await apiRequest<ApiCompany>("/companies", {
         method: "POST",
@@ -77,9 +78,9 @@ function Companies() {
       setCompanyRows((current) => [mapCompany(created), ...current]);
       table.reset();
       setShowModal(false);
-      setFeedback(`${values.name} was saved successfully.`);
+      notify.success(`${values.name} was saved successfully.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to save the company.");
+      notify.error(error, "Unable to save the company.");
     } finally {
       setIsSaving(false);
     }
@@ -96,10 +97,10 @@ function Companies() {
       setCompanyRows((current) => current.map((company) =>
         company.ID === actionCompany.ID ? { ...company, "Account Status": status } : company
       ));
-      setFeedback(`${actionCompany.Name} ${status === "disabled" ? "disabled" : "enabled"}.`);
+      notify.success(`${actionCompany.Name} ${status === "disabled" ? "disabled" : "enabled"}.`);
       setActionCompany(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update company status.");
+      notify.error(error, "Unable to update company status.");
     }
   };
 
@@ -113,10 +114,10 @@ function Companies() {
       setCompanyRows((current) => current.map((company) =>
         company.ID === actionCompany.ID ? mapCompany(updated) : company
       ));
-      setFeedback(`${values.Name ?? actionCompany.Name} was saved.`);
+      notify.success(`${values.Name ?? actionCompany.Name} was saved.`);
       setActionCompany(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the company.");
+      notify.error(error, "Unable to update the company.");
     }
   };
 
@@ -127,7 +128,6 @@ function Companies() {
 
       <div className="admin-content">
 
-        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -138,6 +138,8 @@ function Companies() {
           </div>
 
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
 
         {/* Companies Table */}

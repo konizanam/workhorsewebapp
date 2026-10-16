@@ -5,6 +5,7 @@ import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
 import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
@@ -112,7 +113,7 @@ function Drivers() {
   const [isSaving, setIsSaving] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Record<string, string> | null>(null);
   const [actionDriver, setActionDriver] = useState<Record<string, string> | null>(null);
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
 
   const [driverRows, setDriverRows] = useState<Record<string, string>[]>([]);
   const [caseRows, setCaseRows] = useState<DriverCase[]>([]);
@@ -133,12 +134,12 @@ function Drivers() {
         const response = await apiRequest<DriverListResponse>("/drivers?limit=100");
         setDriverRows((response.data ?? []).map(mapDriver));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load drivers.");
+        notify.error(error, "Unable to load drivers.");
       }
     };
 
     void loadDrivers();
-  }, []);
+  }, [notify]);
 
   useEffect(() => {
     const driverId = selectedDriver?.ID;
@@ -152,12 +153,12 @@ function Drivers() {
           ...(response ?? []).map(mapDriverCase).map((item) => ({ ...item, driverEmail: selectedDriver.Email })),
         ]);
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load driver cases.");
+        notify.error(error, "Unable to load driver cases.");
       }
     };
 
     void loadCases();
-  }, [selectedDriver]);
+  }, [selectedDriver, notify]);
 
   useEffect(() => {
     const driverId = selectedDriver?.ID;
@@ -169,13 +170,13 @@ function Drivers() {
         const response = await apiRequest<ApiDriverDocument[]>(`/drivers/${driverId}/documents`);
         if (active) setDriverDocuments((current) => ({ ...current, [driverId]: response ?? [] }));
       } catch (error) {
-        if (active) setFeedback(error instanceof Error ? error.message : "Unable to load driver documents.");
+        if (active) notify.error(error, "Unable to load driver documents.");
       }
     };
 
     void loadDocuments();
     return () => { active = false; };
-  }, [selectedDriver]);
+  }, [selectedDriver, notify]);
 
   const table = useTableControls(driverRows, {
     searchText: (driver) => Object.entries(driver).filter(([key]) => key !== "Driver Image").map(([, value]) => value).join(" "),
@@ -187,7 +188,7 @@ function Drivers() {
 
   const addDriver = async (values: Record<string, string>) => {
     setIsSaving(true);
-    setFeedback("");
+    notify.clear();
     try {
       const created = await apiRequest<DriverApiRecord>("/drivers", {
         method: "POST",
@@ -205,9 +206,9 @@ function Drivers() {
       setDriverRows((current) => [row, ...current]);
       table.reset();
       setShowModal(false);
-      setFeedback(`${values.name} was saved successfully.`);
+      notify.success(`${values.name} was saved successfully.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to save the driver.");
+      notify.error(error, "Unable to save the driver.");
     } finally {
       setIsSaving(false);
     }
@@ -217,7 +218,7 @@ function Drivers() {
     if (!actionDriver) return;
     const availability = actionDriver.Availability === "Disabled" ? "Available" : "Disabled";
     if (availability === "Available" && caseRows.some((report) => report.driverEmail === actionDriver.Email && report.status === "In Violation")) {
-      setFeedback(`${actionDriver.Name} cannot be enabled while a case is In Violation.`);
+      notify.warning(`${actionDriver.Name} cannot be enabled while a case is In Violation.`);
       setActionDriver(null);
       return;
     }
@@ -228,10 +229,10 @@ function Drivers() {
       });
       const row = mapDriver({ ...updated, email: updated.email ?? actionDriver.Email });
       setDriverRows((current) => current.map((driver) => driver.ID === actionDriver.ID ? { ...driver, ...row } : driver));
-      setFeedback(`${actionDriver.Name} ${availability === "Disabled" ? "disabled" : "enabled"}.`);
+      notify.success(`${actionDriver.Name} ${availability === "Disabled" ? "disabled" : "enabled"}.`);
       setActionDriver(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update driver status.");
+      notify.error(error, "Unable to update driver status.");
     }
   };
 
@@ -252,9 +253,9 @@ function Drivers() {
           item.Email === report.driverEmail ? { ...item, Availability: "Disabled", Status: "Disabled" } : item
         ));
       }
-      setFeedback(status === "In Violation" ? "Driver disabled after the case was marked In Violation." : `Case ${caseId} was updated.`);
+      notify.success(status === "In Violation" ? "Driver disabled after the case was marked In Violation." : `Case ${caseId} was updated.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the driver case.");
+      notify.error(error, "Unable to update the driver case.");
     }
   };
 
@@ -267,17 +268,17 @@ function Drivers() {
       });
       const row = mapDriver({ ...updated, email: updated.email ?? actionDriver.Email });
       setDriverRows((current) => current.map((driver) => driver.ID === actionDriver.ID ? { ...driver, ...row } : driver));
-      setFeedback(`${row.Name} was saved.`);
+      notify.success(`${row.Name} was saved.`);
       setActionDriver(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the driver.");
+      notify.error(error, "Unable to update the driver.");
     }
   };
 
   const viewDriverDocument = (document: ApiDriverDocument) => {
     const source = document.document_data_url ?? document.document_url ?? "";
     if (!source) {
-      setFeedback("This document has no stored file data.");
+      notify.warning("This document has no stored file data.");
       return;
     }
 
@@ -289,7 +290,7 @@ function Drivers() {
       setDocumentPreview(document);
       setDocumentPreviewUrl(previewUrl);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to open this document.");
+      notify.error(error, "Unable to open this document.");
     }
   };
 
@@ -300,7 +301,6 @@ function Drivers() {
 
       <div className="admin-content">
 
-        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -311,6 +311,8 @@ function Drivers() {
           </div>
 
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
 
         {/* Drivers Table */}

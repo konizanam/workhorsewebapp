@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
 import TableToolbar from "../components/TableToolbar";
 import { useTableControls } from "../lib/useTableControls";
@@ -40,7 +41,7 @@ const mapPayment = (payment: ApiPayment): Record<string, string> => ({
 function Payments() {
   const [selectedPayment, setSelectedPayment] = useState<Record<string, string> | null>(null);
   const [actionPayment, setActionPayment] = useState<Record<string, string> | null>(null);
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
   const [isSaving, setIsSaving] = useState(false);
 
   const [paymentRows, setPaymentRows] = useState<Record<string, string>[]>([]);
@@ -51,12 +52,12 @@ function Payments() {
         const response = await apiRequest<PaymentListResponse>("/payments?limit=100");
         setPaymentRows((response.data ?? []).map(mapPayment));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load payments.");
+        notify.error(error, "Unable to load payments.");
       }
     };
 
     void loadPayments();
-  }, []);
+  }, [notify]);
 
   const table = useTableControls(paymentRows, {
     searchText: (payment) => Object.values(payment).join(" "),
@@ -81,10 +82,10 @@ function Payments() {
         "Request ID": actionPayment["Request ID"],
       });
       setPaymentRows((current) => current.map((payment) => payment.ID === actionPayment.ID ? row : payment));
-      setFeedback(`Payment ${actionPayment.ID} was saved.`);
+      notify.success(`Payment ${actionPayment.ID} was saved.`);
       setActionPayment(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the payment.");
+      notify.error(error, "Unable to update the payment.");
     } finally {
       setIsSaving(false);
     }
@@ -104,10 +105,10 @@ function Payments() {
         "Request ID": actionPayment["Request ID"],
       });
       setPaymentRows((current) => current.map((payment) => payment.ID === actionPayment.ID ? row : payment));
-      setFeedback(`Payment ${actionPayment.ID} was marked for refund.`);
+      notify.success(`Payment ${actionPayment.ID} was marked for refund.`);
       setActionPayment(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to refund the payment.");
+      notify.error(error, "Unable to refund the payment.");
     }
   };
 
@@ -118,7 +119,6 @@ function Payments() {
 
       <div className="admin-content">
 
-        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -129,6 +129,8 @@ function Payments() {
           </div>
 
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
 
         {/* Payments Table */}
