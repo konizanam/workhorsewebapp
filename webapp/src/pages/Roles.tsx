@@ -3,6 +3,8 @@ import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 
 interface Permission {
@@ -63,10 +65,7 @@ function RolesPermissions() {
 
   const [roleName, setRoleName] = useState("");
   const [description, setDescription] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [isSaving, setIsSaving] = useState(false);
 
   const loadRolesAndPermissions = async () => {
@@ -102,15 +101,13 @@ function RolesPermissions() {
     return () => { active = false; };
   }, []);
 
-  const filteredRoles = roles.filter((role) =>
-    [role.name, role.description, role.type, role.status, String(role.permissions)]
-      .join(" ")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredRoles.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(roles, {
+    searchText: (role) => [role.name, role.description, role.type, role.status, String(role.permissions)].join(" "),
+    filters: [
+      { key: "type", label: "Type", allLabel: "All types", getValue: (role) => role.type },
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (role) => role.status },
+    ],
+  });
 
   const openAddRole = () => {
     setEditingRole(null);
@@ -235,24 +232,10 @@ function RolesPermissions() {
               </p>
             </div>
 
+            <button type="button" className="btn" onClick={openAddRole}>+ Add Role</button>
           </div>
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search roles..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-            <button className="primary-btn" onClick={openAddRole}>+ Add Role</button>
-          </div>
-
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRoles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search roles..." />
 
           <div className="table-container">
 
@@ -272,7 +255,7 @@ function RolesPermissions() {
 
               <tbody>
 
-                {filteredRoles.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((role) => (
+                {table.pageRows.map((role) => (
 
                   <tr key={role.id}>
 
@@ -348,7 +331,7 @@ function RolesPermissions() {
 
           </div>
 
-          <TablePagination page={page} pageSize={pageSize} totalRecords={roles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
 
         </div>
 

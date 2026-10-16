@@ -2691,3 +2691,43 @@ body:has(.admin-sidebar) .modal-overlay {
 .admin-sidebar .sidebar-link.active:focus span {
   color: var(--brand-white);
 }
+
+/* =========================================
+   TABLE TOOLBAR
+   Search and filters on the left, pagination
+   on the right, in one row.
+========================================= */
+
+.table-toolbar {
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.table-toolbar-filters {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.table-toolbar .table-search-input {
+  width: 16rem;
+  min-width: 12rem;
+  max-width: 100%;
+}
+
+.table-toolbar .table-filter-select {
+  width: auto;
+  min-width: 9rem;
+}
+
+.table-toolbar .table-pagination {
+  margin: 0;
+}
+
+.users-section-header {
+  gap: 1rem;
+}

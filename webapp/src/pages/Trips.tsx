@@ -5,6 +5,8 @@ import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 
 const supportStatuses = ["Open", "Resolved", "Cancelled", "Escalated"] as const;
@@ -132,9 +134,6 @@ function Trips() {
   const [actionTrip, setActionTrip] = useState<Record<string, string> | null>(null);
   const [ticketTrip, setTicketTrip] = useState<Record<string, string> | null>(null);
   const [feedback, setFeedback] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
 
   const [tripRows, setTripRows] = useState<Record<string, string>[]>([]);
   const [tripTickets, setTripTickets] = useState<Record<string, SupportTicket[]>>({});
@@ -262,12 +261,13 @@ function Trips() {
     }
   };
 
-  const filteredTrips = tripRows.filter((trip) =>
-    Object.values(trip).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredTrips.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(tripRows, {
+    searchText: (trip) => Object.values(trip).join(" "),
+    filters: [
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (row) => row["Status"] ?? "" },
+      { key: "driver", label: "Driver", allLabel: "All drivers", getValue: (row) => row["Driver"] ?? "" },
+    ],
+  });
 
   const selectedTripTickets = selectedTrip ? tripTickets[selectedTrip["Trip ID"]] ?? [] : [];
 
@@ -290,20 +290,7 @@ function Trips() {
             <h2>All Trips</h2>
           </div>
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search trips..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-          </div>
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredTrips.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search trips..." />
 
           <div className="table-container">
             <table className="users-table">
@@ -321,7 +308,7 @@ function Trips() {
               </thead>
 
               <tbody>
-                {filteredTrips.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((trip) => (
+                {table.pageRows.map((trip) => (
                   <tr key={trip["Trip ID"]}>
                     <td>{trip["Trip ID"]}</td>
                     <td>{trip["Request ID"]}</td>
@@ -347,7 +334,7 @@ function Trips() {
             </table>
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredTrips.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
         </div>
       </div>
 

@@ -5,6 +5,8 @@ import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 
 type ApiRequest = {
@@ -46,9 +48,6 @@ function Requests() {
   const [selectedRequest, setSelectedRequest] = useState<Record<string, string> | null>(null);
   const [actionRequest, setActionRequest] = useState<Record<string, string> | null>(null);
   const [feedback, setFeedback] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [isSaving, setIsSaving] = useState(false);
 
   const [requestRows, setRequestRows] = useState<Record<string, string>[]>([]);
@@ -66,12 +65,13 @@ function Requests() {
     void loadRequests();
   }, []);
 
-  const filteredRequests = requestRows.filter((request) =>
-    Object.values(request).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(requestRows, {
+    searchText: (request) => Object.values(request).join(" "),
+    filters: [
+      { key: "serviceType", label: "Service type", allLabel: "All service types", getValue: (row) => row["Service Type"] ?? "" },
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (row) => row["Status"] ?? "" },
+    ],
+  });
 
   const saveRequest = async (values: Record<string, string>) => {
     if (!actionRequest) return;
@@ -138,20 +138,7 @@ function Requests() {
           </div>
 
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search requests..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-          </div>
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRequests.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search requests..." />
 
           <div className="table-container">
 
@@ -174,7 +161,7 @@ function Requests() {
 
               <tbody>
 
-                {filteredRequests.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((request) => (
+                {table.pageRows.map((request) => (
                   <tr key={request["Request ID"]}>
                     <td>{request["Request ID"]}</td>
                     <td>{request.Customer}</td>
@@ -198,7 +185,7 @@ function Requests() {
 
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRequests.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
 
         </div>
 

@@ -5,6 +5,8 @@ import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 
 type ApiPayment = {
@@ -39,9 +41,6 @@ function Payments() {
   const [selectedPayment, setSelectedPayment] = useState<Record<string, string> | null>(null);
   const [actionPayment, setActionPayment] = useState<Record<string, string> | null>(null);
   const [feedback, setFeedback] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [isSaving, setIsSaving] = useState(false);
 
   const [paymentRows, setPaymentRows] = useState<Record<string, string>[]>([]);
@@ -59,12 +58,13 @@ function Payments() {
     void loadPayments();
   }, []);
 
-  const filteredPayments = paymentRows.filter((payment) =>
-    Object.values(payment).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredPayments.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(paymentRows, {
+    searchText: (payment) => Object.values(payment).join(" "),
+    filters: [
+      { key: "method", label: "Payment method", allLabel: "All payment methods", getValue: (row) => row["Payment Method"] ?? "" },
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (row) => row["Status"] ?? "" },
+    ],
+  });
 
   const savePayment = async (values: Record<string, string>) => {
     if (!actionPayment) return;
@@ -141,20 +141,7 @@ function Payments() {
           </div>
 
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search payments..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-          </div>
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredPayments.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search payments..." />
 
           <div className="table-container">
 
@@ -178,7 +165,7 @@ function Payments() {
 
               <tbody>
 
-                {filteredPayments.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((payment) => (
+                {table.pageRows.map((payment) => (
                   <tr key={payment["Payment ID"]}>
                     <td>{payment["Payment ID"]}</td>
                     <td>{payment["Request ID"]}</td>
@@ -203,7 +190,7 @@ function Payments() {
 
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredPayments.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
 
         </div>
 

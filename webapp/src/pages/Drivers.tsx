@@ -6,6 +6,8 @@ import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 
 const caseStatuses = ["Under Review", "Resolved", "Cancelled", "In Violation"] as const;
@@ -111,9 +113,6 @@ function Drivers() {
   const [selectedDriver, setSelectedDriver] = useState<Record<string, string> | null>(null);
   const [actionDriver, setActionDriver] = useState<Record<string, string> | null>(null);
   const [feedback, setFeedback] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
 
   const [driverRows, setDriverRows] = useState<Record<string, string>[]>([]);
   const [caseRows, setCaseRows] = useState<DriverCase[]>([]);
@@ -178,17 +177,13 @@ function Drivers() {
     return () => { active = false; };
   }, [selectedDriver]);
 
-  const filteredDrivers = driverRows.filter((driver) =>
-    Object.entries(driver)
-      .filter(([key]) => key !== "Driver Image")
-      .map(([, value]) => value)
-      .join(" ")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredDrivers.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(driverRows, {
+    searchText: (driver) => Object.entries(driver).filter(([key]) => key !== "Driver Image").map(([, value]) => value).join(" "),
+    filters: [
+      { key: "availability", label: "Availability", allLabel: "All availability", getValue: (row) => row["Availability"] ?? "" },
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (row) => row["Status"] ?? "" },
+    ],
+  });
 
   const addDriver = async (values: Record<string, string>) => {
     setIsSaving(true);
@@ -208,8 +203,7 @@ function Drivers() {
         "Car's License Plate": created["Car's License Plate"] ?? values.carLicensePlate,
       });
       setDriverRows((current) => [row, ...current]);
-      setPage(1);
-      setSearchTerm("");
+      table.reset();
       setShowModal(false);
       setFeedback(`${values.name} was saved successfully.`);
     } catch (error) {
@@ -326,24 +320,10 @@ function Drivers() {
 
             <h2>All Drivers</h2>
 
+            <button type="button" className="btn" onClick={() => setShowModal(true)}>+ Add Driver</button>
           </div>
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search drivers..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-            <button className="btn" onClick={() => setShowModal(true)}>+ Add Driver</button>
-          </div>
-
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredDrivers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search drivers..." />
 
           <div className="table-container">
 
@@ -369,7 +349,7 @@ function Drivers() {
 
               <tbody>
 
-                {filteredDrivers.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((driver) => (
+                {table.pageRows.map((driver) => (
                   <tr key={driver.Email}>
                     <td>
                       {driver["Driver Image"] ? (
@@ -404,7 +384,7 @@ function Drivers() {
 
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredDrivers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
 
         </div>
 

@@ -6,6 +6,8 @@ import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 
 type ApiCompany = {
@@ -40,9 +42,6 @@ function Companies() {
   const [selectedCompany, setSelectedCompany] = useState<Record<string, string> | null>(null);
   const [actionCompany, setActionCompany] = useState<Record<string, string> | null>(null);
   const [feedback, setFeedback] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [isSaving, setIsSaving] = useState(false);
 
   const [companyRows, setCompanyRows] = useState<Record<string, string>[]>([]);
@@ -60,12 +59,12 @@ function Companies() {
     void loadCompanies();
   }, []);
 
-  const filteredCompanies = companyRows.filter((company) =>
-    Object.values(company).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredCompanies.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(companyRows, {
+    searchText: (company) => Object.values(company).join(" "),
+    filters: [
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (row) => row["Status"] ?? "" },
+    ],
+  });
 
   const addCompany = async (values: Record<string, string>) => {
     setIsSaving(true);
@@ -76,8 +75,7 @@ function Companies() {
         body: JSON.stringify(values),
       });
       setCompanyRows((current) => [mapCompany(created), ...current]);
-      setPage(1);
-      setSearchTerm("");
+      table.reset();
       setShowModal(false);
       setFeedback(`${values.name} was saved successfully.`);
     } catch (error) {
@@ -149,24 +147,10 @@ function Companies() {
 
             <h2>All Companies</h2>
 
+            <button type="button" className="btn" onClick={() => setShowModal(true)}>+ Add Company</button>
           </div>
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search companies..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-            <button className="btn" onClick={() => setShowModal(true)}>+ Add Company</button>
-          </div>
-
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredCompanies.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search companies..." />
 
           <div className="table-container">
 
@@ -188,7 +172,7 @@ function Companies() {
 
               <tbody>
 
-                {filteredCompanies.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((company) => (
+                {table.pageRows.map((company) => (
                   <tr key={company.ID}>
                     <td>{company.Name}</td>
                     <td>{company.Email}</td>
@@ -211,7 +195,7 @@ function Companies() {
 
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredCompanies.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
 
         </div>
 

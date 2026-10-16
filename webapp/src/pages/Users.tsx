@@ -6,6 +6,8 @@ import ViewDetailsModal from "../components/ViewDetailsModal";
 import UserActionsModal from "../components/UserActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 
 type User = {
@@ -53,9 +55,6 @@ function Users() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [actionUser, setActionUser] = useState<User | null>(null);
   const [feedback, setFeedback] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
   const [roleOptions, setRoleOptions] = useState<ApiRole[]>([]);
   const [assignedRoles, setAssignedRoles] = useState<ApiRole[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -73,15 +72,14 @@ function Users() {
     void loadUsers();
   }, []);
 
-  const filteredUsers = users.filter((user) =>
-    [user.name, user.email, user.phone, user.type, user.status, user.twoFactor]
-      .join(" ")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(users, {
+    searchText: (user) => [user.name, user.email, user.phone, user.type, user.status, user.twoFactor].join(" "),
+    filters: [
+      { key: "type", label: "User type", allLabel: "All user types", getValue: (user) => user.type },
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (user) => user.status },
+      { key: "twoFactor", label: "2FA", allLabel: "All 2FA", getValue: (user) => user.twoFactor },
+    ],
+  });
 
   const addUser = async (values: Record<string, string>) => {
     setIsSaving(true);
@@ -209,23 +207,10 @@ function Users() {
 
             <h2>All Users</h2>
 
+            <button type="button" className="btn" onClick={() => setShowModal(true)}>+ Add User</button>
           </div>
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-            <button className="btn" onClick={() => setShowModal(true)}>+ Add User</button>
-          </div>
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredUsers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search users..." />
 
           <div className="table-container">
 
@@ -247,7 +232,7 @@ function Users() {
 
 
               <tbody>
-                {filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((user) => (
+                {table.pageRows.map((user) => (
                   <tr key={user.id}>
                     <td>{user.name}</td>
                     <td>{user.email}</td>
@@ -269,7 +254,7 @@ function Users() {
 
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredUsers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
 
         </div>
 
