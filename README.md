@@ -10,7 +10,7 @@ The project focuses on creating a modern admin login interface with password rec
 
 ## Authentication Pages
 
-### Login Page (App.tsx)
+### Login Page (Login.tsx)
 - Admin login interface
 - Email input
 - Password input
@@ -78,7 +78,7 @@ src
 │   ├── VerifyOTP.tsx
 │   └── ResetPassword.tsx
 │
-├── App.tsx
+├── Login.tsx
 ├── App.css
 ├── main.tsx
 └── index.css
