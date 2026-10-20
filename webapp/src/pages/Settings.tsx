@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminSidebar from "../components/AdminSidebar";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import { apiRequest } from "../lib/api";
 
 type ApiSettings = {
@@ -35,7 +36,7 @@ const Settings = () => {
     timezone: "Africa/Windhoek",
     currency: "NAD",
   });
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -52,12 +53,12 @@ const Settings = () => {
         setNotifications((current) => ({ ...current, ...saved.notifications }));
         setSecurity((current) => ({ ...current, ...saved.security }));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load settings.");
+        notify.error(error, "Unable to load settings.");
       }
     };
 
     void loadSettings();
-  }, []);
+  }, [notify]);
 
   const handlePlatformChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -99,8 +100,8 @@ const Settings = () => {
       body: JSON.stringify({ platformName: platform.platformName, supportEmail: platform.supportEmail,
         supportPhone: platform.supportPhone, timezone: platform.timezone, currency: platform.currency,
         notifications, security }),
-    }).then(() => setFeedback("Settings saved successfully."))
-      .catch((error: unknown) => setFeedback(error instanceof Error ? error.message : "Unable to save settings."))
+    }).then(() => notify.success("Settings saved successfully."))
+      .catch((error: unknown) => notify.error(error, "Unable to save settings."))
       .finally(() => setIsSaving(false));
   };
 
@@ -126,7 +127,8 @@ const Settings = () => {
             </div>
           </div>
 
-          {feedback && <FeedbackMessage message={feedback} />}
+          {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
+
 
           {/* Platform Settings */}
           <section className="users-section settings-section">

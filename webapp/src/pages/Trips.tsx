@@ -4,8 +4,13 @@ import { useEffect, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
+import { shortRef } from "../lib/format";
+import RecordHistory from "../components/RecordHistory";
 
 const supportStatuses = ["Open", "Resolved", "Cancelled", "Escalated"] as const;
 type SupportTicketStatus = typeof supportStatuses[number];
@@ -131,10 +136,7 @@ function Trips() {
   const [selectedTrip, setSelectedTrip] = useState<Record<string, string> | null>(null);
   const [actionTrip, setActionTrip] = useState<Record<string, string> | null>(null);
   const [ticketTrip, setTicketTrip] = useState<Record<string, string> | null>(null);
-  const [feedback, setFeedback] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { feedback, notify } = useFeedback();
 
   const [tripRows, setTripRows] = useState<Record<string, string>[]>([]);
   const [tripTickets, setTripTickets] = useState<Record<string, SupportTicket[]>>({});
@@ -146,12 +148,12 @@ function Trips() {
         const response = await apiRequest<TripListResponse>("/trips?limit=100");
         setTripRows((response.data ?? []).map(mapTripToRow));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load trips.");
+        notify.error(error, "Unable to load trips.");
       }
     };
 
     void loadTrips();
-  }, []);
+  }, [notify]);
 
   useEffect(() => {
     if (!selectedTrip) return;
@@ -165,12 +167,12 @@ function Trips() {
           [tripId]: (response ?? []).map(mapApiTicketToSupportTicket),
         }));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load support tickets.");
+        notify.error(error, "Unable to load support tickets.");
       }
     };
 
     void loadTickets();
-  }, [selectedTrip]);
+  }, [selectedTrip, notify]);
 
   const createSupportTicket = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -183,7 +185,7 @@ function Trips() {
     const email = String(form.get("email") ?? "").trim();
 
     if (!subject || !description) {
-      setFeedback("Subject and description are required.");
+      notify.error("Subject and description are required.");
       return;
     }
 
@@ -205,10 +207,10 @@ function Trips() {
         ...current,
         [tripId]: [nextTicket, ...(current[tripId] ?? [])],
       }));
-      setFeedback(`Ticket ${nextTicket.id} was submitted for trip ${tripId}.`);
+      notify.success(`Ticket ${nextTicket.id} was submitted for trip ${tripId}.`);
       setTicketTrip(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to submit the ticket.");
+      notify.error(error, "Unable to submit the ticket.");
     }
   };
 
@@ -223,10 +225,10 @@ function Trips() {
       });
       const row = mapTripToRow(updated);
       setTripRows((current) => current.map((trip) => trip.ID === actionTrip.ID ? row : trip));
-      setFeedback(cancel ? `Trip ${actionTrip["Trip ID"]} was cancelled.` : `Trip ${actionTrip["Trip ID"]} was saved.`);
+      notify.success(cancel ? `Trip ${actionTrip["Trip ID"]} was cancelled.` : `Trip ${actionTrip["Trip ID"]} was saved.`);
       setActionTrip(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the trip.");
+      notify.error(error, "Unable to update the trip.");
     } finally {
       setIsSaving(false);
     }
@@ -252,22 +254,23 @@ function Trips() {
         ),
       }));
 
-      setFeedback(
+      notify.success(
         status === "Escalated"
           ? `Ticket ${ticketId} was escalated into a support case.`
           : `Ticket ${ticketId} was marked ${status.toLowerCase()}.`
       );
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the ticket status.");
+      notify.error(error, "Unable to update the ticket status.");
     }
   };
 
-  const filteredTrips = tripRows.filter((trip) =>
-    Object.values(trip).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredTrips.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(tripRows, {
+    searchText: (trip) => Object.values(trip).join(" "),
+    filters: [
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (row) => row["Status"] ?? "" },
+      { key: "driver", label: "Driver", allLabel: "All drivers", getValue: (row) => row["Driver"] ?? "" },
+    ],
+  });
 
   const selectedTripTickets = selectedTrip ? tripTickets[selectedTrip["Trip ID"]] ?? [] : [];
 
@@ -276,7 +279,6 @@ function Trips() {
       <AdminSidebar />
 
       <div className="admin-content">
-        {feedback && <FeedbackMessage message={feedback} />}
 
         <div className="admin-header">
           <div>
@@ -285,25 +287,14 @@ function Trips() {
           </div>
         </div>
 
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
+
         <div className="users-section">
           <div className="users-section-header">
             <h2>All Trips</h2>
           </div>
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search trips..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-          </div>
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredTrips.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search trips..." />
 
           <div className="table-container">
             <table className="users-table">
@@ -321,7 +312,7 @@ function Trips() {
               </thead>
 
               <tbody>
-                {filteredTrips.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((trip) => (
+                {table.pageRows.map((trip) => (
                   <tr key={trip["Trip ID"]}>
                     <td>{trip["Trip ID"]}</td>
                     <td>{trip["Request ID"]}</td>
@@ -347,17 +338,17 @@ function Trips() {
             </table>
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredTrips.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
         </div>
       </div>
 
       {selectedTrip && (
         <ViewDetailsModal
-          title={selectedTrip["Trip ID"]}
+          title={`Trip ${shortRef("TRP", selectedTrip["Trip ID"] ?? selectedTrip.ID)}`}
           details={selectedTrip}
           onClose={() => setSelectedTrip(null)}
         >
-          <section className="driver-cases support-ticket-section">
+          <section className="driver-cases support-ticket-section detail-section">
             <div className="driver-cases-header">
               <div>
                 <h3>Support tickets</h3>
@@ -414,6 +405,7 @@ function Trips() {
               <p className="cases-empty">No support tickets for this trip yet.</p>
             )}
           </section>
+          <RecordHistory path={`/trips/${selectedTrip.ID}/history`} description="Milestones, payments, tickets, ratings and every change made to this trip." />
         </ViewDetailsModal>
       )}
 
@@ -434,7 +426,7 @@ function Trips() {
               </div>
               <button className="modal-close" type="button" onClick={() => setTicketTrip(null)}>×</button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body modal-form-grid">
               <div className="form-group">
                 <label htmlFor="support-requester">Your name</label>
                 <input id="support-requester" name="requester" required />
@@ -447,7 +439,7 @@ function Trips() {
                 <label htmlFor="support-subject">Subject</label>
                 <input id="support-subject" name="subject" required maxLength={120} />
               </div>
-              <div className="form-group">
+              <div className="form-group form-group-full">
                 <label htmlFor="support-description">What happened?</label>
                 <textarea id="support-description" name="description" required maxLength={2000} rows={5} />
               </div>
@@ -462,7 +454,8 @@ function Trips() {
 
       {actionTrip && (
         <RecordActionsModal
-          title={`Manage ${actionTrip["Trip ID"]}`}
+          title={`Manage trip ${shortRef("TRP", actionTrip["Trip ID"] ?? actionTrip.ID)}`}
+          description={`${actionTrip.Driver} · ${actionTrip.Pickup} → ${actionTrip.Destination}`}
           values={actionTrip}
           fields={[
             { key: "Driver", label: "Driver" },

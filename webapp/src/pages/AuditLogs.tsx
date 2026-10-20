@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import { apiRequest } from "../lib/api";
 
 interface AuditLog {
@@ -51,13 +54,13 @@ const mapAuditLog = (log: ApiAuditLog): AuditLog => ({
 function AuditLogs() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [totalLogs, setTotalLogs] = useState(0);
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const [methodFilter, setMethodFilter] = useState("All");
+  const [methodFilter, setMethodFilter] = useState("");
 
   const [selectedLog, setSelectedLog] =
     useState<AuditLog | null>(null);
@@ -66,20 +69,31 @@ function AuditLogs() {
     const loadLogs = async () => {
       const query = new URLSearchParams({ page: String(page), limit: String(pageSize) });
       if (search.trim()) query.set("search", search.trim());
-      if (methodFilter !== "All") query.set("method", methodFilter);
+      if (methodFilter) query.set("method", methodFilter);
       try {
         const response = await apiRequest<AuditLogResponse>(`/audit-logs?${query.toString()}`);
         setLogs((response.data ?? []).map(mapAuditLog));
         setTotalLogs(response.pagination?.total ?? 0);
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load audit logs.");
+        notify.error(error, "Unable to load audit logs.");
       }
     };
 
     void loadLogs();
-  }, [page, pageSize, search, methodFilter]);
+  }, [page, pageSize, search, methodFilter, notify]);
 
   const filteredLogs = logs;
+
+  const pagination = {
+    page,
+    pageSize,
+    totalRecords: totalLogs,
+    onPageChange: setPage,
+    onPageSizeChange: (size: number) => {
+      setPageSize(size);
+      setPage(1);
+    },
+  };
 
   const getMethodClass = (method: string) => {
     switch (method) {
@@ -120,6 +134,8 @@ function AuditLogs() {
 
         </div>
 
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
+
 
         {/* Audit Logs Section */}
         <div className="users-section">
@@ -137,46 +153,27 @@ function AuditLogs() {
           </div>
 
 
-          {/* Filters */}
-          <div className="audit-filters">
-
-            <div className="audit-search">
-
-              <input
-                type="text"
-                placeholder="Search logs..."
-                value={search}
-                onChange={(event) => {
-                  setSearch(event.target.value);
-                  setPage(1);
-                }}
-              />
-
-            </div>
-
-
-            <div className="audit-filter">
-
-              <label>Method</label>
-
-              <select
-                value={methodFilter}
-                onChange={(event) => {
-                  setMethodFilter(event.target.value);
-                  setPage(1);
-                }}
-              >
-                <option value="All">All Methods</option>
-                <option value="GET">GET</option>
-                <option value="POST">POST</option>
-                <option value="PUT">PUT</option>
-                <option value="DELETE">DELETE</option>
-              </select>
-
-            </div>
-
-          </div>
-
+          {/* Search, filters and pagination (filtered on the server) */}
+          <TableToolbar
+            search={search}
+            onSearchChange={(value) => {
+              setSearch(value);
+              setPage(1);
+            }}
+            searchPlaceholder="Search logs..."
+            filters={[{
+              key: "method",
+              label: "Method",
+              allLabel: "All methods",
+              value: methodFilter,
+              options: ["GET", "POST", "PUT", "DELETE"],
+              onChange: (value) => {
+                setMethodFilter(value);
+                setPage(1);
+              },
+            }]}
+            pagination={pagination}
+          />
 
           {/* Results */}
           <div className="audit-results">
@@ -184,11 +181,6 @@ function AuditLogs() {
             Showing {Math.min((page - 1) * pageSize + filteredLogs.length, totalLogs)} of {totalLogs} logs
 
           </div>
-          {feedback && <p className="error">{feedback}</p>}
-
-
-          {/* Table */}
-          <TablePagination page={page} pageSize={pageSize} totalRecords={totalLogs} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
 
           <div className="table-container">
 
@@ -325,7 +317,7 @@ function AuditLogs() {
 
           </div>
 
-          <TablePagination page={page} pageSize={pageSize} totalRecords={filteredLogs.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...pagination} />
 
         </div>
 

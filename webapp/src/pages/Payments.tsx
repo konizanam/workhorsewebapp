@@ -4,8 +4,12 @@ import { useEffect, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
+import { shortRef } from "../lib/format";
 
 type ApiPayment = {
   payment_id: string;
@@ -38,10 +42,7 @@ const mapPayment = (payment: ApiPayment): Record<string, string> => ({
 function Payments() {
   const [selectedPayment, setSelectedPayment] = useState<Record<string, string> | null>(null);
   const [actionPayment, setActionPayment] = useState<Record<string, string> | null>(null);
-  const [feedback, setFeedback] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { feedback, notify } = useFeedback();
   const [isSaving, setIsSaving] = useState(false);
 
   const [paymentRows, setPaymentRows] = useState<Record<string, string>[]>([]);
@@ -52,19 +53,20 @@ function Payments() {
         const response = await apiRequest<PaymentListResponse>("/payments?limit=100");
         setPaymentRows((response.data ?? []).map(mapPayment));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load payments.");
+        notify.error(error, "Unable to load payments.");
       }
     };
 
     void loadPayments();
-  }, []);
+  }, [notify]);
 
-  const filteredPayments = paymentRows.filter((payment) =>
-    Object.values(payment).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredPayments.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(paymentRows, {
+    searchText: (payment) => Object.values(payment).join(" "),
+    filters: [
+      { key: "method", label: "Payment method", allLabel: "All payment methods", getValue: (row) => row["Payment Method"] ?? "" },
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (row) => row["Status"] ?? "" },
+    ],
+  });
 
   const savePayment = async (values: Record<string, string>) => {
     if (!actionPayment) return;
@@ -81,10 +83,10 @@ function Payments() {
         "Request ID": actionPayment["Request ID"],
       });
       setPaymentRows((current) => current.map((payment) => payment.ID === actionPayment.ID ? row : payment));
-      setFeedback(`Payment ${actionPayment.ID} was saved.`);
+      notify.success(`Payment ${actionPayment.ID} was saved.`);
       setActionPayment(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the payment.");
+      notify.error(error, "Unable to update the payment.");
     } finally {
       setIsSaving(false);
     }
@@ -104,10 +106,10 @@ function Payments() {
         "Request ID": actionPayment["Request ID"],
       });
       setPaymentRows((current) => current.map((payment) => payment.ID === actionPayment.ID ? row : payment));
-      setFeedback(`Payment ${actionPayment.ID} was marked for refund.`);
+      notify.success(`Payment ${actionPayment.ID} was marked for refund.`);
       setActionPayment(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to refund the payment.");
+      notify.error(error, "Unable to refund the payment.");
     }
   };
 
@@ -118,7 +120,6 @@ function Payments() {
 
       <div className="admin-content">
 
-        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -129,6 +130,8 @@ function Payments() {
           </div>
 
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
 
         {/* Payments Table */}
@@ -141,20 +144,7 @@ function Payments() {
           </div>
 
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search payments..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-          </div>
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredPayments.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search payments..." />
 
           <div className="table-container">
 
@@ -178,7 +168,7 @@ function Payments() {
 
               <tbody>
 
-                {filteredPayments.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((payment) => (
+                {table.pageRows.map((payment) => (
                   <tr key={payment["Payment ID"]}>
                     <td>{payment["Payment ID"]}</td>
                     <td>{payment["Request ID"]}</td>
@@ -203,7 +193,7 @@ function Payments() {
 
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredPayments.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
 
         </div>
 
@@ -219,7 +209,8 @@ function Payments() {
 
       {actionPayment && (
         <RecordActionsModal
-          title={`Manage ${actionPayment["Payment ID"]}`}
+          title={`Manage payment ${shortRef("PAY", actionPayment["Payment ID"] ?? actionPayment.ID)}`}
+          description={`${actionPayment.Customer} · ${actionPayment.Amount}`}
           values={actionPayment}
           fields={[{ key: "Customer", label: "Customer" }, { key: "Amount", label: "Amount" }, { key: "Payment Method", label: "Payment Method", options: ["Card", "Mobile Money", "Bank Transfer"] }, { key: "Status", label: "Status", options: ["Pending", "Completed", "Failed", "Refunded"] }]}
           actions={[{ label: "Refund Payment", onClick: () => void refundPayment() }]}

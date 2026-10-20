@@ -1,0 +1,676 @@
+/* =============================================================================================
+   WORKHORSE THEME
+
+   The single source of truth for fonts, colours, labels, fields and buttons across the app.
+   It styles plain HTML tags, so any new page picks it up automatically:
+
+     <h1>..<h4>, <p>, <label>, <input>, <select>, <textarea>, <table>   -> styled as-is
+     <button>                                                            -> primary button
+     <button className="secondary-btn">                                  -> outlined button
+     <button className="btn-sm"> / className="primary-btn btn-sm"        -> compact button
+
+   Page stylesheets should only handle layout (width, grid, spacing, position). Change the
+   tokens below rather than setting font sizes, paddings or colours on individual pages.
+================================================================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+:root {
+  /* Brand */
+  --brand-navy: #1c3e70;
+  --brand-gold: #eebf1c;
+  --brand-white: #ffffff;
+  --brand-grey: #e4e5e5e2;
+
+  /* Text */
+  --font-family: "Poppins", sans-serif;
+  --color-text: var(--brand-navy);
+  --color-label: #3d4d63;
+  --color-muted: #6b7686;
+
+  /* Font scale (rem, so the whole app scales from the html font size) */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.875rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+
+  /* Controls (fields and buttons) */
+  --control-height: 2.1rem;
+  --control-height-sm: var(--control-height); /* one size for every field and button */
+  --control-padding-x: 0.7rem;
+  --control-font-size: var(--font-size-sm);
+  --control-border: #d7dce2;
+  --control-radius: 0;
+  --control-focus-ring: 0 0 0 2px rgba(238, 191, 28, 0.2);
+}
+
+html {
+  font-size: 14px;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+  color: var(--color-text);
+}
+
+/* =========================================
+   HEADINGS AND TEXT
+========================================= */
+
+:where(h1, h2, h3, h4) {
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--brand-navy);
+}
+
+:where(h1) { font-size: var(--font-size-xl); }
+:where(h2) { font-size: var(--font-size-lg); }
+:where(h3) { font-size: var(--font-size-md); }
+:where(h4) { font-size: var(--font-size-sm); }
+
+:where(th, td) {
+  font-size: var(--font-size-sm);
+}
+
+:where(th) {
+  font-weight: 600;
+}
+
+/* =========================================
+   LABELS
+========================================= */
+
+:where(label) {
+  font-size: var(--control-font-size);
+  font-weight: 600;
+  color: var(--color-label);
+}
+
+:where(.form-group, .settings-field, .audit-filter) > label {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+/* =========================================
+   FIELDS
+========================================= */
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea
+) {
+  width: 100%;
+  height: var(--control-height);
+  padding: 0 var(--control-padding-x);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  background: var(--brand-white);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--control-font-size);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+:where(select) {
+  cursor: pointer;
+}
+
+:where(textarea) {
+  height: auto;
+  min-height: 6rem;
+  padding: 0.5rem var(--control-padding-x);
+  resize: vertical;
+}
+
+:where(input[type="file"]) {
+  width: 100%;
+  font: inherit;
+  font-size: var(--control-font-size);
+}
+
+:where(input, select, textarea):focus {
+  border-color: var(--brand-gold);
+  box-shadow: var(--control-focus-ring);
+}
+
+:where(input, select, textarea)::placeholder {
+  color: #9aa3af;
+}
+
+:where(input[type="checkbox"], input[type="radio"]) {
+  accent-color: var(--brand-navy);
+}
+
+/* =========================================
+   BUTTONS
+========================================= */
+
+:where(.btn, .primary-btn, .secondary-btn, .btn-secondary, .action-btn, .btn-sm, button:not([class])) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: var(--control-height);
+  padding: 0 1rem;
+  border: 1px solid var(--brand-navy);
+  border-radius: var(--control-radius);
+  background: var(--brand-navy);
+  color: var(--brand-white);
+  font: inherit;
+  font-size: var(--control-font-size);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+:where(.btn, .primary-btn, .btn-secondary, .action-btn, .btn-sm, button:not([class])):hover:not(:disabled),
+:where(.btn, .primary-btn, .btn-secondary, .action-btn, .btn-sm, button:not([class])):focus-visible {
+  border-color: var(--brand-gold);
+  background: var(--brand-gold);
+  color: var(--brand-navy);
+  outline: none;
+}
+
+/* Outlined (secondary) buttons */
+:where(.secondary-btn, .table-pagination button) {
+  border-color: var(--control-border);
+  background: var(--brand-white);
+  color: var(--brand-navy);
+}
+
+:where(.secondary-btn, .table-pagination button):hover:not(:disabled),
+:where(.secondary-btn, .table-pagination button):focus-visible,
+:where(.table-pagination button.active) {
+  border-color: var(--brand-gold);
+  background: var(--brand-gold);
+  color: var(--brand-navy);
+  outline: none;
+}
+
+:where(.btn, .primary-btn, .secondary-btn, .btn-secondary, .action-btn, .btn-sm, .table-pagination button, button:not([class])):disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Compact controls: table actions, toolbars, pagination */
+:where(
+  .btn-sm,
+  .action-btn,
+  .table-toolbar > .btn,
+  .table-toolbar > .primary-btn,
+  .users-section-header .btn,
+  .admin-header > .primary-btn
+) {
+  height: var(--control-height-sm);
+  padding: 0 0.7rem;
+  font-size: var(--control-font-size);
+}
+
+:where(.table-pagination button, .page-size-control select, .case-status-select, .table-search-input, .table-filter-select) {
+  height: var(--control-height-sm);
+  min-height: var(--control-height-sm);
+  padding: 0 0.6rem;
+  font-size: var(--control-font-size);
+}
+
+:where(.table-pagination button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--control-border);
+  font: inherit;
+  font-size: var(--control-font-size);
+  cursor: pointer;
+}
+
+/* Checkbox and radio labels keep the control and its text together */
+:where(label:has(> input[type="checkbox"], > input[type="radio"])) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+}
+
+/* =========================================
+   CARDS
+   One card style for every white panel in the app.
+   Use className="card" on new panels.
+========================================= */
+
+:root {
+  --card-bg: var(--brand-white);
+  --card-border: #e3e7ee;
+  --card-shadow: 0 1px 3px rgba(28, 62, 112, 0.06);
+  --card-padding: 1.25rem;
+}
+
+:where(.card, .users-section, .dashboard-card, .dashboard-section, .permission-card, .auth-card, .chart-card) {
+  border: 1px solid var(--card-border);
+  border-radius: var(--control-radius);
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+}
+
+:where(.card, .users-section, .dashboard-card, .dashboard-section, .permission-card, .chart-card) {
+  padding: var(--card-padding);
+}
+
+/* =========================================
+   MESSAGES
+   In-page success, error, warning and info
+   banners (components/FeedbackMessage).
+========================================= */
+
+:root {
+  --success-bg: #ecfdf3;
+  --success-border: #abefc6;
+  --success-accent: #079455;
+  --success-text: #05603a;
+
+  --error-bg: #fef3f2;
+  --error-border: #fecdca;
+  --error-accent: #d92d20;
+  --error-text: #912018;
+
+  --warning-bg: #fffaeb;
+  --warning-border: #fedf89;
+  --warning-accent: #dc6803;
+  --warning-text: #93370d;
+
+  --info-bg: #eff4fb;
+  --info-border: #c5d3e8;
+  --info-accent: var(--brand-navy);
+  --info-text: var(--brand-navy);
+}
+
+.feedback-message {
+  --tone-bg: var(--info-bg);
+  --tone-border: var(--info-border);
+  --tone-accent: var(--info-accent);
+  --tone-text: var(--info-text);
+
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--tone-border);
+  border-left: 4px solid var(--tone-accent);
+  border-radius: var(--control-radius);
+  background: var(--tone-bg);
+  color: var(--tone-text);
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+  text-align: left;
+  animation: feedback-enter 180ms ease-out;
+}
+
+.feedback-message.success {
+  --tone-bg: var(--success-bg);
+  --tone-border: var(--success-border);
+  --tone-accent: var(--success-accent);
+  --tone-text: var(--success-text);
+}
+
+.feedback-message.error {
+  --tone-bg: var(--error-bg);
+  --tone-border: var(--error-border);
+  --tone-accent: var(--error-accent);
+  --tone-text: var(--error-text);
+}
+
+.feedback-message.warning {
+  --tone-bg: var(--warning-bg);
+  --tone-border: var(--warning-border);
+  --tone-accent: var(--warning-accent);
+  --tone-text: var(--warning-text);
+}
+
+.feedback-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--tone-accent);
+  font-size: 1.15rem;
+}
+
+.feedback-text {
+  display: grid;
+  flex: 1;
+  gap: 0.1rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.feedback-text strong {
+  font-weight: 600;
+}
+
+.feedback-message .feedback-dismiss {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tone-text);
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.feedback-message .feedback-dismiss:hover,
+.feedback-message .feedback-dismiss:focus-visible {
+  background: rgba(0, 0, 0, 0.06);
+  opacity: 1;
+  outline: none;
+}
+
+/* While a modal is open, page messages float above it so they are not hidden behind the overlay. */
+body:has(.modal-overlay) .admin-content > .feedback-message {
+  position: fixed;
+  top: 1rem;
+  left: calc(var(--sidebar-width, 0px) + 1.5rem);
+  right: 1.5rem;
+  z-index: 1300;
+  width: auto;
+  box-shadow: 0 8px 24px rgba(28, 62, 112, 0.18);
+}
+
+/* Field-level errors under a single input */
+.file-upload-error,
+.location-error {
+  color: var(--error-accent);
+  font-size: var(--font-size-xs);
+}
+
+/* =========================================
+   FILE UPLOAD
+   Drop zone used for every file field
+   (components/FileUpload).
+========================================= */
+
+.file-upload {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 4.25rem;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px dashed #b9c3d3;
+  background: #f8fafc;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+/* The real input covers the zone: click or drop a file anywhere on it. */
+.file-upload input[type="file"] {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-upload:hover,
+.file-upload.is-dragging {
+  border-color: var(--brand-navy);
+  background: #eff4fb;
+}
+
+.file-upload:focus-within {
+  border-color: var(--brand-gold);
+  box-shadow: var(--control-focus-ring);
+}
+
+.file-upload.has-file {
+  border-style: solid;
+  border-color: var(--success-border);
+  background: var(--success-bg);
+}
+
+.file-upload.has-error {
+  border-color: var(--error-accent);
+  background: var(--error-bg);
+}
+
+.file-upload-preview {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background: var(--brand-white);
+  color: var(--brand-navy);
+  font-size: 1.35rem;
+}
+
+.file-upload-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.file-upload.has-file .file-upload-preview {
+  color: var(--success-accent);
+}
+
+.file-upload-text {
+  display: grid;
+  flex: 1;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.file-upload-text strong {
+  overflow: hidden;
+  color: var(--brand-navy);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-upload-text span {
+  color: var(--color-muted);
+  font-size: var(--font-size-xs);
+}
+
+.file-upload-action {
+  flex-shrink: 0;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--brand-navy);
+  background: var(--brand-white);
+  color: var(--brand-navy);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.file-upload:hover .file-upload-action,
+.file-upload:focus-within .file-upload-action {
+  border-color: var(--brand-gold);
+  background: var(--brand-gold);
+}
+
+.file-upload + .file-upload-error {
+  display: block;
+  margin-top: 0.35rem;
+}
+
+/* =========================================
+   FORM SECTIONS
+   Titled groups of fields inside modals
+   (components/FormSections).
+========================================= */
+
+.form-section + .form-section {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--card-border);
+}
+
+.form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.8rem;
+  color: var(--brand-navy);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.form-section-title::before {
+  content: "";
+  width: 3px;
+  height: 0.9rem;
+  background: var(--brand-gold);
+}
+
+/* Required field marker */
+.required-mark {
+  margin-left: 0.2rem;
+  color: var(--error-accent);
+}
+
+/* Line up fields in a row. Each field spans three shared grid rows (label, control,
+   help or error text), so across a row the labels end at the same line, the controls start
+   at the same line, and help text below one field never pushes its neighbours down. */
+.modal-form-grid {
+  row-gap: 0;
+  align-items: start;
+}
+
+.modal-form-grid > .form-group {
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  align-content: start;
+  padding-bottom: 0.9rem;
+}
+
+.modal-form-grid > .form-group > label:first-child {
+  align-self: end;
+}
+
+.modal-form-grid > .form-group > :nth-child(3) {
+  margin-top: 0.3rem;
+}
+
+.modal-form-grid .file-upload {
+  height: 4.25rem;
+}
+
+/* =========================================
+   STICKY MODAL HEADER AND FOOTER
+   The title and close button stay at the top,
+   and the action buttons at the bottom, while
+   a long modal scrolls.
+========================================= */
+
+:where(.role-modal, .audit-modal) > .modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--brand-white);
+}
+
+:where(.role-modal, .audit-modal) > .modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  background: var(--brand-white);
+}
+
+:where(.role-modal, .audit-modal) > form > .modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  background: var(--brand-white);
+}
+
+/* Upload fields need more room than text fields, so their rows use wider columns. */
+.modal-form-grid:has(> .form-group > .file-upload) {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+}
+
+/* =========================================
+   TABLE ROW STRIPES
+   Every table alternates light yellow and
+   light blue rows, with a stronger tint on hover.
+========================================= */
+
+:root {
+  --row-odd: #fffbeb;
+  --row-even: #eef4fb;
+  --row-hover: #fdf0c2;
+}
+
+:where(table) > tbody > tr:nth-child(odd) > td {
+  background: var(--row-odd);
+}
+
+:where(table) > tbody > tr:nth-child(even) > td {
+  background: var(--row-even);
+}
+
+:where(table) > tbody > tr:hover > td {
+  background: var(--row-hover);
+}
+
+/* =========================================
+   COMPACT MODAL CHROME
+   Shorter header and footer bars on every modal.
+========================================= */
+
+.modal-header {
+  align-items: center;
+  padding: 0.65rem 1.25rem;
+}
+
+.modal-header h2 {
+  font-size: var(--font-size-lg);
+  line-height: 1.3;
+}
+
+.modal-header p,
+.audit-modal .modal-header p {
+  margin: 0.05rem 0 0;
+  font-size: var(--font-size-xs);
+}
+
+.modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1.4rem;
+}
+
+.modal-body {
+  padding: 1.1rem 1.25rem;
+}
+
+.modal-footer {
+  padding: 0.65rem 1.25rem;
+}

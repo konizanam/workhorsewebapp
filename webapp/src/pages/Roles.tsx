@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import "../App.css";
 import AdminSidebar from "../components/AdminSidebar";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 
 interface Permission {
@@ -63,10 +66,7 @@ function RolesPermissions() {
 
   const [roleName, setRoleName] = useState("");
   const [description, setDescription] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { feedback, notify } = useFeedback();
   const [isSaving, setIsSaving] = useState(false);
 
   const loadRolesAndPermissions = async () => {
@@ -97,20 +97,18 @@ function RolesPermissions() {
         }))));
       })
       .catch((error: unknown) => {
-        if (active) setFeedback(error instanceof Error ? error.message : "Unable to load roles and permissions.");
+        if (active) notify.error(error, "Unable to load roles and permissions.");
       });
     return () => { active = false; };
-  }, []);
+  }, [notify]);
 
-  const filteredRoles = roles.filter((role) =>
-    [role.name, role.description, role.type, role.status, String(role.permissions)]
-      .join(" ")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredRoles.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(roles, {
+    searchText: (role) => [role.name, role.description, role.type, role.status, String(role.permissions)].join(" "),
+    filters: [
+      { key: "type", label: "Type", allLabel: "All types", getValue: (role) => role.type },
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (role) => role.status },
+    ],
+  });
 
   const openAddRole = () => {
     setEditingRole(null);
@@ -130,7 +128,7 @@ function RolesPermissions() {
       setSelectedPermissions((details.permissions ?? []).map((permission) => permission.permission_id));
       setShowModal(true);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to load role details.");
+      notify.error(error, "Unable to load role details.");
     }
   };
 
@@ -149,7 +147,7 @@ function RolesPermissions() {
 
   const saveRole = async () => {
     if (!roleName.trim()) {
-      setFeedback("Please enter a role name.");
+      notify.error("Please enter a role name.");
       return;
     }
 
@@ -172,9 +170,9 @@ function RolesPermissions() {
       }
       await loadRolesAndPermissions();
       closeModal();
-      setFeedback(editingRole ? "Role updated successfully." : "Role created successfully.");
+      notify.success(editingRole ? "Role updated successfully." : "Role created successfully.");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to save the role.");
+      notify.error(error, "Unable to save the role.");
     } finally {
       setIsSaving(false);
     }
@@ -191,9 +189,9 @@ function RolesPermissions() {
       setRoles((current) => current.map((item) =>
         item.id === role.id ? { ...item, status: is_active ? "Active" : "Inactive" } : item
       ));
-      setFeedback(`${role.name} ${is_active ? "enabled" : "disabled"}.`);
+      notify.success(`${role.name} ${is_active ? "enabled" : "disabled"}.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update role status.");
+      notify.error(error, "Unable to update role status.");
     }
   };
 
@@ -206,7 +204,6 @@ function RolesPermissions() {
 
       <div className="admin-content">
 
-        {feedback && <FeedbackMessage message={feedback} tone={feedback.startsWith("Please") || feedback.startsWith("System") ? "error" : "success"} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -220,6 +217,8 @@ function RolesPermissions() {
           </div>
 
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
 
         {/* Roles Section */}
@@ -235,24 +234,10 @@ function RolesPermissions() {
               </p>
             </div>
 
+            <button type="button" className="btn" onClick={openAddRole}>+ Add Role</button>
           </div>
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search roles..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-            <button className="primary-btn" onClick={openAddRole}>+ Add Role</button>
-          </div>
-
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRoles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search roles..." />
 
           <div className="table-container">
 
@@ -272,7 +257,7 @@ function RolesPermissions() {
 
               <tbody>
 
-                {filteredRoles.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((role) => (
+                {table.pageRows.map((role) => (
 
                   <tr key={role.id}>
 
@@ -348,7 +333,7 @@ function RolesPermissions() {
 
           </div>
 
-          <TablePagination page={page} pageSize={pageSize} totalRecords={roles.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
 
         </div>
 
@@ -480,7 +465,7 @@ function RolesPermissions() {
             </div>
 
 
-            <div className="modal-body">
+            <div className="modal-body modal-form-grid">
 
               <div className="form-group">
 
@@ -518,7 +503,7 @@ function RolesPermissions() {
               </div>
 
 
-              <div className="form-group">
+              <div className="form-group form-group-full">
 
                 <label>
                   Permissions

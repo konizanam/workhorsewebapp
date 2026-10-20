@@ -5,12 +5,18 @@ import AddRecordModal from "../components/AddRecordModal";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import UserActionsModal from "../components/UserActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
 
 type User = {
   id: string;
   name: string;
+  firstName: string;
+  initials: string;
+  surname: string;
   email: string;
   phone: string;
   type: string;
@@ -21,6 +27,7 @@ type User = {
 type ApiUser = {
   user_id: string;
   first_name?: string | null;
+  initials?: string | null;
   last_name?: string | null;
   name?: string;
   email: string;
@@ -39,7 +46,10 @@ type ApiRole = { role_id: string; name: string };
 
 const mapUser = (user: ApiUser): User => ({
   id: user.user_id,
-  name: user.name ?? [user.first_name, user.last_name].filter(Boolean).join(" "),
+  name: user.name ?? [user.first_name, user.initials, user.last_name].filter(Boolean).join(" "),
+  firstName: user.first_name ?? "",
+  initials: user.initials ?? "",
+  surname: user.last_name ?? "",
   email: user.email,
   phone: user.phone ?? user.phone_number ?? "",
   type: (user.type ?? user.user_type ?? "").replace(/^./, (letter) => letter.toUpperCase()),
@@ -52,10 +62,7 @@ function Users() {
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [actionUser, setActionUser] = useState<User | null>(null);
-  const [feedback, setFeedback] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { feedback, notify } = useFeedback();
   const [roleOptions, setRoleOptions] = useState<ApiRole[]>([]);
   const [assignedRoles, setAssignedRoles] = useState<ApiRole[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -66,22 +73,21 @@ function Users() {
         const response = await apiRequest<UserListResponse>("/users?limit=100");
         setUsers((response.data ?? []).map(mapUser));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load users.");
+        notify.error(error, "Unable to load users.");
       }
     };
 
     void loadUsers();
-  }, []);
+  }, [notify]);
 
-  const filteredUsers = users.filter((user) =>
-    [user.name, user.email, user.phone, user.type, user.status, user.twoFactor]
-      .join(" ")
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(users, {
+    searchText: (user) => [user.name, user.email, user.phone, user.type, user.status, user.twoFactor].join(" "),
+    filters: [
+      { key: "type", label: "User type", allLabel: "All user types", getValue: (user) => user.type },
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (user) => user.status },
+      { key: "twoFactor", label: "2FA", allLabel: "All 2FA", getValue: (user) => user.twoFactor },
+    ],
+  });
 
   const addUser = async (values: Record<string, string>) => {
     setIsSaving(true);
@@ -92,9 +98,9 @@ function Users() {
       });
       setUsers((current) => [mapUser(created), ...current]);
       setShowModal(false);
-      setFeedback(`${values.name} was saved successfully.`);
+      notify.success(`${values.first_name} ${values.last_name} was saved successfully.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to save the user.");
+      notify.error(error, "Unable to save the user.");
     } finally {
       setIsSaving(false);
     }
@@ -110,11 +116,11 @@ function Users() {
       setRoleOptions(roles);
       setAssignedRoles(assigned);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to load user roles.");
+      notify.error(error, "Unable to load user roles.");
     }
   };
 
-  const updateUser = async (values: Pick<User, "name" | "email" | "phone">) => {
+  const updateUser = async (values: { first_name: string; initials: string; last_name: string; email: string; phone: string }) => {
     if (!actionUser) return;
     try {
       const updated = await apiRequest<ApiUser>(`/users/${actionUser.id}`, {
@@ -124,9 +130,9 @@ function Users() {
       const mapped = mapUser(updated);
       setUsers((current) => current.map((user) => user.id === mapped.id ? mapped : user));
       setActionUser(mapped);
-      setFeedback(`${values.name} was updated.`);
+      notify.success(`${values.first_name} ${values.last_name} was updated.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the user.");
+      notify.error(error, "Unable to update the user.");
     }
   };
 
@@ -138,9 +144,9 @@ function Users() {
         body: JSON.stringify({ role_id: roleId }),
       });
       setAssignedRoles(await apiRequest<ApiRole[]>(`/users/${actionUser.id}/roles`));
-      setFeedback("Role assigned successfully.");
+      notify.success("Role assigned successfully.");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to assign role.");
+      notify.error(error, "Unable to assign role.");
     }
   };
 
@@ -149,9 +155,9 @@ function Users() {
     try {
       await apiRequest(`/users/${actionUser.id}/roles/${roleId}`, { method: "DELETE" });
       setAssignedRoles((current) => current.filter((role) => role.role_id !== roleId));
-      setFeedback("Role removed successfully.");
+      notify.success("Role removed successfully.");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to remove role.");
+      notify.error(error, "Unable to remove role.");
     }
   };
 
@@ -159,9 +165,9 @@ function Users() {
     if (!actionUser) return;
     try {
       await apiRequest(`/users/${actionUser.id}`, { method: "PUT", body: JSON.stringify({ password }) });
-      setFeedback("Password updated successfully.");
+      notify.success("Password updated successfully.");
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update password.");
+      notify.error(error, "Unable to update password.");
     }
   };
 
@@ -176,9 +182,9 @@ function Users() {
       const mapped = mapUser(updated);
       setUsers((current) => current.map((user) => user.id === mapped.id ? mapped : user));
       setActionUser(mapped);
-      setFeedback(`User ${status === "active" ? "enabled" : "disabled"}.`);
+      notify.success(`User ${status === "active" ? "enabled" : "disabled"}.`);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update user status.");
+      notify.error(error, "Unable to update user status.");
     }
   };
 
@@ -197,9 +203,10 @@ function Users() {
             <p>Manage all registered users.</p>
           </div>
 
-          {feedback && <FeedbackMessage message={feedback} />}
 
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
 
         {/* Users Table */}
@@ -209,23 +216,10 @@ function Users() {
 
             <h2>All Users</h2>
 
+            <button type="button" className="btn" onClick={() => setShowModal(true)}>+ Add User</button>
           </div>
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-            <button className="btn" onClick={() => setShowModal(true)}>+ Add User</button>
-          </div>
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredUsers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search users..." />
 
           <div className="table-container">
 
@@ -247,7 +241,7 @@ function Users() {
 
 
               <tbody>
-                {filteredUsers.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((user) => (
+                {table.pageRows.map((user) => (
                   <tr key={user.id}>
                     <td>{user.name}</td>
                     <td>{user.email}</td>
@@ -269,7 +263,7 @@ function Users() {
 
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredUsers.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
 
         </div>
 
@@ -280,10 +274,12 @@ function Users() {
           title="Add New User"
           description="Enter the details for the new user."
           fields={[
-            { name: "name", label: "Full Name", placeholder: "e.g. Alex Morgan" },
-            { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com" },
-            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678" },
-            { name: "type", label: "User Type", options: ["Admin", "Customer", "Driver"] },
+            { name: "first_name", label: "First Name", placeholder: "e.g. Alex", section: "Personal details" },
+            { name: "initials", label: "Initials", placeholder: "e.g. J.K.", required: false, section: "Personal details" },
+            { name: "last_name", label: "Surname", placeholder: "e.g. Morgan", section: "Personal details" },
+            { name: "email", label: "Email Address", type: "email", placeholder: "alex@example.com", section: "Contact details" },
+            { name: "phone", label: "Phone Number", type: "tel", placeholder: "0812345678", section: "Contact details" },
+            { name: "type", label: "User Type", options: ["Admin", "Customer"], section: "Account" },
           ]}
           onClose={() => setShowModal(false)}
           onSubmit={addUser}

@@ -4,8 +4,13 @@ import { useEffect, useState } from "react";
 import ViewDetailsModal from "../components/ViewDetailsModal";
 import RecordActionsModal from "../components/RecordActionsModal";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import TablePagination from "../components/TablePagination";
+import TableToolbar from "../components/TableToolbar";
+import { useTableControls } from "../lib/useTableControls";
 import { apiRequest } from "../lib/api";
+import { shortRef } from "../lib/format";
+import RecordHistory from "../components/RecordHistory";
 
 type ApiRequest = {
   request_id: string;
@@ -45,10 +50,7 @@ const mapRequest = (request: ApiRequest): Record<string, string> => ({
 function Requests() {
   const [selectedRequest, setSelectedRequest] = useState<Record<string, string> | null>(null);
   const [actionRequest, setActionRequest] = useState<Record<string, string> | null>(null);
-  const [feedback, setFeedback] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const { feedback, notify } = useFeedback();
   const [isSaving, setIsSaving] = useState(false);
 
   const [requestRows, setRequestRows] = useState<Record<string, string>[]>([]);
@@ -59,19 +61,20 @@ function Requests() {
         const response = await apiRequest<RequestListResponse>("/requests?limit=100");
         setRequestRows((response.data ?? []).map(mapRequest));
       } catch (error) {
-        setFeedback(error instanceof Error ? error.message : "Unable to load requests.");
+        notify.error(error, "Unable to load requests.");
       }
     };
 
     void loadRequests();
-  }, []);
+  }, [notify]);
 
-  const filteredRequests = requestRows.filter((request) =>
-    Object.values(request).join(" ").toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
+  const table = useTableControls(requestRows, {
+    searchText: (request) => Object.values(request).join(" "),
+    filters: [
+      { key: "serviceType", label: "Service type", allLabel: "All service types", getValue: (row) => row["Service Type"] ?? "" },
+      { key: "status", label: "Status", allLabel: "All statuses", getValue: (row) => row["Status"] ?? "" },
+    ],
+  });
 
   const saveRequest = async (values: Record<string, string>) => {
     if (!actionRequest) return;
@@ -83,10 +86,10 @@ function Requests() {
       });
       const row = mapRequest({ ...updated, request_id: updated.request_id ?? actionRequest.ID });
       setRequestRows((current) => current.map((request) => request.ID === actionRequest.ID ? row : request));
-      setFeedback(`Request ${actionRequest.ID} was saved.`);
+      notify.success(`Request ${actionRequest.ID} was saved.`);
       setActionRequest(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to update the request.");
+      notify.error(error, "Unable to update the request.");
     } finally {
       setIsSaving(false);
     }
@@ -101,10 +104,10 @@ function Requests() {
       });
       const row = mapRequest({ ...updated, request_id: updated.request_id ?? actionRequest.ID });
       setRequestRows((current) => current.map((request) => request.ID === actionRequest.ID ? row : request));
-      setFeedback(`Request ${actionRequest.ID} was cancelled.`);
+      notify.success(`Request ${actionRequest.ID} was cancelled.`);
       setActionRequest(null);
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "Unable to cancel the request.");
+      notify.error(error, "Unable to cancel the request.");
     }
   };
 
@@ -115,7 +118,6 @@ function Requests() {
 
       <div className="admin-content">
 
-        {feedback && <FeedbackMessage message={feedback} />}
 
         {/* Header */}
         <div className="admin-header">
@@ -126,6 +128,8 @@ function Requests() {
           </div>
 
         </div>
+
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
 
         {/* Requests Table */}
@@ -138,20 +142,7 @@ function Requests() {
           </div>
 
 
-          <div className="table-toolbar">
-            <input
-              type="text"
-              className="table-search-input"
-              placeholder="Search requests..."
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setPage(1);
-              }}
-            />
-          </div>
-
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRequests.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TableToolbar {...table.toolbar} searchPlaceholder="Search requests..." />
 
           <div className="table-container">
 
@@ -174,7 +165,7 @@ function Requests() {
 
               <tbody>
 
-                {filteredRequests.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((request) => (
+                {table.pageRows.map((request) => (
                   <tr key={request["Request ID"]}>
                     <td>{request["Request ID"]}</td>
                     <td>{request.Customer}</td>
@@ -198,7 +189,7 @@ function Requests() {
 
           </div>
 
-          <TablePagination page={currentPage} pageSize={pageSize} totalRecords={filteredRequests.length} onPageChange={setPage} onPageSizeChange={(size) => { setPageSize(size); setPage(1); }} />
+          <TablePagination {...table.pagination} />
 
         </div>
 
@@ -206,15 +197,18 @@ function Requests() {
 
       {selectedRequest && (
         <ViewDetailsModal
-          title={selectedRequest["Request ID"]}
+          title={`Request ${shortRef("REQ", selectedRequest["Request ID"] ?? selectedRequest.ID)}`}
           details={selectedRequest}
           onClose={() => setSelectedRequest(null)}
-        />
+        >
+          <RecordHistory path={`/requests/${selectedRequest.ID}/history`} description="Submission, matching, delivery and every change made to this request." />
+        </ViewDetailsModal>
       )}
 
       {actionRequest && (
         <RecordActionsModal
-          title={`Manage ${actionRequest["Request ID"]}`}
+          title={`Manage request ${shortRef("REQ", actionRequest["Request ID"] ?? actionRequest.ID)}`}
+          description={`${actionRequest.Customer} · ${actionRequest.Pickup} → ${actionRequest.Destination}`}
           values={actionRequest}
           fields={[{ key: "Customer", label: "Customer" }, { key: "Service Type", label: "Service Type" }, { key: "Pickup", label: "Pickup", type: "location" }, { key: "Destination", label: "Destination", type: "location" }, { key: "Status", label: "Status", options: ["Pending", "Accepted", "Completed", "Cancelled"] }]}
           actions={[{ label: "Cancel Request", onClick: () => void cancelRequest() }]}

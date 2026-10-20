@@ -36,7 +36,8 @@ function ViewDetailsModal({ title, details, children, onClose }: ViewDetailsModa
         <div className="modal-body">
           <div className="details-grid">
             {details["Driver Image"] !== undefined && (
-              <div className="driver-details-image">
+              <div className="detail-item driver-details-image">
+                <span>Photo</span>
                 {details["Driver Image"] ? (
                   <button
                     className="driver-image-preview-trigger"

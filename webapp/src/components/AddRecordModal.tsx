@@ -1,15 +1,20 @@
 import { useState } from "react";
+import FormSections from "./FormSections";
+import FileUpload from "./FileUpload";
 
 type AddRecordField = {
   name: string;
   label: string;
-  type?: "text" | "email" | "tel" | "file";
+  type?: "text" | "email" | "tel" | "file" | "date" | "number";
+  min?: string;
+  max?: string;
   options?: string[];
   placeholder?: string;
   pattern?: string;
   title?: string;
   accept?: string;
   required?: boolean;
+  section?: string;
 };
 
 type AddRecordModalProps = {
@@ -103,9 +108,9 @@ function AddRecordModal({
         </div>
 
         <div className="modal-body">
-          {fields.map((field) => (
+          <FormSections fields={fields} renderField={(field) => (
             <div className="form-group" key={field.name}>
-              <label htmlFor={`add-${field.name}`}>{field.label}</label>
+              <label htmlFor={`add-${field.name}`}>{field.label}{(field.required ?? true) && <span className="required-mark" aria-hidden="true">*</span>}</label>
               {field.options ? (
                 <select
                   id={`add-${field.name}`}
@@ -116,29 +121,32 @@ function AddRecordModal({
                   <option value="" disabled>Select {field.label.toLowerCase()}</option>
                   {field.options.map((option) => <option key={option} value={option}>{option}</option>)}
                 </select>
+              ) : field.type === "file" ? (
+                <FileUpload
+                  id={`add-${field.name}`}
+                  label={field.label}
+                  accept={field.accept}
+                  required={field.required ?? true}
+                  value={values[field.name]}
+                  error={fileErrors[field.name]}
+                  onChange={(event) => handleFieldChange(field, event)}
+                />
               ) : (
                 <input
                   id={`add-${field.name}`}
                   type={field.type ?? "text"}
-                  value={field.type === "file" ? undefined : values[field.name] ?? ""}
+                  value={values[field.name] ?? ""}
                   onChange={(event) => handleFieldChange(field, event)}
                   placeholder={field.placeholder}
                   pattern={field.pattern}
+                  min={field.min}
+                  max={field.max}
                   title={field.title}
-                  accept={field.accept}
                   required={field.required ?? true}
                 />
               )}
-              {field.type === "file" && values[field.name] && (
-                values[field.name].startsWith("data:image/") ? (
-                  <img className="driver-photo-preview" src={values[field.name]} alt={`${field.label} preview`} />
-                ) : (
-                  <span>File uploaded</span>
-                )
-              )}
-              {field.type === "file" && fileErrors[field.name] && <span className="file-upload-error" role="alert">{fileErrors[field.name]}</span>}
             </div>
-          ))}
+          )} />
         </div>
 
         <div className="modal-footer">

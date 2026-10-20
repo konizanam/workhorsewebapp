@@ -164,9 +164,7 @@ function LocationAutocomplete({
           <li className="location-attribution">Powered by <strong>Google</strong></li>
         </ul>
       )}
-      {!apiKeyConfigured ? (
-        <span className="location-help">Enter an address manually. Add a Google Maps API key to attach coordinates.</span>
-      ) : isLoading ? (
+      {!apiKeyConfigured ? null : isLoading ? (
         <span className="location-help" role="status">Searching places...</span>
       ) : error ? (
         <span className="location-error" role="alert">{error}</span>

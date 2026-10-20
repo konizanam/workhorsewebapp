@@ -2,6 +2,7 @@ import "../App.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import FeedbackMessage from "../components/FeedbackMessage";
+import { useFeedback } from "../lib/feedback";
 import { apiRequest, clearSession, storeTokens } from "../lib/api";
 
 const OTP_RESEND_SECONDS = 240;
@@ -15,7 +16,7 @@ function VerifyOTP() {
     
   const [timer, setTimer] = useState(OTP_RESEND_SECONDS);
   const canResend = timer === 0;
-  const [feedback, setFeedback] = useState("");
+  const { feedback, notify } = useFeedback();
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ const resendOTP = async () => {
   }
 
   setSubmitting(true);
-  setFeedback("");
+  notify.clear();
   try {
     const result = await apiRequest<{ message: string }>("/auth/resend-2fa", {
       method: "POST",
@@ -61,9 +62,9 @@ const resendOTP = async () => {
     setTimer(OTP_RESEND_SECONDS);
     setOtp(["", "", "", "", "", ""]);
     inputRefs.current[0]?.focus();
-    setFeedback(result.message);
+    notify.success(result.message);
   } catch (requestError) {
-    setFeedback(requestError instanceof Error ? requestError.message : "Unable to resend the code.");
+    notify.error(requestError, "Unable to resend the code.");
   } finally {
     setSubmitting(false);
   }
@@ -123,7 +124,7 @@ const handleVerify = async (
     e.preventDefault();
 
     if (otp.some((digit) => !digit)) {
-      setFeedback("Enter all 6 digits to continue.");
+      notify.error("Enter all 6 digits to continue.");
       return;
     }
 
@@ -134,7 +135,7 @@ const handleVerify = async (
     }
 
     setSubmitting(true);
-    setFeedback("");
+    notify.clear();
     try {
       const tokens = await apiRequest<{ accessToken: string; refreshToken: string }>("/auth/verify-2fa", {
         method: "POST",
@@ -153,7 +154,7 @@ const handleVerify = async (
       }
       navigate("/Dashboard");
     } catch (requestError) {
-      setFeedback(requestError instanceof Error ? requestError.message : "Unable to verify the code.");
+      notify.error(requestError, "Unable to verify the code.");
     } finally {
       setSubmitting(false);
     }
@@ -180,7 +181,7 @@ const handleVerify = async (
           Enter the 6-digit code sent to {verificationState?.email || "your email address"}.
         </p>
 
-        {feedback && <FeedbackMessage message={feedback} />}
+        {feedback && <FeedbackMessage key={feedback.id} tone={feedback.tone} message={feedback.message} onDismiss={notify.clear} />}
 
 
         <form onSubmit={handleVerify}>
