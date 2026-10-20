@@ -35,6 +35,18 @@ import { apiRequest } from "../lib/api";
 
 type CountBy = { count: number };
 
+type AwaitingClient = {
+  id: string;
+  type: "driver" | "company";
+  name: string;
+  email: string;
+  phone?: string | null;
+  waiting_since: string;
+  pending_documents: number;
+  licence_pending: boolean;
+  reference?: string | null;
+};
+
 type DashboardSummary = {
   users: number;
   drivers: number;
@@ -42,6 +54,7 @@ type DashboardSummary = {
   requests: number;
   activeTrips: number;
   pendingVerifications: number;
+  awaitingVerification?: AwaitingClient[];
   activity: { log_id: string; actor: string; method: string; endpoint: string; created_at: string }[];
   completedTrips?: number;
   onlineDrivers?: number;
@@ -172,6 +185,83 @@ function BreakdownChart({ title, subtitle, rows, unit, to }: {
   );
 }
 
+const daysSince = (since: string, now: number) => Math.floor((now - new Date(since).getTime()) / 86400000);
+
+function waitingLabel(days: number) {
+  if (days <= 0) return "Since today";
+  return `Waiting ${days} ${days === 1 ? "day" : "days"}`;
+}
+
+/** Drivers and companies waiting to be verified, longest waiting first. */
+function VerificationQueue({ clients, total }: { clients: AwaitingClient[]; total: number }) {
+  // Read the clock once, when the section first shows.
+  const [now] = useState(() => Date.now());
+  return (
+    <section className="dashboard-section verification-queue" aria-label="Waiting for verification">
+      <header className="chart-card-header">
+        <div>
+          <h2>Waiting for verification</h2>
+          <p>Drivers and companies whose onboarding needs review, longest waiting first</p>
+        </div>
+        <span className="queue-count">{total} waiting</span>
+      </header>
+
+      {clients.length === 0 ? (
+        <p className="chart-empty-inline">Everyone has been verified.</p>
+      ) : (
+        <ul className="verification-list">
+          {clients.map((client) => {
+            const isDriver = client.type === "driver";
+            const days = daysSince(client.waiting_since, now);
+            const outstanding = isDriver
+              ? [
+                  client.licence_pending ? "Licence registration" : null,
+                  client.pending_documents > 0 ? `${client.pending_documents} ${client.pending_documents === 1 ? "document" : "documents"}` : null,
+                ].filter(Boolean)
+              : ["Company registration"];
+            return (
+              <li className="verification-item" key={`${client.type}-${client.id}`}>
+                <span className={`verification-icon type-${client.type}`} aria-hidden="true">
+                  {isDriver ? <FiUserCheck /> : <FiBriefcase />}
+                </span>
+                <div className="verification-main">
+                  <div className="verification-name">
+                    <strong>{client.name}</strong>
+                    <span className="verification-type">{isDriver ? "Driver" : "Company"}</span>
+                  </div>
+                  <span className="verification-contact">
+                    {[client.email, client.phone, client.reference].filter(Boolean).join(" · ")}
+                  </span>
+                </div>
+                <div className="verification-outstanding">
+                  {(outstanding.length ? outstanding : ["Onboarding review"]).map((item) => (
+                    <span className="status-badge status-submitted" key={item}>{item}</span>
+                  ))}
+                </div>
+                <span
+                  className={`verification-wait${days > 7 ? " is-overdue" : ""}`}
+                  title={new Date(client.waiting_since).toLocaleString()}
+                >
+                  <FiClock aria-hidden="true" /> {waitingLabel(days)}
+                </span>
+                <Link
+                  className="primary-btn btn-sm"
+                  to={`/${isDriver ? "Drivers" : "Companies"}?search=${encodeURIComponent(client.email)}`}
+                >
+                  Review
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {total > clients.length && (
+        <p className="verification-more">Showing the {clients.length} longest waiting of {total}.</p>
+      )}
+    </section>
+  );
+}
+
 function AdminDashboard() {
   const [summary, setSummary] = useState<DashboardSummary>({
     users: 0,
@@ -227,8 +317,11 @@ function AdminDashboard() {
           <StatCard to="/Payments" icon={FiDollarSign} label="Revenue, last 30 days" value={formatMoney(summary.revenue?.last30 ?? 0, currency)} caption={`${formatMoney(summary.revenue?.total ?? 0, currency)} all time`} />
           <StatCard to="/Payments" icon={FiClock} label="Pending payments" value={(summary.pendingPayments?.count ?? 0).toLocaleString()} caption={`${formatMoney(summary.pendingPayments?.amount ?? 0, currency)} outstanding`} />
           <StatCard to="/Trips" icon={FiCheckCircle} label="Completed trips" value={(summary.completedTrips ?? 0).toLocaleString()} caption="Delivered successfully" />
-          <StatCard to="/Drivers" icon={FiBriefcase} label="Pending verification" value={summary.pendingVerifications.toLocaleString()} caption="Registrations awaiting review" />
+          <StatCard to="/Drivers" icon={FiBriefcase} label="Pending verification" value={summary.pendingVerifications.toLocaleString()} caption="Drivers and companies awaiting review" />
         </div>
+
+        {/* Clients waiting to be verified */}
+        <VerificationQueue clients={summary.awaitingVerification ?? []} total={summary.pendingVerifications} />
 
         {/* Chart filters: one period for every chart below */}
         <div className="chart-filters">

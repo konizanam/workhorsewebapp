@@ -18,7 +18,8 @@ type TableControlsOptions<T> = {
  * Filter options are built from the values present in the rows.
  */
 export function useTableControls<T>(rows: T[], { searchText, filters = [] }: TableControlsOptions<T>) {
-  const [search, setSearch] = useState("");
+  // A ?search= in the address bar pre-fills the search, e.g. when following a link from the dashboard.
+  const [search, setSearch] = useState(() => new URLSearchParams(window.location.search).get("search") ?? "");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
